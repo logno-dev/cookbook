@@ -4,14 +4,14 @@
   user-select: none;
 }
 
-main {
-  @apply flex flex-col items-center justify-center min-h-screen bg-gray-50 gap-8 px-4;
-}
-
-h1 {
-  @apply uppercase text-6xl text-sky-700 font-thin;
-}
-
 button {
   cursor: pointer;
+}
+
+/* Text selection improvement */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }

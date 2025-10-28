@@ -3,11 +3,13 @@ import { Show, createSignal, createEffect } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "@solidjs/router";
 
-export default function Login() {
-  const { login, user, loading: authLoading } = useAuth();
+export default function Register() {
+  const { register, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
+  const [name, setName] = createSignal("");
+  const [confirmPassword, setConfirmPassword] = createSignal("");
   const [error, setError] = createSignal("");
   const [loading, setLoading] = createSignal(false);
 
@@ -23,11 +25,23 @@ export default function Login() {
     setLoading(true);
     setError("");
 
+    if (password() !== confirmPassword()) {
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
+    }
+
+    if (password().length < 8) {
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return;
+    }
+
     try {
-      await login(email(), password());
+      await register(email(), password(), name() || undefined);
       navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Login failed");
+      setError(err instanceof Error ? err.message : "Registration failed");
     } finally {
       setLoading(false);
     }
@@ -59,11 +73,25 @@ export default function Login() {
 
   return (
     <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center pt-16">
-      <Title>Sign In - Recipe Curator</Title>
+      <Title>Sign Up - Recipe Curator</Title>
       <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
-        <h1 class="text-3xl font-bold text-center text-gray-900 mb-8">Sign In</h1>
+        <h1 class="text-3xl font-bold text-center text-gray-900 mb-8">Create Account</h1>
         
         <form onSubmit={handleSubmit} class="space-y-6">
+          <div>
+            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+              Name (Optional)
+            </label>
+            <input
+              id="name"
+              type="text"
+              value={name()}
+              onInput={(e) => setName(e.currentTarget.value)}
+              placeholder="John Doe"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+
           <div>
             <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
               Email Address
@@ -94,6 +122,21 @@ export default function Login() {
             />
           </div>
 
+          <div>
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+              Confirm Password
+            </label>
+            <input
+              id="confirmPassword"
+              type="password"
+              value={confirmPassword()}
+              onInput={(e) => setConfirmPassword(e.currentTarget.value)}
+              placeholder="••••••••"
+              required
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+            />
+          </div>
+
           <Show when={error()}>
             <div class="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg">
               {error()}
@@ -105,15 +148,15 @@ export default function Login() {
             disabled={loading()}
             class="w-full px-4 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-lg hover:from-emerald-700 hover:to-teal-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 font-medium"
           >
-            {loading() ? "Signing in..." : "Sign In"}
+            {loading() ? "Creating account..." : "Create Account"}
           </button>
         </form>
 
         <div class="mt-6 text-center">
           <p class="text-gray-600">
-            Don't have an account?{" "}
-            <a href="/register" class="text-emerald-600 hover:text-emerald-700 font-medium">
-              Sign up
+            Already have an account?{" "}
+            <a href="/login" class="text-emerald-600 hover:text-emerald-700 font-medium">
+              Sign in
             </a>
           </p>
         </div>

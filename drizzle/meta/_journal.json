@@ -1,0 +1,55 @@
+{
+  "version": "7",
+  "dialect": "sqlite",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "6",
+      "when": 1761522259677,
+      "tag": "0000_burly_lethal_legion",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1761523259264,
+      "tag": "0001_vengeful_swordsman",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "6",
+      "when": 1761533226252,
+      "tag": "0002_whole_shiver_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "6",
+      "when": 1761536801512,
+      "tag": "0003_warm_misty_knight",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1761541085152,
+      "tag": "0004_lying_supernaut",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "6",
+      "when": 1761544309977,
+      "tag": "0005_opposite_warbird",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1761544839306,
+      "tag": "0006_faulty_bug",
+      "breakpoints": true
+    }
+  ]
+}
