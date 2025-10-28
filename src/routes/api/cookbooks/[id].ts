@@ -85,12 +85,40 @@ export async function DELETE(event: APIEvent) {
   try {
     const user = await requireAuth(event);
     const cookbookId = event.params.id;
+    const body = await event.request.json();
+
+    const { confirmationName } = body;
+
+    // Get cookbook to verify name matches
+    const cookbook = await getCookbookById(cookbookId, user.id);
+    if (!cookbook) {
+      return new Response(JSON.stringify({ error: 'Cookbook not found or insufficient permissions' }), {
+        status: 404,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Only owner can delete
+    if (cookbook.userRole !== 'owner') {
+      return new Response(JSON.stringify({ error: 'Only the cookbook owner can delete the cookbook' }), {
+        status: 403,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+
+    // Verify confirmation name matches cookbook title exactly
+    if (confirmationName !== cookbook.title) {
+      return new Response(JSON.stringify({ error: 'Cookbook name confirmation does not match' }), {
+        status: 400,
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
 
     const success = await deleteCookbook(cookbookId, user.id);
 
     if (!success) {
-      return new Response(JSON.stringify({ error: 'Cookbook not found or insufficient permissions' }), {
-        status: 404,
+      return new Response(JSON.stringify({ error: 'Failed to delete cookbook' }), {
+        status: 500,
         headers: { 'Content-Type': 'application/json' }
       });
     }
