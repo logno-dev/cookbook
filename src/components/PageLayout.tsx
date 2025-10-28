@@ -41,7 +41,7 @@ export default function PageLayout(props: PageLayoutProps) {
         {/* Page Header */}
         <Show when={props.title || props.headerActions}>
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <div class="flex items-start justify-between">
+            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
               <div class="flex-1">
                 <Show when={props.title}>
                   <h1 class="text-3xl font-bold text-gray-900 mb-2">{props.title}</h1>
@@ -51,7 +51,7 @@ export default function PageLayout(props: PageLayoutProps) {
                 </Show>
               </div>
               <Show when={props.headerActions}>
-                <div class="ml-4 flex-shrink-0">
+                <div class="sm:ml-4 sm:flex-shrink-0">
                   {props.headerActions}
                 </div>
               </Show>
