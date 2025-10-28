@@ -6,7 +6,7 @@ interface Fraction {
   denominator: number;
 }
 
-// Parse a quantity string that may contain whole numbers, fractions, or mixed numbers
+// Parse a quantity string that may contain whole numbers, fractions, mixed numbers, or ranges
 export function parseQuantity(quantity: string): Fraction | null {
   if (!quantity || !quantity.trim()) return null;
   
@@ -34,6 +34,12 @@ export function parseQuantity(quantity: string): Fraction | null {
   let normalized = trimmed;
   for (const [unicode, fraction] of Object.entries(unicodeFractions)) {
     normalized = normalized.replace(new RegExp(unicode, 'g'), fraction);
+  }
+  
+  // Check for range patterns first (before removing characters)
+  const range = parseRange(normalized);
+  if (range) {
+    return range;
   }
   
   // Remove any non-numeric characters except spaces, slashes, and dashes
@@ -70,6 +76,45 @@ export function parseQuantity(quantity: string): Fraction | null {
   if (wholeMatch) {
     const whole = parseInt(wholeMatch[1]);
     return { whole, numerator: 0, denominator: 1 };
+  }
+  
+  return null;
+}
+
+// Parse range quantities like "1-2", "1 to 2", "1-1½", etc.
+function parseRange(quantity: string): Fraction | null {
+  if (!quantity) return null;
+  
+  // Range patterns to match
+  const rangePatterns = [
+    // "1-2", "1½-2", "1/2-3/4", etc.
+    /^([^\s]+?)\s*[-–—]\s*([^\s]+?)$/,
+    // "1 to 2", "1½ to 2", etc.
+    /^([^\s]+?)\s+to\s+([^\s]+?)$/i,
+    // "1 or 2", "1½ or 2", etc.
+    /^([^\s]+?)\s+or\s+([^\s]+?)$/i,
+  ];
+  
+  for (const pattern of rangePatterns) {
+    const match = quantity.match(pattern);
+    if (match) {
+      const [, start, end] = match;
+      
+      // Parse both ends of the range
+      const startFraction = parseQuantity(start);
+      const endFraction = parseQuantity(end);
+      
+      if (startFraction && endFraction) {
+        // Convert both to decimals
+        const startDecimal = fractionToDecimal(startFraction);
+        const endDecimal = fractionToDecimal(endFraction);
+        
+        // Use the midpoint of the range for calculations
+        const midpoint = (startDecimal + endDecimal) / 2;
+        
+        return decimalToFraction(midpoint);
+      }
+    }
   }
   
   return null;
@@ -136,6 +181,10 @@ function fractionToDecimal(fraction: Fraction): number {
 export function multiplyQuantity(quantity: string, multiplier: number): string {
   if (!quantity || !quantity.trim() || multiplier === 1) return quantity;
   
+  // Check if this is a range quantity first
+  const rangeResult = multiplyRange(quantity, multiplier);
+  if (rangeResult) return rangeResult;
+  
   const parsed = parseQuantity(quantity);
   if (!parsed) return quantity;
   
@@ -145,6 +194,47 @@ export function multiplyQuantity(quantity: string, multiplier: number): string {
   const result = decimalToFraction(multiplied);
   
   return formatFraction(result);
+}
+
+// Multiply range quantities while preserving the range format
+function multiplyRange(quantity: string, multiplier: number): string | null {
+  if (!quantity || multiplier === 1) return null;
+  
+  // Range patterns to match
+  const rangePatterns = [
+    // "1-2", "1½-2", "1/2-3/4", etc.
+    { pattern: /^([^\s]+?)\s*([-–—])\s*([^\s]+?)$/, separator: (match: RegExpMatchArray) => match[2] },
+    // "1 to 2", "1½ to 2", etc.
+    { pattern: /^([^\s]+?)\s+(to)\s+([^\s]+?)$/i, separator: () => ' to ' },
+    // "1 or 2", "1½ or 2", etc.
+    { pattern: /^([^\s]+?)\s+(or)\s+([^\s]+?)$/i, separator: () => ' or ' },
+  ];
+  
+  for (const { pattern, separator } of rangePatterns) {
+    const match = quantity.match(pattern);
+    if (match) {
+      const [, start, , end] = match;
+      
+      // Parse and multiply both ends of the range
+      const startParsed = parseQuantity(start);
+      const endParsed = parseQuantity(end);
+      
+      if (startParsed && endParsed) {
+        const startDecimal = fractionToDecimal(startParsed);
+        const endDecimal = fractionToDecimal(endParsed);
+        
+        const multipliedStart = startDecimal * multiplier;
+        const multipliedEnd = endDecimal * multiplier;
+        
+        const startResult = formatFraction(decimalToFraction(multipliedStart));
+        const endResult = formatFraction(decimalToFraction(multipliedEnd));
+        
+        return `${startResult}${separator(match)}${endResult}`;
+      }
+    }
+  }
+  
+  return null;
 }
 
 // Format a fraction as a string
@@ -187,6 +277,29 @@ export function parseFraction(quantityStr: string): number {
 
 // Convert common fractions to unicode symbols for display
 export function formatFractionWithUnicode(quantity: string): string {
+  // Handle range quantities by applying unicode formatting to each part
+  const rangePatterns = [
+    { pattern: /^([^\s]+?)\s*([-–—])\s*([^\s]+?)$/, separator: (match: RegExpMatchArray) => match[2] },
+    { pattern: /^([^\s]+?)\s+(to)\s+([^\s]+?)$/i, separator: () => ' to ' },
+    { pattern: /^([^\s]+?)\s+(or)\s+([^\s]+?)$/i, separator: () => ' or ' },
+  ];
+  
+  for (const { pattern, separator } of rangePatterns) {
+    const match = quantity.match(pattern);
+    if (match) {
+      const [, start, , end] = match;
+      const formattedStart = formatSingleFractionWithUnicode(start);
+      const formattedEnd = formatSingleFractionWithUnicode(end);
+      return `${formattedStart}${separator(match)}${formattedEnd}`;
+    }
+  }
+  
+  // Not a range, format as single quantity
+  return formatSingleFractionWithUnicode(quantity);
+}
+
+// Helper function to format a single fraction with unicode
+function formatSingleFractionWithUnicode(quantity: string): string {
   const unicodeReplacements: { [key: string]: string } = {
     ' 1/2': ' ½',
     ' 1/3': ' ⅓',

@@ -963,30 +963,32 @@ export default function RecipeDetail() {
                 <div>
                    <div class="space-y-8">
                      <div>
-                       <div class="flex items-center justify-between mb-4">
-                         <h2 class="text-xl font-semibold text-gray-900">Ingredients</h2>
-                         <Show when={!isNewRecipe() && !isEditing()}>
-                           <div class="flex items-center gap-2">
-                             <span class="text-sm text-gray-600 font-medium">Recipe size:</span>
-                             <div class="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden">
-                               <For each={[1, 1.5, 2, 3]}>
-                                 {(multiplier) => (
-                                   <button
-                                     onClick={() => setRecipeMultiplier(multiplier)}
-                                     class={`px-3 py-1 text-sm font-medium transition-colors ${
-                                       recipeMultiplier() === multiplier
-                                         ? "bg-emerald-600 text-white"
-                                         : "bg-white text-gray-700 hover:bg-gray-50"
-                                     }`}
-                                   >
-                                     {multiplier}x
-                                   </button>
-                                 )}
-                               </For>
-                             </div>
-                           </div>
-                         </Show>
-                       </div>
+                        <div class="mb-4">
+                          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
+                            <h2 class="text-xl font-semibold text-gray-900">Ingredients</h2>
+                            <Show when={!isNewRecipe() && !isEditing()}>
+                              <div class="flex items-center gap-2">
+                                <span class="text-sm text-gray-600 font-medium">Recipe size:</span>
+                                <div class="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden">
+                                  <For each={[1, 1.5, 2, 3]}>
+                                    {(multiplier) => (
+                                      <button
+                                        onClick={() => setRecipeMultiplier(multiplier)}
+                                        class={`px-3 py-1 text-sm font-medium transition-colors ${
+                                          recipeMultiplier() === multiplier
+                                            ? "bg-emerald-600 text-white"
+                                            : "bg-white text-gray-700 hover:bg-gray-50"
+                                        }`}
+                                      >
+                                        {multiplier}x
+                                      </button>
+                                    )}
+                                  </For>
+                                </div>
+                              </div>
+                            </Show>
+                          </div>
+                        </div>
                       <Show
                         when={isEditing()}
                         fallback={

@@ -491,6 +491,10 @@ export class GroceryListService {
       return { quantity: '1' };
     }
 
+    // Check if either quantity is a range
+    const isRange1 = this.isRangeQuantity(quantity1);
+    const isRange2 = this.isRangeQuantity(quantity2);
+
     const q1 = quantity1 ? parseFraction(quantity1) : 0;
     const q2 = quantity2 ? parseFraction(quantity2) : 0;
 
@@ -514,10 +518,33 @@ export class GroceryListService {
     }
 
     const total = q1 + q2;
+    
+    // If one of the original quantities was a range, indicate that the result might be approximate
+    if (isRange1 || isRange2) {
+      const formattedTotal = decimalToFractionString(total);
+      return {
+        quantity: `~${formattedTotal}`,
+        unit,
+      };
+    }
+
     return {
       quantity: decimalToFractionString(total),
       unit,
     };
+  }
+
+  // Helper to check if a quantity string represents a range
+  private static isRangeQuantity(quantity?: string): boolean {
+    if (!quantity) return false;
+    
+    const rangePatterns = [
+      /[-–—]/,  // Contains dash/hyphen
+      /\bto\b/i,  // Contains "to"
+      /\bor\b/i,  // Contains "or"
+    ];
+    
+    return rangePatterns.some(pattern => pattern.test(quantity));
   }
 
   static async processRecipeIngredients(
