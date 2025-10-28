@@ -20,18 +20,26 @@ export function AuthProvider(props: { children: JSX.Element }) {
   const [user, setUser] = createSignal<User | null>(null);
   const [loading, setLoading] = createSignal(true);
 
-  createEffect(async () => {
+  // Check auth status on initial load
+  const checkAuthStatus = async () => {
     try {
       const response = await fetch('/api/auth/me');
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
+      } else {
+        setUser(null);
       }
     } catch (error) {
       console.error('Failed to check auth status:', error);
+      setUser(null);
     } finally {
       setLoading(false);
     }
+  };
+
+  createEffect(() => {
+    checkAuthStatus();
   });
 
   const login = async (email: string, password: string) => {
@@ -48,6 +56,9 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
     const data = await response.json();
     setUser(data.user);
+    
+    // Ensure loading is false after successful login
+    setLoading(false);
   };
 
   const register = async (email: string, password: string, name?: string) => {

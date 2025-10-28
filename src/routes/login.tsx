@@ -14,7 +14,10 @@ export default function Login() {
   // Handle redirect when user is already logged in
   createEffect(() => {
     if (!authLoading() && user()) {
-      navigate("/dashboard", { replace: true });
+      // Small delay to ensure all auth state is properly set
+      setTimeout(() => {
+        navigate("/dashboard", { replace: true });
+      }, 0);
     }
   });
 
@@ -25,7 +28,8 @@ export default function Login() {
 
     try {
       await login(email(), password());
-      navigate("/dashboard");
+      // Don't navigate immediately - let the createEffect handle it
+      // This prevents race conditions with auth state updates
     } catch (err) {
       setError(err instanceof Error ? err.message : "Login failed");
     } finally {

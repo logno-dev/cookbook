@@ -88,7 +88,7 @@ interface GroceryList {
 }
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   
@@ -101,15 +101,26 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal("");
 
-
-
-  // Handle redirect when user is not logged in
+  // Handle redirect when user is not logged in - only after auth loading is complete
   createEffect(() => {
-    if (!user()) {
+    if (!authLoading() && !user()) {
       navigate("/login", { replace: true });
     }
   });
 
+  // Show loading while checking auth status
+  if (authLoading()) {
+    return (
+      <main class="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
+        <div class="text-center">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <p class="mt-2 text-gray-600">Loading...</p>
+        </div>
+      </main>
+    );
+  }
+
+  // Show redirecting message if no user but auth is not loading (effect will handle navigation)
   if (!user()) {
     return (
       <main class="min-h-screen bg-gray-50 pt-16 flex items-center justify-center">
