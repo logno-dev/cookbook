@@ -275,6 +275,57 @@ export function parseFraction(quantityStr: string): number {
   return fractionToDecimal(parsed);
 }
 
+// Parse a fraction string and return the maximum value for grocery shopping
+// (uses max of range instead of midpoint for aggregation purposes)
+export function parseFractionForShopping(quantityStr: string): number {
+  if (!quantityStr || !quantityStr.trim()) return 0;
+  
+  // Check for range patterns first and return the maximum
+  const range = parseRangeForShopping(quantityStr.trim());
+  if (range !== null) {
+    return range;
+  }
+  
+  // Not a range, use regular parsing
+  return parseFraction(quantityStr);
+}
+
+// Parse range quantities and return the maximum value for shopping
+function parseRangeForShopping(quantity: string): number | null {
+  if (!quantity) return null;
+  
+  // Range patterns to match
+  const rangePatterns = [
+    // "1-2", "1½-2", "1/2-3/4", etc.
+    /^([^\s]+?)\s*[-–—]\s*([^\s]+?)$/,
+    // "1 to 2", "1½ to 2", etc.
+    /^([^\s]+?)\s+to\s+([^\s]+?)$/i,
+    // "1 or 2", "1½ or 2", etc.
+    /^([^\s]+?)\s+or\s+([^\s]+?)$/i,
+  ];
+  
+  for (const pattern of rangePatterns) {
+    const match = quantity.match(pattern);
+    if (match) {
+      const [, start, end] = match;
+      
+      // Parse both ends of the range
+      const startFraction = parseQuantity(start);
+      const endFraction = parseQuantity(end);
+      
+      if (startFraction && endFraction) {
+        // Convert both to decimals and return the maximum
+        const startDecimal = fractionToDecimal(startFraction);
+        const endDecimal = fractionToDecimal(endFraction);
+        
+        return Math.max(startDecimal, endDecimal);
+      }
+    }
+  }
+  
+  return null;
+}
+
 // Convert common fractions to unicode symbols for display
 export function formatFractionWithUnicode(quantity: string): string {
   // Handle range quantities by applying unicode formatting to each part

@@ -2,7 +2,7 @@ import { db } from '../db';
 import { groceryLists, groceryListItems, groceryListRecipes, recipes, recipeVariants } from '../db/schema';
 import { eq, and, desc, asc } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
-import { parseFraction } from './fraction-utils';
+import { parseFraction, parseFractionForShopping } from './fraction-utils';
 import Fraction from 'fraction.js';
 
 // Helper function to normalize units (handle plurals and common variations)
@@ -491,12 +491,9 @@ export class GroceryListService {
       return { quantity: '1' };
     }
 
-    // Check if either quantity is a range
-    const isRange1 = this.isRangeQuantity(quantity1);
-    const isRange2 = this.isRangeQuantity(quantity2);
-
-    const q1 = quantity1 ? parseFraction(quantity1) : 0;
-    const q2 = quantity2 ? parseFraction(quantity2) : 0;
+    // For grocery shopping, use maximum values from ranges to ensure we have enough
+    const q1 = quantity1 ? parseFractionForShopping(quantity1) : 0;
+    const q2 = quantity2 ? parseFractionForShopping(quantity2) : 0;
 
     // Normalize units to handle plurals and variations
     const normalizedUnit1 = normalizeUnit(unit1);
@@ -518,34 +515,13 @@ export class GroceryListService {
     }
 
     const total = q1 + q2;
-    
-    // If one of the original quantities was a range, indicate that the result might be approximate
-    if (isRange1 || isRange2) {
-      const formattedTotal = decimalToFractionString(total);
-      return {
-        quantity: `~${formattedTotal}`,
-        unit,
-      };
-    }
-
     return {
       quantity: decimalToFractionString(total),
       unit,
     };
   }
 
-  // Helper to check if a quantity string represents a range
-  private static isRangeQuantity(quantity?: string): boolean {
-    if (!quantity) return false;
-    
-    const rangePatterns = [
-      /[-–—]/,  // Contains dash/hyphen
-      /\bto\b/i,  // Contains "to"
-      /\bor\b/i,  // Contains "or"
-    ];
-    
-    return rangePatterns.some(pattern => pattern.test(quantity));
-  }
+
 
   static async processRecipeIngredients(
     groceryListId: string,
@@ -564,12 +540,12 @@ export class GroceryListService {
       // Use the structured data from the recipe if available
       if (ing.quantity && ing.unit) {
         const adjustedQuantity = ing.quantity && multiplier !== 1 
-          ? (parseFraction(ing.quantity) * multiplier).toString()
+          ? (parseFractionForShopping(ing.quantity) * multiplier).toString()
           : ing.quantity;
         
         return {
           originalText: `${adjustedQuantity} ${ing.unit} ${ing.ingredient}`,
-          quantity: adjustedQuantity ? parseFraction(adjustedQuantity) : undefined,
+          quantity: adjustedQuantity ? parseFractionForShopping(adjustedQuantity) : undefined,
           unit: ing.unit,
           ingredient: ing.ingredient,
           notes: ing.notes,
