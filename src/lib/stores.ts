@@ -1,4 +1,4 @@
-import { createSignal, createEffect, createMemo } from 'solid-js';
+import { createSignal, createEffect, createMemo, createResource } from 'solid-js';
 
 export interface Tag {
   id: string;
@@ -77,241 +77,123 @@ export interface Cookbook {
   userRole: 'owner' | 'editor' | 'contributor' | 'reader';
 }
 
-// Cache duration in milliseconds
+
+
+// Simple cached resource functions
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
-interface CacheEntry<T> {
-  data: T;
-  timestamp: number;
-}
-
-class Store<T> {
-  private dataSignal = createSignal<T | null>(null);
-  private loadingSignal = createSignal(false);
-  private errorSignal = createSignal<string | null>(null);
-  private lastFetchSignal = createSignal<number>(0);
-  
-  private data = this.dataSignal[0];
-  private setData = this.dataSignal[1];
-  private loading = this.loadingSignal[0];
-  private setLoading = this.loadingSignal[1];
-  private error = this.errorSignal[0];
-  private setError = this.errorSignal[1];
-  private lastFetch = this.lastFetchSignal[0];
-  private setLastFetch = this.lastFetchSignal[1];
-  
-  constructor(
-    private fetchFn: () => Promise<T>,
-    private cacheKey: string,
-    private cacheDuration: number = CACHE_DURATION
-  ) {}
-
-  // Get cached data from sessionStorage
-  private getCached(): T | null {
+function createCachedResource<T>(
+  fetchFn: () => Promise<T>,
+  cacheKey: string
+) {
+  return createResource(async () => {
+    // Check cache first
     try {
-      const cached = sessionStorage.getItem(this.cacheKey);
-      if (cached) {
-        const entry: CacheEntry<T> = JSON.parse(cached);
-        if (Date.now() - entry.timestamp < this.cacheDuration) {
-          return entry.data;
-        }
+      const cached = sessionStorage.getItem(cacheKey);
+      const expiry = sessionStorage.getItem(`${cacheKey}_expiry`);
+      
+      if (cached && expiry && Date.now() < parseInt(expiry)) {
+        return JSON.parse(cached);
       }
     } catch (error) {
-      console.warn(`Failed to read cache for ${this.cacheKey}:`, error);
+      console.warn('Failed to read cache:', error);
     }
-    return null;
-  }
 
-  // Set cached data in sessionStorage
-  private setCached(data: T) {
+    // Fetch from server
+    const result = await fetchFn();
+    
+    // Cache the result
     try {
-      const entry: CacheEntry<T> = {
-        data,
-        timestamp: Date.now()
-      };
-      sessionStorage.setItem(this.cacheKey, JSON.stringify(entry));
+      sessionStorage.setItem(cacheKey, JSON.stringify(result));
+      sessionStorage.setItem(`${cacheKey}_expiry`, (Date.now() + CACHE_DURATION).toString());
     } catch (error) {
-      console.warn(`Failed to cache data for ${this.cacheKey}:`, error);
-    }
-  }
-
-  // Clear cache
-  private clearCache() {
-    try {
-      sessionStorage.removeItem(this.cacheKey);
-    } catch (error) {
-      console.warn(`Failed to clear cache for ${this.cacheKey}:`, error);
-    }
-  }
-
-  // Fetch data with caching logic
-  async fetch(forceRefresh = false): Promise<T | null> {
-    if (!forceRefresh) {
-      // Check if we have recent cached data
-      const cached = this.getCached();
-      if (cached) {
-        this.setData(cached);
-        return cached;
-      }
-
-      // Check if we have in-memory data that's still fresh
-      const currentData = this.data();
-      const timeSinceLastFetch = Date.now() - this.lastFetch();
-      if (currentData && timeSinceLastFetch < this.cacheDuration) {
-        return currentData;
-      }
+      console.warn('Failed to cache data:', error);
     }
 
-    // Prevent multiple simultaneous requests
-    if (this.loading()) {
-      return this.data();
-    }
-
-    this.setLoading(true);
-    this.setError(null);
-
-    try {
-      const result = await this.fetchFn();
-      this.setData(result);
-      this.setCached(result);
-      this.setLastFetch(Date.now());
-      return result;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch data';
-      this.setError(errorMessage);
-      console.error(`Error fetching ${this.cacheKey}:`, err);
-      return null;
-    } finally {
-      this.setLoading(false);
-    }
-  }
-
-  // Invalidate and refetch
-  async invalidate(): Promise<T | null> {
-    this.clearCache();
-    this.setLastFetch(0);
-    return this.fetch(true);
-  }
-
-  // Update data optimistically
-  update(updater: (current: T | null) => T | null) {
-    const current = this.data();
-    const updated = updater(current);
-    this.setData(updated);
-    if (updated) {
-      this.setCached(updated);
-    } else {
-      this.clearCache();
-    }
-  }
-
-  // Getters
-  getData() { return this.data; }
-  getLoading() { return this.loading; }
-  getError() { return this.error; }
-}
-
-// Global stores
-export const tagsStore = new Store<Tag[]>(
-  async () => {
-    const response = await fetch('/api/tags');
-    if (!response.ok) throw new Error('Failed to fetch tags');
-    const data = await response.json();
-    return data.tags;
-  },
-  'tags_cache'
-);
-
-export const recipesStore = new Store<Recipe[]>(
-  async () => {
-    const response = await fetch('/api/recipes');
-    if (!response.ok) throw new Error('Failed to fetch recipes');
-    const data = await response.json();
-    return data.recipes;
-  },
-  'recipes_cache'
-);
-
-export const cookbooksStore = new Store<Cookbook[]>(
-  async () => {
-    const response = await fetch('/api/cookbooks');
-    if (!response.ok) throw new Error('Failed to fetch cookbooks');
-    const data = await response.json();
-    return data.cookbooks;
-  },
-  'cookbooks_cache'
-);
-
-// Helper functions for common operations
-export const useTags = () => {
-  createEffect(() => {
-    // Auto-fetch tags when the component mounts
-    tagsStore.fetch();
+    return result;
   });
+}
+
+export const useTags = () => {
+  const [tags, { refetch }] = createCachedResource(
+    async () => {
+      const response = await fetch('/api/tags');
+      if (!response.ok) throw new Error('Failed to fetch tags');
+      const data = await response.json();
+      return data.tags as Tag[];
+    },
+    'tags_cache'
+  );
 
   return {
-    data: tagsStore.getData(),
-    loading: tagsStore.getLoading(),
-    error: tagsStore.getError(),
-    refetch: () => tagsStore.fetch(true),
-    invalidate: () => tagsStore.invalidate()
+    data: tags,
+    loading: () => tags.loading,
+    error: () => tags.error?.message || null,
+    refetch,
+    invalidate: () => {
+      try {
+        sessionStorage.removeItem('tags_cache');
+        sessionStorage.removeItem('tags_cache_expiry');
+      } catch (error) {
+        console.warn('Failed to clear cache:', error);
+      }
+      return refetch();
+    }
   };
 };
 
 export const useRecipes = () => {
-  createEffect(() => {
-    // Auto-fetch recipes when the component mounts
-    recipesStore.fetch();
-  });
+  const [recipes, { refetch }] = createCachedResource(
+    async () => {
+      const response = await fetch('/api/recipes');
+      if (!response.ok) throw new Error('Failed to fetch recipes');
+      const data = await response.json();
+      return data.recipes as Recipe[];
+    },
+    'recipes_cache'
+  );
 
   return {
-    data: recipesStore.getData(),
-    loading: recipesStore.getLoading(),
-    error: recipesStore.getError(),
-    refetch: () => recipesStore.fetch(true),
-    invalidate: () => recipesStore.invalidate(),
-    // Optimistic updates for common operations
-    addRecipe: (recipe: Recipe) => {
-      recipesStore.update(current => current ? [...current, recipe] : [recipe]);
-    },
-    updateRecipe: (recipeId: string, updates: Partial<Recipe>) => {
-      recipesStore.update(current => 
-        current ? current.map(r => r.id === recipeId ? { ...r, ...updates } : r) : null
-      );
-    },
-    removeRecipe: (recipeId: string) => {
-      recipesStore.update(current => 
-        current ? current.filter(r => r.id !== recipeId) : null
-      );
+    data: recipes,
+    loading: () => recipes.loading,
+    error: () => recipes.error?.message || null,
+    refetch,
+    invalidate: () => {
+      try {
+        sessionStorage.removeItem('recipes_cache');
+        sessionStorage.removeItem('recipes_cache_expiry');
+      } catch (error) {
+        console.warn('Failed to clear cache:', error);
+      }
+      return refetch();
     }
   };
 };
 
 export const useCookbooks = () => {
-  createEffect(() => {
-    // Auto-fetch cookbooks when the component mounts
-    cookbooksStore.fetch();
-  });
+  const [cookbooks, { refetch }] = createCachedResource(
+    async () => {
+      const response = await fetch('/api/cookbooks');
+      if (!response.ok) throw new Error('Failed to fetch cookbooks');
+      const data = await response.json();
+      return data.cookbooks as Cookbook[];
+    },
+    'cookbooks_cache'
+  );
 
   return {
-    data: cookbooksStore.getData(),
-    loading: cookbooksStore.getLoading(),
-    error: cookbooksStore.getError(),
-    refetch: () => cookbooksStore.fetch(true),
-    invalidate: () => cookbooksStore.invalidate(),
-    // Optimistic updates for common operations
-    addCookbook: (cookbook: Cookbook) => {
-      cookbooksStore.update(current => current ? [...current, cookbook] : [cookbook]);
-    },
-    updateCookbook: (cookbookId: string, updates: Partial<Cookbook>) => {
-      cookbooksStore.update(current => 
-        current ? current.map(c => c.id === cookbookId ? { ...c, ...updates } : c) : null
-      );
-    },
-    removeCookbook: (cookbookId: string) => {
-      cookbooksStore.update(current => 
-        current ? current.filter(c => c.id !== cookbookId) : null
-      );
+    data: cookbooks,
+    loading: () => cookbooks.loading,
+    error: () => cookbooks.error?.message || null,
+    refetch,
+    invalidate: () => {
+      try {
+        sessionStorage.removeItem('cookbooks_cache');
+        sessionStorage.removeItem('cookbooks_cache_expiry');
+      } catch (error) {
+        console.warn('Failed to clear cache:', error);
+      }
+      return refetch();
     }
   };
 };
@@ -323,10 +205,10 @@ export const useFilteredRecipes = (
   sortBy: () => string,
   sortOrder: () => string
 ) => {
-  const recipesStore = useRecipes();
+  const { data: recipes } = useRecipes();
 
   return createMemo(() => {
-    const recipeList = recipesStore.data();
+    const recipeList = recipes();
     if (!recipeList) return [];
 
     let filtered = recipeList;
