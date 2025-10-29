@@ -3,7 +3,8 @@ import { createSignal, createResource, Show, For, createEffect } from "solid-js"
 import { useAuth } from "~/lib/auth-context";
 import { Navigate, useParams, useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
-import Breadcrumbs from "~/components/Breadcrumbs";
+import { useBreadcrumbs, createBreadcrumbs } from "~/lib/breadcrumb-context";
+import { useTags } from "~/lib/stores";
 import { useConfirm, useToast } from "~/lib/notifications";
 
 interface CookbookMember {
@@ -366,12 +367,20 @@ export default function CookbookDetailPage() {
   
   const [pendingInvitations, { refetch: refetchInvitations }] = createResource(() => params.id, fetchPendingInvitations);
   
-  // Fetch all tags for filtering
-  const [tags] = createResource(async () => {
-    const response = await fetch("/api/tags");
-    if (!response.ok) throw new Error("Failed to fetch tags");
-    const data = await response.json();
-    return data.tags;
+  // Use optimized tags store
+  const tagsStore = useTags();
+  
+  // Use breadcrumb context
+  const breadcrumbContext = useBreadcrumbs();
+  
+  // Update breadcrumbs when cookbook data changes
+  createEffect(() => {
+    const cookbookData = cookbook();
+    if (cookbookData) {
+      breadcrumbContext.setBreadcrumbs(
+        createBreadcrumbs.cookbook(cookbookData.title, cookbookData.id)
+      );
+    }
   });
 
   const handleInviteUser = async (e: Event) => {
@@ -535,10 +544,7 @@ export default function CookbookDetailPage() {
     return values.sort();
   };
 
-  const breadcrumbItems = () => [
-    { label: 'Cookbooks', href: '/cookbooks' },
-    { label: cookbook()?.title || 'Loading...', current: true },
-  ];
+  // Breadcrumbs are now handled by the context in the createEffect above
 
   const headerActions = () => (
     <div class="flex items-center gap-2 sm:gap-3">
@@ -577,7 +583,7 @@ export default function CookbookDetailPage() {
         title={cookbook()?.title}
         subtitle={cookbook() ? `Created ${new Date(cookbook()!.createdAt).toLocaleDateString()} • ${cookbook()!.members.length} member${cookbook()!.members.length !== 1 ? 's' : ''}` : undefined}
         headerActions={headerActions()}
-        breadcrumbs={<Breadcrumbs items={breadcrumbItems()} />}
+
         loading={cookbook.loading}
         error={cookbook.error ? 'Cookbook not found or access denied' : undefined}
       >
@@ -640,11 +646,11 @@ export default function CookbookDetailPage() {
                     </div>
                   </div>
 
-                  <Show when={tags()}>
+                  <Show when={tagsStore.data()}>
                     <div>
                       <h3 class="text-sm font-medium text-gray-700 mb-2">Filter by tags:</h3>
                       <div class="flex flex-wrap gap-2">
-                        <For each={tags()}>
+                        <For each={tagsStore.data()}>
                           {(tag) => (
                             <button
                               onClick={() => toggleTag(tag.id)}

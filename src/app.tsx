@@ -3,6 +3,7 @@ import { FileRoutes } from "@solidjs/start/router";
 import { MetaProvider } from "@solidjs/meta";
 import { Suspense } from "solid-js";
 import { AuthProvider } from "./lib/auth-context";
+import { BreadcrumbProvider } from "./lib/breadcrumb-context";
 import Nav from "./components/Nav";
 import ErrorNotification from "./components/Error";
 import { ConfirmModalProvider } from "./components/ConfirmModal";
@@ -15,15 +16,17 @@ export default function App() {
       root={props => (
         <MetaProvider>
           <AuthProvider>
-            <ToastProvider>
-              <ConfirmModalProvider>
-                <Suspense>
-                  <Nav />
-                  {props.children}
-                  <ErrorNotification />
-                </Suspense>
-              </ConfirmModalProvider>
-            </ToastProvider>
+            <BreadcrumbProvider>
+              <ToastProvider>
+                <ConfirmModalProvider>
+                  <Suspense>
+                    <Nav />
+                    {props.children}
+                    <ErrorNotification />
+                  </Suspense>
+                </ConfirmModalProvider>
+              </ToastProvider>
+            </BreadcrumbProvider>
           </AuthProvider>
         </MetaProvider>
       )}

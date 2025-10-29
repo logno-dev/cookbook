@@ -1,4 +1,6 @@
 import { JSX, Show } from 'solid-js';
+import { useBreadcrumbs } from '~/lib/breadcrumb-context';
+import Breadcrumbs from './Breadcrumbs';
 
 interface PageLayoutProps {
   children: JSX.Element;
@@ -6,13 +8,15 @@ interface PageLayoutProps {
   subtitle?: string;
   maxWidth?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | '7xl' | 'full';
   headerActions?: JSX.Element;
-  breadcrumbs?: JSX.Element;
+  breadcrumbs?: JSX.Element; // Deprecated: use breadcrumb context instead
   loading?: boolean;
   error?: string;
   className?: string;
 }
 
 export default function PageLayout(props: PageLayoutProps) {
+  const breadcrumbContext = useBreadcrumbs();
+  
   const getMaxWidthClass = () => {
     switch (props.maxWidth) {
       case 'sm': return 'max-w-sm';
@@ -32,9 +36,9 @@ export default function PageLayout(props: PageLayoutProps) {
     <main class={`min-h-screen bg-gray-50 pt-16 ${props.className || ''}`}>
       <div class={`${getMaxWidthClass()} mx-auto px-4 py-8`}>
         {/* Breadcrumbs */}
-        <Show when={props.breadcrumbs}>
+        <Show when={props.breadcrumbs || breadcrumbContext.items().length > 0}>
           <div class="mb-6">
-            {props.breadcrumbs}
+            {props.breadcrumbs || <Breadcrumbs items={breadcrumbContext.items()} />}
           </div>
         </Show>
 

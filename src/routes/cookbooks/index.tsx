@@ -1,8 +1,10 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, createResource, Show, For } from "solid-js";
+import { createSignal, Show, For, createEffect } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { Navigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
+import { useCookbooks } from "~/lib/stores";
+import { useBreadcrumbs } from "~/lib/breadcrumb-context";
 import { useToast } from "~/lib/notifications";
 
 interface CookbookMember {
@@ -51,13 +53,16 @@ export default function CookbooksPage() {
     return <Navigate href="/login" />;
   }
 
-  const [cookbooks, { refetch }] = createResource(
-    () => user(), // Only fetch when user is available
-    async (userData) => {
-      if (!userData) return [];
-      return fetchCookbooks();
-    }
-  );
+  // Use the optimized cookbooks store
+  const cookbooksStore = useCookbooks();
+  const breadcrumbContext = useBreadcrumbs();
+  
+  // Set breadcrumbs for this page
+  createEffect(() => {
+    breadcrumbContext.setBreadcrumbs([
+      { label: 'Cookbooks', current: true }
+    ]);
+  });
 
   const handleCreateCookbook = async (e: Event) => {
     e.preventDefault();
@@ -83,7 +88,7 @@ export default function CookbooksPage() {
       setTitle("");
       setDescription("");
       setShowCreateForm(false);
-      refetch();
+      cookbooksStore.invalidate(); // Use store invalidation
     } catch (error) {
       console.error('Failed to create cookbook:', error);
       toast.error('Failed to create cookbook');
@@ -169,21 +174,21 @@ export default function CookbooksPage() {
           </div>
         </Show>
 
-          <Show when={cookbooks.loading}>
+          <Show when={cookbooksStore.loading()}>
             <div class="text-center py-8">
               <div class="text-gray-600">Loading cookbooks...</div>
             </div>
           </Show>
 
-          <Show when={cookbooks.error}>
+          <Show when={cookbooksStore.error()}>
             <div class="text-center py-8">
               <div class="text-red-600">Failed to load cookbooks</div>
             </div>
           </Show>
 
-        <Show when={cookbooks()}>
+        <Show when={cookbooksStore.data()}>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <For each={cookbooks()}>
+            <For each={cookbooksStore.data()}>
               {(cookbook) => (
                 <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <div class="p-6">

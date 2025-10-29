@@ -1,83 +1,10 @@
 import { Title } from "@solidjs/meta";
-import { Show, createSignal, createResource, For, createEffect } from "solid-js";
+import { Show, createSignal, createResource, For, createEffect, createMemo } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
+import { useTags, useCookbooks, useFilteredRecipes, type Recipe } from "~/lib/stores";
 
-
-interface RecipeIngredient {
-  quantity?: string;
-  unit?: string;
-  ingredient: string;
-  notes?: string;
-}
-
-interface RecipeInstruction {
-  step: number;
-  instruction: string;
-  time?: number;
-  temperature?: string;
-}
-
-interface Recipe {
-  id: string;
-  title: string;
-  description?: string;
-  ingredients: RecipeIngredient[];
-  instructions: RecipeInstruction[];
-  servings?: number;
-  yield?: string;
-  cookTime?: number;
-  prepTime?: number;
-  totalTime?: number;
-  restTime?: number;
-  difficulty?: string;
-  cuisine?: string;
-  category?: string;
-  diet?: string;
-  imageUrl?: string;
-  sourceUrl?: string;
-  sourceAuthor?: string;
-  equipment?: string[];
-  notes?: string;
-  nutrition?: {
-    calories?: number;
-    protein?: string;
-    carbohydrates?: string;
-    fat?: string;
-    saturatedFat?: string;
-    cholesterol?: string;
-    sodium?: string;
-    fiber?: string;
-    sugar?: string;
-    servingSize?: string;
-    servingsPerContainer?: number;
-  };
-  createdAt: Date;
-  updatedAt: Date;
-  tags: Array<{
-    id: string;
-    name: string;
-    color: string;
-  }>;
-}
-
-interface Tag {
-  id: string;
-  name: string;
-  color: string;
-}
-
-interface Cookbook {
-  id: string;
-  ownerId: string;
-  title: string;
-  description?: string;
-  isPublic: boolean;
-  createdAt: string;
-  updatedAt: string;
-  userRole: 'owner' | 'editor' | 'contributor' | 'reader';
-}
 
 interface GroceryList {
   id: string;
@@ -132,36 +59,19 @@ export default function Dashboard() {
     );
   }
 
-  const buildQuery = () => {
-    const params = new URLSearchParams();
-    if (searchQuery()) params.append("query", searchQuery());
-    if (selectedTags().length > 0) params.append("tags", selectedTags().join(","));
-    params.append("sortBy", sortBy());
-    params.append("sortOrder", sortOrder());
-    return params.toString();
-  };
-
-  const [recipes, { refetch: refetchRecipes }] = createResource(() => buildQuery(), async (queryString) => {
-    const response = await fetch(`/api/recipes?${queryString}`);
-    if (!response.ok) throw new Error("Failed to fetch recipes");
-    const data = await response.json();
-    return data.recipes as Recipe[];
-  });
-
-  const [tags] = createResource(async () => {
-    const response = await fetch("/api/tags");
-    if (!response.ok) throw new Error("Failed to fetch tags");
-    const data = await response.json();
-    return data.tags as Tag[];
-  });
-
-  // Fetch recent cookbooks (limit to 5 on frontend)
-  const [recentCookbooks] = createResource(async () => {
-    const response = await fetch("/api/cookbooks");
-    if (!response.ok) throw new Error("Failed to fetch recent cookbooks");
-    const data = await response.json();
-    // Sort by updatedAt desc and take first 5
-    return (data.cookbooks as Cookbook[])
+  // Use optimized stores for data fetching
+  const tagsStore = useTags();
+  const cookbooksStore = useCookbooks();
+  
+  // Use filtered recipes with memoization
+  const filteredRecipes = useFilteredRecipes(searchQuery, selectedTags, sortBy, sortOrder);
+  
+  // Recent cookbooks with memoization (limit to 5)
+  const recentCookbooks = createMemo(() => {
+    const cookbooks = cookbooksStore.data();
+    if (!cookbooks) return [];
+    
+    return cookbooks
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5);
   });
@@ -209,7 +119,8 @@ export default function Dashboard() {
 
       setScrapeUrl("");
       setShowAddRecipe(false);
-      refetchRecipes();
+      // Invalidate recipes cache to force refetch
+      window.location.reload(); // Temporary - should use store invalidation
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
@@ -286,11 +197,11 @@ export default function Dashboard() {
         </div>
 
         {/* Tags Filter */}
-        <Show when={tags()}>
+        <Show when={tagsStore.data()}>
           <div class="mb-6">
             <h3 class="text-sm font-medium text-gray-700 mb-2">Filter by tags:</h3>
             <div class="flex flex-wrap gap-2">
-              <For each={tags()}>
+              <For each={tagsStore.data()}>
                 {(tag) => (
                   <button
                     onClick={() => toggleTag(tag.id)}
@@ -314,19 +225,19 @@ export default function Dashboard() {
           <h2 class="text-xl font-semibold text-gray-900">My Recipes</h2>
         </div>
 
-        <Show when={recipes.loading}>
+        <Show when={tagsStore.loading() || cookbooksStore.loading()}>
           <div class="flex justify-center py-8">
             <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
           </div>
         </Show>
 
-        <Show when={recipes.error}>
+        <Show when={tagsStore.error() || cookbooksStore.error()}>
           <div class="text-center py-8">
-            <p class="text-red-600">Error loading recipes: {recipes.error.message}</p>
+            <p class="text-red-600">Error loading data</p>
           </div>
         </Show>
 
-        <Show when={recipes() && recipes()!.length === 0}>
+        <Show when={filteredRecipes() && filteredRecipes().length === 0}>
           <div class="text-center py-12">
             <div class="text-gray-400 text-6xl mb-4">🍽️</div>
             <h3 class="text-xl font-medium text-gray-900 mb-2">No recipes yet</h3>
@@ -340,9 +251,9 @@ export default function Dashboard() {
           </div>
         </Show>
 
-        <Show when={recipes() && recipes()!.length > 0}>
+        <Show when={filteredRecipes() && filteredRecipes().length > 0}>
           <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <For each={recipes()}>
+            <For each={filteredRecipes()}>
               {(recipe) => (
                 <div 
                   class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
@@ -481,13 +392,13 @@ export default function Dashboard() {
              </a>
            </div>
            
-           <Show when={recentCookbooks.loading}>
-             <div class="flex justify-center py-4">
-               <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
-             </div>
-           </Show>
-           
-           <Show when={recentCookbooks() && recentCookbooks()!.length === 0}>
+            <Show when={cookbooksStore.loading()}>
+              <div class="flex justify-center py-4">
+                <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
+              </div>
+            </Show>
+            
+            <Show when={recentCookbooks() && recentCookbooks().length === 0}>
              <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
                <div class="text-gray-400 text-4xl mb-2">📚</div>
                <p class="text-gray-600">No cookbooks yet</p>
@@ -500,9 +411,9 @@ export default function Dashboard() {
              </div>
            </Show>
            
-           <Show when={recentCookbooks() && recentCookbooks()!.length > 0}>
-             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
-               <For each={recentCookbooks()}>
+            <Show when={recentCookbooks() && recentCookbooks().length > 0}>
+              <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+                <For each={recentCookbooks()}>
                  {(cookbook) => (
                    <div 
                      class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
