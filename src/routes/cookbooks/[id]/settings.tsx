@@ -4,6 +4,7 @@ import { useAuth } from "~/lib/auth-context";
 import { Navigate, useParams, useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
 import Breadcrumbs from "~/components/Breadcrumbs";
+import { SkeletonCardGrid } from "~/components/Skeletons";
 import { useConfirm, useToast } from "~/lib/notifications";
 // We'll create our own modal component below
 
@@ -168,16 +169,12 @@ function Modal(props: {
 }
 
 export default function CookbookSettingsPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
   const navigate = useNavigate();
   const toast = useToast();
   
-  // Form state for cookbook editing
-  const [isEditing, setIsEditing] = createSignal(false);
-  const [editTitle, setEditTitle] = createSignal("");
-  const [editDescription, setEditDescription] = createSignal("");
-  const [editIsPublic, setEditIsPublic] = createSignal(false);
+  // Form state
   const [isUpdating, setIsUpdating] = createSignal(false);
   
   // Delete confirmation state
@@ -189,9 +186,12 @@ export default function CookbookSettingsPage() {
   const [showRecipeManagement, setShowRecipeManagement] = createSignal(false);
   const [removingRecipe, setRemovingRecipe] = createSignal<string | null>(null);
 
-  if (!user()) {
-    return <Navigate href="/login" />;
-  }
+  // Auth redirect effect - only redirect after loading completes
+  createEffect(() => {
+    if (!authLoading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
 
   const [cookbook, { refetch: refetchCookbook }] = createResource(() => params.id, fetchCookbook);
   const [recipes, { refetch: refetchRecipes }] = createResource(() => params.id, fetchCookbookRecipes);
@@ -431,9 +431,8 @@ export default function CookbookSettingsPage() {
               <Show when={showRecipeManagement()}>
                 <div>
                   <Show when={recipes.loading}>
-                    <div class="text-center py-4">
-                      <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-emerald-600"></div>
-                      <p class="mt-2 text-gray-600">Loading recipes...</p>
+                    <div class="mt-4">
+                      <SkeletonCardGrid count={3} />
                     </div>
                   </Show>
 

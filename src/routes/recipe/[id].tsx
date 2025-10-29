@@ -6,6 +6,7 @@ import { multiplyQuantity, formatFractionWithUnicode } from "~/lib/fraction-util
 import { useConfirm, useToast } from "~/lib/notifications";
 import PageLayout from "~/components/PageLayout";
 import Breadcrumbs from "~/components/Breadcrumbs";
+import { SkeletonRecipeDetail } from "~/components/Skeletons";
 
 interface RecipeIngredient {
   quantity?: string;
@@ -111,7 +112,7 @@ interface RecipeVariant {
 }
 
 export default function RecipeDetail() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
   const params = useParams();
   const [searchParams] = useSearchParams();
@@ -138,44 +139,172 @@ export default function RecipeDetail() {
   const [showForkDialog, setShowForkDialog] = createSignal(false);
   const [forkTitle, setForkTitle] = createSignal("");
 
-  if (!user()) {
-    navigate("/login");
-    return null;
-  }
+  // Auth redirect effect - only redirect after loading completes
+  createEffect(() => {
+    if (!authLoading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
 
-  const [recipe, { refetch }] = createResource(() => params.id, async (id) => {
+  const [recipe, { refetch }] = createResource(() => {
+    // Only fetch on client side after auth is loaded, or if it's a new recipe
+    if (params.id === "new") return "new";
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
+    return params.id;
+  }, async (id) => {
     if (id === "new") return null;
-    const response = await fetch(`/api/recipes/${id}`);
-    if (!response.ok) throw new Error("Recipe not found");
-    const data = await response.json();
-    return data.recipe as Recipe;
+    if (!id) return null;
+    
+    try {
+      // Validate and encode the ID to ensure it's a valid URL component
+      const encodedId = encodeURIComponent(id);
+      const url = `/api/recipes/${encodedId}`;
+      
+      console.log('Fetching recipe with URL:', url, 'for ID:', id);
+      
+      const response = await fetch(url, {
+        credentials: 'include', // Include cookies for authentication
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      console.log('Recipe fetch response:', {
+        status: response.status,
+        statusText: response.statusText,
+      });
+      
+      if (!response.ok) {
+        let errorText = '';
+        try {
+          const errorData = await response.clone().json();
+          errorText = errorData.error || errorData.message || response.statusText;
+          console.error('Recipe fetch error details:', errorData);
+        } catch {
+          errorText = await response.text();
+          console.error('Recipe fetch error text:', errorText);
+        }
+        
+        throw new Error(`Recipe fetch failed: ${response.status} ${errorText}`);
+      }
+      
+      const data = await response.json();
+      console.log('Recipe fetch successful:', { recipeId: data.recipe?.id, title: data.recipe?.title });
+      return data.recipe as Recipe;
+    } catch (error) {
+      console.error('Recipe fetch error:', error, 'for ID:', id);
+      throw error;
+    }
   });
 
-  const [tags, { refetch: refetchTags }] = createResource(async () => {
-    const response = await fetch("/api/tags");
-    if (!response.ok) throw new Error("Failed to fetch tags");
-    const data = await response.json();
-    return data.tags as Tag[];
+  const [tags, { refetch: refetchTags }] = createResource(() => {
+    // Only fetch on client side after auth is loaded
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
+    return 'fetch-tags';
+  }, async () => {
+    try {
+      console.log('Fetching tags');
+      
+      const response = await fetch("/api/tags", {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Tags fetch failed:', response.status, response.statusText);
+        throw new Error("Failed to fetch tags");
+      }
+      
+      const data = await response.json();
+      console.log('Tags fetch successful:', data.tags?.length || 0, 'tags');
+      return data.tags as Tag[];
+    } catch (error) {
+      console.error('Tags fetch error:', error);
+      throw error;
+    }
   });
 
-  const [variants, { refetch: refetchVariants }] = createResource(() => params.id, async (id) => {
+  const [variants, { refetch: refetchVariants }] = createResource(() => {
+    // Only fetch on client side after auth is loaded
+    if (params.id === "new") return "new";
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
+    return params.id;
+  }, async (id) => {
     if (id === "new") return [];
-    const response = await fetch(`/api/recipes/${id}/variants`);
-    if (!response.ok) return [];
-    const data = await response.json();
-    return data.variants as RecipeVariant[];
+    if (!id) return [];
+    
+    try {
+      const encodedId = encodeURIComponent(id);
+      const url = `/api/recipes/${encodedId}/variants`;
+      
+      console.log('Fetching variants with URL:', url, 'for ID:', id);
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.log('Variants fetch failed:', response.status, 'returning empty array');
+        return [];
+      }
+      
+      const data = await response.json();
+      console.log('Variants fetch successful:', data.variants?.length || 0, 'variants');
+      return data.variants as RecipeVariant[];
+    } catch (error) {
+      console.error('Variants fetch error:', error, 'returning empty array');
+      return [];
+    }
   });
 
   // Fetch cookbook data if coming from a cookbook
   const [sourceCookbook, { refetch: refetchCookbook }] = createResource(() => {
     const cookbookId = searchParams.cookbookId;
+    // Only fetch on client side after auth is loaded
+    if (!cookbookId) return null;
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
     return cookbookId;
   }, async (cookbookId) => {
     if (!cookbookId) return null;
-    const response = await fetch(`/api/cookbooks/${cookbookId}`);
-    if (!response.ok) return null;
-    const data = await response.json();
-    return data.cookbook;
+    
+    try {
+      const encodedId = encodeURIComponent(cookbookId);
+      const url = `/api/cookbooks/${encodedId}`;
+      
+      console.log('Fetching cookbook with URL:', url, 'for ID:', cookbookId);
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.log('Cookbook fetch failed:', response.status, 'returning null');
+        return null;
+      }
+      
+      const data = await response.json();
+      console.log('Cookbook fetch successful:', data.cookbook?.title);
+      return data.cookbook;
+    } catch (error) {
+      console.error('Cookbook fetch error:', error, 'returning null');
+      return null;
+    }
   });
 
   // Computed signal for the current recipe data (base or variant)
@@ -765,24 +894,27 @@ export default function RecipeDetail() {
 
 
   return (
-    <PageLayout
-      title={isNewRecipe() ? "New Recipe" : formData().title || "Recipe"}
-      breadcrumbs={<Breadcrumbs items={breadcrumbItems()} />}
-    >
+    <>
       <Title>{isNewRecipe() ? "New Recipe" : formData().title || "Recipe"} - Recipe Curator</Title>
-        <Show when={recipe.loading && !isNewRecipe()}>
-          <div class="text-center py-8">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-            <p class="mt-2 text-gray-600">Loading recipe...</p>
+      {authLoading() || !user() || (recipe.loading && !isNewRecipe()) ? (
+        <main class="min-h-screen bg-gray-50 pt-16">
+          <div class="max-w-6xl mx-auto px-4 py-8">
+            <SkeletonRecipeDetail />
           </div>
-        </Show>
-
-        <Show when={recipe.error}>
-          <div class="text-center py-8">
-            <p class="text-red-600">Error loading recipe: {recipe.error.message}</p>
+        </main>
+      ) : recipe.error ? (
+        <main class="min-h-screen bg-gray-50 pt-16">
+          <div class="max-w-6xl mx-auto px-4 py-8">
+            <div class="text-center py-8">
+              <p class="text-red-600">Error loading recipe: {recipe.error.message}</p>
+            </div>
           </div>
-        </Show>
-
+        </main>
+      ) : (formData().title !== undefined || isNewRecipe()) ? (
+        <PageLayout
+          title={isNewRecipe() ? "New Recipe" : formData().title || "Recipe"}
+          breadcrumbs={<Breadcrumbs items={breadcrumbItems()} />}
+        >
         <Show when={formData().title !== undefined || isNewRecipe()}>
           <div class="bg-white rounded-lg shadow-lg overflow-hidden">
             <div class="p-6 border-b">
@@ -1715,6 +1847,8 @@ export default function RecipeDetail() {
             </div>
           </div>
          </Show>
-    </PageLayout>
+        </PageLayout>
+      ) : null}
+    </>
   );
 }

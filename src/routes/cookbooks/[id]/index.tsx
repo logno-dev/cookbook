@@ -1,8 +1,9 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, createResource, Show, For, createEffect } from "solid-js";
+import { createSignal, createResource, Show, For, createEffect, Suspense, SuspenseList, onMount } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
-import { Navigate, useParams, useNavigate } from "@solidjs/router";
+import { useParams, useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
+import { SkeletonCardGrid, SkeletonFilters, SkeletonPageHeader } from "~/components/Skeletons";
 import { useBreadcrumbs, createBreadcrumbs } from "~/lib/breadcrumb-context";
 import { useTags } from "~/lib/stores";
 import { useConfirm, useToast } from "~/lib/notifications";
@@ -306,7 +307,7 @@ function MemberRow(props: {
 }
 
 export default function CookbookDetailPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
   const navigate = useNavigate();
   const confirm = useConfirm();
@@ -333,12 +334,58 @@ export default function CookbookDetailPage() {
   
   // Recipe removal state
   const [removingRecipe, setRemovingRecipe] = createSignal<string | null>(null);
+  
+  // Client-side mounting state for SSR safety
+  const [mounted, setMounted] = createSignal(false);
+  
+  onMount(() => {
+    setMounted(true);
+  });
+  
+  // Non-blocking auth check - redirect if needed but show content immediately
+  createEffect(() => {
+    if (!authLoading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
 
-  if (!user()) {
-    return <Navigate href="/login" />;
-  }
+  // Remove early return - use conditional JSX rendering instead
 
-  const [cookbook] = createResource(() => params.id, fetchCookbook);
+  const [cookbook] = createResource(() => {
+    // Only fetch on client side after auth is loaded
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
+    return params.id;
+  }, async (id) => {
+    if (!id) return null;
+    
+    try {
+      const encodedId = encodeURIComponent(id);
+      const url = `/api/cookbooks/${encodedId}`;
+      
+      console.log('Fetching cookbook with URL:', url, 'for ID:', id);
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.error('Cookbook fetch failed:', response.status, response.statusText);
+        throw new Error('Failed to fetch cookbook');
+      }
+      
+      const data = await response.json();
+      console.log('Cookbook fetch successful:', data.cookbook?.title);
+      return data.cookbook;
+    } catch (error) {
+      console.error('Cookbook fetch error:', error, 'for ID:', id);
+      throw error;
+    }
+  });
   
   // Build query for filtering recipes
   const buildRecipeQuery = () => {
@@ -353,22 +400,83 @@ export default function CookbookDetailPage() {
   };
   
   const [recipes, { refetch: refetchRecipes }] = createResource(
-    () => params.id ? `${params.id}?${buildRecipeQuery()}` : null,
+    () => {
+      // Only fetch on client side after auth is loaded
+      if (typeof window === 'undefined') return null; // Skip SSR fetch
+      if (authLoading()) return null; // Wait for auth to load
+      if (!user()) return null; // Don't fetch if not authenticated
+      return params.id ? `${params.id}?${buildRecipeQuery()}` : null;
+    },
     async (queryString) => {
-      const [id, query] = queryString.split('?');
-      const response = await fetch(`/api/cookbooks/${id}/recipes?${query || ''}`);
-      if (!response.ok) {
-        throw new Error('Failed to fetch cookbook recipes');
+      if (!queryString) return [];
+      
+      try {
+        const [id, query] = queryString.split('?');
+        const encodedId = encodeURIComponent(id);
+        const url = `/api/cookbooks/${encodedId}/recipes?${query || ''}`;
+        
+        console.log('Fetching cookbook recipes with URL:', url);
+        
+        const response = await fetch(url, {
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        });
+        
+        if (!response.ok) {
+          console.error('Cookbook recipes fetch failed:', response.status, response.statusText);
+          throw new Error('Failed to fetch cookbook recipes');
+        }
+        
+        const data = await response.json();
+        console.log('Cookbook recipes fetch successful:', data.recipes?.length || 0, 'recipes');
+        return data.recipes;
+      } catch (error) {
+        console.error('Cookbook recipes fetch error:', error);
+        throw error;
       }
-      const data = await response.json();
-      return data.recipes;
     }
   );
   
-  const [pendingInvitations, { refetch: refetchInvitations }] = createResource(() => params.id, fetchPendingInvitations);
+  const [pendingInvitations, { refetch: refetchInvitations }] = createResource(() => {
+    // Only fetch on client side after auth is loaded
+    if (typeof window === 'undefined') return null; // Skip SSR fetch
+    if (authLoading()) return null; // Wait for auth to load
+    if (!user()) return null; // Don't fetch if not authenticated
+    return params.id;
+  }, async (id) => {
+    if (!id) return [];
+    
+    try {
+      const encodedId = encodeURIComponent(id);
+      const url = `/api/cookbooks/${encodedId}/invitations`;
+      
+      console.log('Fetching pending invitations with URL:', url, 'for ID:', id);
+      
+      const response = await fetch(url, {
+        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+        }
+      });
+      
+      if (!response.ok) {
+        console.log('Pending invitations fetch failed:', response.status, 'returning empty array');
+        return [];
+      }
+      
+      const data = await response.json();
+      console.log('Pending invitations fetch successful:', data.invitations?.length || 0, 'invitations');
+      return data.invitations;
+    } catch (error) {
+      console.error('Pending invitations fetch error:', error, 'returning empty array');
+      return [];
+    }
+  });
   
-  // Use optimized tags store
-  const tagsStore = useTags();
+  // Use optimized tags store (only on client after mount)
+  const tagsStore = mounted() ? useTags() : { data: () => [], loading: () => false, error: () => null };
   
   // Use breadcrumb context
   const breadcrumbContext = useBreadcrumbs();
@@ -579,14 +687,24 @@ export default function CookbookDetailPage() {
   return (
     <>
       <Title>{cookbook()?.title || 'Loading...'} - Recipe Curator</Title>
-      <PageLayout
-        title={cookbook()?.title}
-        subtitle={cookbook() ? `Created ${new Date(cookbook()!.createdAt).toLocaleDateString()} • ${cookbook()!.members.length} member${cookbook()!.members.length !== 1 ? 's' : ''}` : undefined}
-        headerActions={headerActions()}
+      {/* Show skeleton while auth is loading */}
+      {authLoading() || !user() || cookbook.loading ? (
+        <main class="min-h-screen bg-gray-50 pt-16">
+          <div class="max-w-7xl mx-auto px-4 py-8">
+            <SkeletonPageHeader />
+            <SkeletonFilters />
+            <SkeletonCardGrid count={6} />
+          </div>
+        </main>
+      ) : (
+        <PageLayout
+          title={cookbook()?.title}
+          subtitle={cookbook() ? `Created ${new Date(cookbook()!.createdAt).toLocaleDateString()} • ${cookbook()!.members.length} member${cookbook()!.members.length !== 1 ? 's' : ''}` : undefined}
+          headerActions={headerActions()}
 
-        loading={cookbook.loading}
-        error={cookbook.error ? 'Cookbook not found or access denied' : undefined}
-      >
+          loading={cookbook.loading}
+          error={cookbook.error ? 'Cookbook not found or access denied' : undefined}
+        >
 
                 {/* Search and Filters */}
                 <div class="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -741,8 +859,8 @@ export default function CookbookDetailPage() {
 
 
 
-                {/* Recipes */}
-                <div class="mb-8">
+                  {/* Recipes */}
+                  <div class="mb-8">
                   <div class="flex justify-between items-center mb-6">
                     <h2 class="text-2xl font-bold text-gray-900">
                       Recipes {recipes() ? `(${recipes()!.length})` : ''}
@@ -750,10 +868,7 @@ export default function CookbookDetailPage() {
                   </div>
 
                   <Show when={recipes.loading}>
-                    <div class="text-center py-12">
-                      <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-                      <p class="mt-2 text-gray-600">Loading recipes...</p>
-                    </div>
+                    <SkeletonCardGrid count={6} />
                   </Show>
 
                   <Show when={recipes.error}>
@@ -906,12 +1021,12 @@ export default function CookbookDetailPage() {
                           </div>
                         )}
                       </For>
-                    </div>
-                  </Show>
-                </div>
+                     </div>
+                   </Show>
+                 </div>
 
-                {/* Members & Management Section */}
-                <div class="bg-white rounded-lg shadow-md p-6">
+                 {/* Members & Management Section */}
+                 <div class="bg-white rounded-lg shadow-md p-6">
                   <div class="flex justify-between items-center mb-4">
                     <button
                       onClick={() => setShowMembersSection(!showMembersSection())}
@@ -1000,7 +1115,8 @@ export default function CookbookDetailPage() {
                     </div>
                   </Show>
                 </div>
-      </PageLayout>
+        </PageLayout>
+      )}
     </>
   );
 }

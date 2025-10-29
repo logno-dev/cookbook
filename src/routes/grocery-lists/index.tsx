@@ -1,8 +1,9 @@
 import { createSignal, Show, For, createEffect } from 'solid-js';
 import { useAuth } from '../../lib/auth-context';
-import { Navigate, useNavigate } from '@solidjs/router';
+import { useNavigate } from '@solidjs/router';
 import { Title } from '@solidjs/meta';
 import PageLayout from '../../components/PageLayout';
+import { SkeletonCardGrid, SkeletonPageHeader } from '../../components/Skeletons';
 import { useConfirm, useToast } from '../../lib/notifications';
 
 interface GroceryList {
@@ -25,10 +26,14 @@ export default function GroceryListsPage() {
   const [newListDescription, setNewListDescription] = createSignal('');
   const [deletingListId, setDeletingListId] = createSignal<string | null>(null);
 
-  // Redirect to login if not authenticated
-  if (!loading() && !user()) {
-    return <Navigate href="/login" />;
-  }
+  // Non-blocking auth redirect
+  createEffect(() => {
+    if (!loading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
+
+  // Remove early return - use conditional JSX rendering instead
 
   // Load grocery lists when user becomes available
   const loadGroceryLists = async () => {
@@ -137,12 +142,27 @@ export default function GroceryListsPage() {
   return (
     <>
       <Title>Grocery Lists - Recipe Curator</Title>
-      <Show when={!loading()}>
+      {/* Show skeleton while auth is loading */}
+      {loading() || (!user() && !loading()) ? (
+        <main class="min-h-screen bg-gray-50 pt-16">
+          <div class="max-w-6xl mx-auto px-4 py-8">
+            <SkeletonPageHeader />
+            <SkeletonCardGrid count={6} />
+          </div>
+        </main>
+      ) : (
         <PageLayout
           title="Grocery Lists"
           subtitle="Create shopping lists from your recipes"
-          loading={isLoading()}
         >
+          {/* Show skeleton while loading grocery lists */}
+          {isLoading() ? (
+            <>
+              <SkeletonPageHeader />
+              <SkeletonCardGrid count={6} />
+            </>
+          ) : (
+            <>
           {/* Create New List Form */}
           <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
             <h2 class="text-lg font-semibold text-gray-900 mb-4">Create New List</h2>
@@ -255,8 +275,10 @@ export default function GroceryListsPage() {
               </For>
             </div>
           </Show>
+            </>
+          )}
         </PageLayout>
-      </Show>
+      )}
     </>
   );
 }

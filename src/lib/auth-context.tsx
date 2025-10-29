@@ -1,4 +1,5 @@
 import { createContext, useContext, createSignal, createEffect, JSX } from 'solid-js';
+import { api } from './api-client';
 
 export interface User {
   id: string;
@@ -20,7 +21,7 @@ const AuthContext = createContext<AuthContextType>();
 // Cache auth status in sessionStorage to prevent unnecessary API calls
 const AUTH_CACHE_KEY = 'auth_status';
 const AUTH_CACHE_EXPIRY_KEY = 'auth_status_expiry';
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - increased for better performance
 
 export function AuthProvider(props: { children: JSX.Element }) {
   const [user, setUser] = createSignal<User | null>(null);
@@ -29,6 +30,11 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
   // Get cached auth status
   const getCachedAuth = (): User | null => {
+    // Return null during SSR to prevent hydration mismatches
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    
     try {
       const cached = sessionStorage.getItem(AUTH_CACHE_KEY);
       const expiry = sessionStorage.getItem(AUTH_CACHE_EXPIRY_KEY);
@@ -44,6 +50,11 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
   // Cache auth status
   const setCachedAuth = (user: User | null) => {
+    // Skip caching during SSR
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     try {
       sessionStorage.setItem(AUTH_CACHE_KEY, user ? JSON.stringify(user) : 'null');
       sessionStorage.setItem(AUTH_CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION).toString());
@@ -65,15 +76,9 @@ export function AuthProvider(props: { children: JSX.Element }) {
   // Check auth status from server
   const checkAuthStatus = async () => {
     try {
-      const response = await fetch('/api/auth/me');
-      if (response.ok) {
-        const data = await response.json();
-        setUser(data.user);
-        setCachedAuth(data.user);
-      } else {
-        setUser(null);
-        setCachedAuth(null);
-      }
+      const data = await api.checkAuth();
+      setUser(data.user);
+      setCachedAuth(data.user);
     } catch (error) {
       console.error('Failed to check auth status:', error);
       setUser(null);
@@ -91,6 +96,11 @@ export function AuthProvider(props: { children: JSX.Element }) {
 
   // Initial auth check with caching
   createEffect(() => {
+    // Only run on client side to avoid SSR issues
+    if (typeof window === 'undefined') {
+      return;
+    }
+    
     if (!hasCheckedAuth()) {
       setHasCheckedAuth(true);
       
@@ -109,18 +119,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
   });
 
   const login = async (email: string, password: string) => {
-    const response = await fetch('/api/auth/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Login failed');
-    }
-
-    const data = await response.json();
+    const data = await api.login(email, password);
     setUser(data.user);
     setCachedAuth(data.user);
     
@@ -129,24 +128,13 @@ export function AuthProvider(props: { children: JSX.Element }) {
   };
 
   const register = async (email: string, password: string, name?: string) => {
-    const response = await fetch('/api/auth/register', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password, name }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error || 'Registration failed');
-    }
-
-    const data = await response.json();
+    const data = await api.register(email, password, name);
     setUser(data.user);
     setCachedAuth(data.user);
   };
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
+    await api.logout();
     setUser(null);
     clearAuthCache();
   };
@@ -169,12 +157,8 @@ export function useAuth() {
 // Server-side auth helper for routes
 export async function getAuthenticatedUser(): Promise<User | null> {
   try {
-    const response = await fetch('/api/auth/me');
-    if (response.ok) {
-      const data = await response.json();
-      return data.user;
-    }
-    return null;
+    const data = await api.checkAuth();
+    return data.user;
   } catch (error) {
     console.error('Failed to check auth status:', error);
     return null;

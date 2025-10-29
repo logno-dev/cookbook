@@ -1,17 +1,27 @@
 import { Title } from "@solidjs/meta";
-import { Show, createSignal, createEffect, onMount } from "solid-js";
+import { Show, createSignal, createResource, For, createEffect, createMemo, Suspense, SuspenseList } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
-import { SkeletonDashboard, SkeletonCardGrid, SkeletonFilters } from "~/components/Skeletons";
+import ErrorBoundary from "~/components/ErrorBoundary";
+import { SkeletonDashboard, SkeletonCardGrid, SkeletonFilters, SkeletonText } from "~/components/Skeletons";
 import { SearchAndFilters, RecipesGrid, RecentCookbooks, RecentGroceryLists } from "~/components/DashboardSections";
-import { useFilteredRecipes } from "~/lib/stores";
 import { api } from "~/lib/api-client";
+import { useFilteredRecipes, type Recipe } from "~/lib/stores";
+
+
+interface GroceryList {
+  id: string;
+  name: string;
+  description?: string;
+  createdAt: string;
+  updatedAt: string;
+}
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
-  const [mounted, setMounted] = createSignal(false);
+
   
   const [searchQuery, setSearchQuery] = createSignal("");
   const [selectedTags, setSelectedTags] = createSignal<string[]>([]);
@@ -22,19 +32,17 @@ export default function Dashboard() {
   const [isLoading, setIsLoading] = createSignal(false);
   const [error, setError] = createSignal("");
 
-  // Ensure client-side only rendering for store-dependent components
-  onMount(() => {
-    setMounted(true);
-  });
-
-  // Non-blocking auth redirect
+  // Non-blocking auth check - redirect if needed but show content immediately
   createEffect(() => {
     if (!authLoading() && !user()) {
       navigate("/login", { replace: true });
     }
   });
 
-  // Always call stores - let them handle SSR safety internally
+  // Show skeleton while auth is loading, but don't block the entire page
+  const showSkeleton = () => authLoading() || (!user() && !authLoading());
+
+  // Use filtered recipes with memoization
   const filteredRecipes = useFilteredRecipes(searchQuery, selectedTags, sortBy, sortOrder);
 
   const handleScrapeRecipe = async () => {
@@ -57,6 +65,7 @@ export default function Dashboard() {
       setScrapeUrl("");
       setShowAddRecipe(false);
       // Trigger a simple page refresh to update recipes
+      // TODO: Replace with proper store invalidation
       window.location.reload();
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
@@ -115,46 +124,66 @@ export default function Dashboard() {
     </div>
   );
 
+  // Show skeleton for initial auth loading or when user data isn't available yet
+  if (showSkeleton()) {
+    return (
+      <>
+        <Title>Dashboard - Recipe Curator</Title>
+        <SkeletonDashboard />
+      </>
+    );
+  }
+
   return (
     <>
       <Title>Dashboard - Recipe Curator</Title>
-      {/* Show skeleton while auth is loading or not mounted */}
-      {authLoading() || !user() || !mounted() ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
-          <div class="max-w-7xl mx-auto px-4 py-8">
-            <SkeletonDashboard />
-          </div>
-        </main>
-      ) : (
-        <PageLayout
-          title="Dashboard"
-          headerActions={headerActions()}
-        >
-          {/* Search and Filters */}
-          <SearchAndFilters 
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-            selectedTags={selectedTags}
-            toggleTag={toggleTag}
-          />
+      <PageLayout
+        title="Dashboard"
+        headerActions={headerActions()}
+      >
+        <SuspenseList revealOrder="forwards" tail="collapsed">
+          {/* Search and Filters - Priority 1 */}
+          <ErrorBoundary>
+            <Suspense fallback={<SkeletonFilters />}>
+              <SearchAndFilters 
+                searchQuery={searchQuery}
+                setSearchQuery={setSearchQuery}
+                selectedTags={selectedTags}
+                toggleTag={toggleTag}
+              />
+            </Suspense>
+          </ErrorBoundary>
 
-          {/* Main Recipes Grid */}
-          <RecipesGrid 
-            filteredRecipes={filteredRecipes}
-            formatTime={formatTime}
-            showAddRecipe={showAddRecipe}
-            setShowAddRecipe={setShowAddRecipe}
-          />
+          {/* Main Recipes Grid - Priority 2 */}
+          <ErrorBoundary>
+            <Suspense fallback={<SkeletonCardGrid count={6} />}>
+              <RecipesGrid 
+                filteredRecipes={filteredRecipes}
+                formatTime={formatTime}
+                showAddRecipe={showAddRecipe}
+                setShowAddRecipe={setShowAddRecipe}
+              />
+            </Suspense>
+          </ErrorBoundary>
 
-          {/* Recent Grocery Lists */}
-          <RecentGroceryLists />
+          {/* Recent Grocery Lists - Priority 3 */}
+          <ErrorBoundary>
+            <Suspense fallback={<SkeletonCardGrid count={5} columns={5} />}>
+              <RecentGroceryLists />
+            </Suspense>
+          </ErrorBoundary>
 
-          {/* Recent Cookbooks */}
-          <RecentCookbooks />
-        </PageLayout>
-      )}
+          {/* Recent Cookbooks - Priority 4 */}
+          <ErrorBoundary>
+            <Suspense fallback={<SkeletonCardGrid count={5} columns={5} />}>
+              <RecentCookbooks />
+            </Suspense>
+          </ErrorBoundary>
+        </SuspenseList>
 
-      {/* Add Recipe Modal */}
+
+      </PageLayout>
+
       <Show when={showAddRecipe()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">

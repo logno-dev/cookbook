@@ -1,7 +1,7 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, createResource, Show, For } from "solid-js";
+import { createSignal, createResource, Show, For, createEffect } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
-import { Navigate, useParams } from "@solidjs/router";
+import { Navigate, useParams, useNavigate } from "@solidjs/router";
 import { useToast } from "~/lib/notifications";
 
 interface Recipe {
@@ -57,17 +57,21 @@ async function addRecipeToCookbook(cookbookId: string, recipeId: string, notes?:
 }
 
 export default function AddRecipePage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const params = useParams();
   const toast = useToast();
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = createSignal("");
   const [selectedRecipe, setSelectedRecipe] = createSignal<Recipe | null>(null);
   const [notes, setNotes] = createSignal("");
   const [isAdding, setIsAdding] = createSignal(false);
 
-  if (!user()) {
-    return <Navigate href="/login" />;
-  }
+  // Auth redirect effect - only redirect after loading completes
+  createEffect(() => {
+    if (!authLoading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
 
   const [cookbook] = createResource(() => params.id, fetchCookbook);
   const [recipes] = createResource(fetchUserRecipes);

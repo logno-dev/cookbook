@@ -1,8 +1,9 @@
 import { Title } from "@solidjs/meta";
-import { createSignal, Show, For, createEffect } from "solid-js";
+import { createSignal, Show, For, createEffect, onMount } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
-import { Navigate } from "@solidjs/router";
+import { useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
+import { SkeletonCardGrid, SkeletonPageHeader } from "~/components/Skeletons";
 import { useCookbooks } from "~/lib/stores";
 import { useBreadcrumbs } from "~/lib/breadcrumb-context";
 import { useToast } from "~/lib/notifications";
@@ -42,18 +43,28 @@ async function fetchCookbooks(): Promise<Cookbook[]> {
 }
 
 export default function CookbooksPage() {
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const navigate = useNavigate();
   const toast = useToast();
   const [showCreateForm, setShowCreateForm] = createSignal(false);
   const [title, setTitle] = createSignal("");
   const [description, setDescription] = createSignal("");
   const [isCreating, setIsCreating] = createSignal(false);
+  const [mounted, setMounted] = createSignal(false);
 
-  if (!user()) {
-    return <Navigate href="/login" />;
-  }
+  // Ensure client-side only rendering for store-dependent components
+  onMount(() => {
+    setMounted(true);
+  });
 
-  // Use the optimized cookbooks store
+  // Non-blocking auth redirect
+  createEffect(() => {
+    if (!authLoading() && !user()) {
+      navigate("/login", { replace: true });
+    }
+  });
+
+  // Always call stores - let them handle SSR safety internally
   const cookbooksStore = useCookbooks();
   const breadcrumbContext = useBreadcrumbs();
   
@@ -119,11 +130,20 @@ export default function CookbooksPage() {
   return (
     <>
       <Title>Cookbooks - Recipe Curator</Title>
-      <PageLayout
-        title="My Cookbooks"
-        headerActions={headerActions()}
-        maxWidth="6xl"
-      >
+      {/* Show skeleton while auth is loading or not mounted */}
+      {authLoading() || !user() || !mounted() ? (
+        <main class="min-h-screen bg-gray-50 pt-16">
+          <div class="max-w-6xl mx-auto px-4 py-8">
+            <SkeletonPageHeader />
+            <SkeletonCardGrid count={6} />
+          </div>
+        </main>
+      ) : (
+        <PageLayout
+          title="My Cookbooks"
+          headerActions={headerActions()}
+          maxWidth="6xl"
+        >
 
         <Show when={showCreateForm()}>
           <div class="bg-white rounded-lg shadow-md p-6 mb-8">
@@ -175,9 +195,7 @@ export default function CookbooksPage() {
         </Show>
 
           <Show when={cookbooksStore.loading()}>
-            <div class="text-center py-8">
-              <div class="text-gray-600">Loading cookbooks...</div>
-            </div>
+            <SkeletonCardGrid count={6} />
           </Show>
 
           <Show when={cookbooksStore.error()}>
@@ -226,7 +244,8 @@ export default function CookbooksPage() {
             </For>
           </div>
         </Show>
-      </PageLayout>
+        </PageLayout>
+      )}
     </>
   );
 }

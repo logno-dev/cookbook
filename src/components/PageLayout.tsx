@@ -1,6 +1,7 @@
 import { JSX, Show } from 'solid-js';
 import { useBreadcrumbs } from '~/lib/breadcrumb-context';
 import Breadcrumbs from './Breadcrumbs';
+import { SkeletonCardGrid, SkeletonPageHeader } from './Skeletons';
 
 interface PageLayoutProps {
   children: JSX.Element;
@@ -65,9 +66,9 @@ export default function PageLayout(props: PageLayoutProps) {
 
         {/* Loading State */}
         <Show when={props.loading}>
-          <div class="flex justify-center items-center py-12">
-            <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <span class="ml-3 text-gray-600">Loading...</span>
+          <div class="space-y-6">
+            <SkeletonPageHeader />
+            <SkeletonCardGrid count={6} />
           </div>
         </Show>
 

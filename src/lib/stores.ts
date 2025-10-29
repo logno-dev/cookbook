@@ -1,4 +1,6 @@
 import { createSignal, createEffect, createMemo, createResource } from 'solid-js';
+import { useAuth } from './auth-context';
+import { api } from './api-client';
 
 export interface Tag {
   id: string;
@@ -80,13 +82,19 @@ export interface Cookbook {
 
 
 // Simple cached resource functions
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
+const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - increased for better performance
 
 function createCachedResource<T>(
   fetchFn: () => Promise<T>,
-  cacheKey: string
+  cacheKey: string,
+  deps?: () => any
 ) {
-  return createResource(async () => {
+  return createResource(deps, async () => {
+    // Only run on client side to avoid SSR issues
+    if (typeof window === 'undefined') {
+      return null;
+    }
+    
     // Check cache first
     try {
       const cached = sessionStorage.getItem(cacheKey);
@@ -99,7 +107,7 @@ function createCachedResource<T>(
       console.warn('Failed to read cache:', error);
     }
 
-    // Fetch from server
+    // Fetch from server with absolute URL handling
     const result = await fetchFn();
     
     // Cache the result
@@ -115,14 +123,19 @@ function createCachedResource<T>(
 }
 
 export const useTags = () => {
+  const { user } = useAuth();
+  
   const [tags, { refetch }] = createCachedResource(
     async () => {
-      const response = await fetch('/api/tags');
-      if (!response.ok) throw new Error('Failed to fetch tags');
-      const data = await response.json();
+      // Check if user is authenticated
+      if (!user()) {
+        throw new Error('User not authenticated');
+      }
+      const data = await api.getTags();
       return data.tags as Tag[];
     },
-    'tags_cache'
+    'tags_cache',
+    () => !!user() // Fetch when user becomes available
   );
 
   return {
@@ -143,14 +156,19 @@ export const useTags = () => {
 };
 
 export const useRecipes = () => {
+  const { user } = useAuth();
+  
   const [recipes, { refetch }] = createCachedResource(
     async () => {
-      const response = await fetch('/api/recipes');
-      if (!response.ok) throw new Error('Failed to fetch recipes');
-      const data = await response.json();
+      // Check if user is authenticated
+      if (!user()) {
+        throw new Error('User not authenticated');
+      }
+      const data = await api.getRecipes();
       return data.recipes as Recipe[];
     },
-    'recipes_cache'
+    'recipes_cache',
+    () => !!user() // Fetch when user becomes available
   );
 
   return {
@@ -171,14 +189,19 @@ export const useRecipes = () => {
 };
 
 export const useCookbooks = () => {
+  const { user } = useAuth();
+  
   const [cookbooks, { refetch }] = createCachedResource(
     async () => {
-      const response = await fetch('/api/cookbooks');
-      if (!response.ok) throw new Error('Failed to fetch cookbooks');
-      const data = await response.json();
+      // Check if user is authenticated
+      if (!user()) {
+        throw new Error('User not authenticated');
+      }
+      const data = await api.getCookbooks();
       return data.cookbooks as Cookbook[];
     },
-    'cookbooks_cache'
+    'cookbooks_cache',
+    () => !!user() // Fetch when user becomes available
   );
 
   return {
