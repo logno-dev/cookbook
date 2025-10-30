@@ -119,10 +119,15 @@ export default function Login() {
           </button>
         </form>
 
-        <div class="mt-6 text-center">
-          <p class="text-gray-600">
+        <div class="mt-6 text-center space-y-2">
+          <p class="text-gray-600 dark:text-stone-400">
+            <a href="/password-reset" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium">
+              Forgot your password?
+            </a>
+          </p>
+          <p class="text-gray-600 dark:text-stone-400">
             Don't have an account?{" "}
-            <a href="/register" class="text-emerald-600 hover:text-emerald-700 font-medium">
+            <a href="/register" class="text-emerald-600 hover:text-emerald-700 dark:text-emerald-400 dark:hover:text-emerald-300 font-medium">
               Sign up
             </a>
           </p>

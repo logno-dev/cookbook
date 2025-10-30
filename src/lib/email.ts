@@ -161,3 +161,55 @@ export async function sendCookbookInvitationEmail(
     html: generateCookbookInvitationEmail(inviterName, cookbookTitle, role, message, hasAccount),
   });
 }
+
+export function generatePasswordResetEmail(verificationCode: string, name?: string): string {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #dc2626; text-align: center;">Password Reset Request</h1>
+      
+      <p>Hi ${name || 'there'},</p>
+      
+      <p>You recently requested to reset your password for your Recipe Curator account. Use the verification code below to complete your password reset:</p>
+      
+      <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 20px 0; text-align: center;">
+        <p style="font-size: 14px; margin: 0 0 10px 0; color: #6b7280;">Your verification code is:</p>
+        <p style="font-size: 32px; font-weight: bold; color: #dc2626; margin: 10px 0; letter-spacing: 8px; font-family: 'Courier New', monospace;">
+          ${verificationCode}
+        </p>
+        <p style="font-size: 12px; margin: 10px 0 0 0; color: #6b7280;">This code will expire in 15 minutes</p>
+      </div>
+      
+      <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 20px 0;">
+        <p style="margin: 0; color: #92400e;">
+          <strong>Security Note:</strong> If you didn't request this password reset, please ignore this email. Your password will remain unchanged.
+        </p>
+      </div>
+      
+      <p>To complete your password reset:</p>
+      <ol>
+        <li>Return to the password reset page</li>
+        <li>Enter the verification code above</li>
+        <li>Create your new password</li>
+      </ol>
+      
+      <p>If you're having trouble, please contact our support team.</p>
+      
+      <p>Best regards,<br>The Recipe Curator Team</p>
+      
+      <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+      
+      <p style="color: #6b7280; font-size: 12px; text-align: center;">
+        This password reset email was sent from Recipe Curator.<br>
+        If you didn't request this, you can safely ignore this email.
+      </p>
+    </div>
+  `;
+}
+
+export async function sendPasswordResetEmail(email: string, verificationCode: string, name?: string): Promise<void> {
+  await sendEmail({
+    to: email,
+    subject: 'Password Reset - Recipe Curator',
+    html: generatePasswordResetEmail(verificationCode, name),
+  });
+}

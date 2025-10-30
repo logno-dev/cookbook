@@ -173,6 +173,15 @@ export const userSessions = sqliteTable('user_sessions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+export const passwordResetCodes = sqliteTable('password_reset_codes', {
+  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
+  code: text('code').notNull(), // 6-digit verification code
+  expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
+  isUsed: integer('is_used', { mode: 'boolean' }).$default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export const userSettings = sqliteTable('user_settings', {
   id: text('id').primaryKey().$defaultFn(() => uuidv4()),
   userId: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
@@ -237,6 +246,7 @@ export const groceryListRecipes = sqliteTable('grocery_list_recipes', {
 export const usersRelations = relations(users, ({ one, many }) => ({
   recipes: many(recipes),
   sessions: many(userSessions),
+  passwordResetCodes: many(passwordResetCodes),
   settings: one(userSettings),
   ownedCookbooks: many(cookbooks),
   cookbookMemberships: many(cookbookMembers),
@@ -281,6 +291,13 @@ export const recipeVariantsRelations = relations(recipeVariants, ({ one }) => ({
 export const userSessionsRelations = relations(userSessions, ({ one }) => ({
   user: one(users, {
     fields: [userSessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const passwordResetCodesRelations = relations(passwordResetCodes, ({ one }) => ({
+  user: one(users, {
+    fields: [passwordResetCodes.userId],
     references: [users.id],
   }),
 }));
