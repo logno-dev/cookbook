@@ -113,18 +113,18 @@ export default function AddRecipePage() {
   return (
     <>
       <Title>Add Recipe - {cookbook()?.title || 'Loading...'} - Recipe Curator</Title>
-      <div class="min-h-screen bg-gray-50 pt-20">
+      <div class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-20">
         <div class="max-w-6xl mx-auto px-4 py-8">
           <Show when={cookbook.loading || recipes.loading}>
             <div class="text-center py-8">
-              <div class="text-gray-600">Loading...</div>
+              <div class="text-gray-600 dark:text-stone-400">Loading...</div>
             </div>
           </Show>
 
           <Show when={cookbook.error || recipes.error}>
             <div class="text-center py-8">
-              <div class="text-red-600">Failed to load data</div>
-              <a href={`/cookbooks/${params.id}`} class="text-emerald-600 hover:underline mt-4 inline-block">
+              <div class="text-red-600 dark:text-red-400">Failed to load data</div>
+              <a href={`/cookbooks/${params.id}`} class="text-emerald-600 dark:text-emerald-400 hover:underline mt-4 inline-block">
                 ← Back to Cookbook
               </a>
             </div>
@@ -132,8 +132,8 @@ export default function AddRecipePage() {
 
           <Show when={cookbook() && !canAddRecipes()}>
             <div class="text-center py-8">
-              <div class="text-red-600">You don't have permission to add recipes to this cookbook</div>
-              <a href={`/cookbooks/${params.id}`} class="text-emerald-600 hover:underline mt-4 inline-block">
+              <div class="text-red-600 dark:text-red-400">You don't have permission to add recipes to this cookbook</div>
+              <a href={`/cookbooks/${params.id}`} class="text-emerald-600 dark:text-emerald-400 hover:underline mt-4 inline-block">
                 ← Back to Cookbook
               </a>
             </div>
@@ -144,21 +144,21 @@ export default function AddRecipePage() {
               {/* Header */}
               <div class="flex justify-between items-center">
                 <div>
-                  <h1 class="text-3xl font-bold text-gray-900">Add Recipe to Cookbook</h1>
-                  <p class="text-gray-600 mt-2">Adding to: <strong>{cookbook()!.title}</strong></p>
+                  <h1 class="text-3xl font-bold text-gray-900 dark:text-stone-100">Add Recipe to Cookbook</h1>
+                  <p class="text-gray-600 dark:text-stone-400 mt-2">Adding to: <strong class="text-gray-900 dark:text-stone-100">{cookbook()!.title}</strong></p>
                 </div>
                 <a 
                   href={`/cookbooks/${params.id}`}
-                  class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                  class="bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-stone-500 transition-colors"
                 >
                   ← Back to Cookbook
                 </a>
               </div>
 
               {/* Search */}
-              <div class="bg-white rounded-lg shadow-md p-6">
+              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6">
                 <div class="mb-4">
-                  <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                  <label for="search" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                     Search Your Recipes
                   </label>
                   <input
@@ -166,26 +166,26 @@ export default function AddRecipePage() {
                     type="text"
                     value={searchQuery()}
                     onInput={(e) => setSearchQuery(e.currentTarget.value)}
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     placeholder="Search by title, description, tags, or cuisine..."
                   />
                 </div>
               </div>
 
               {/* Recipe Selection */}
-              <div class="bg-white rounded-lg shadow-md p-6">
-                <h2 class="text-xl font-semibold mb-4">Select a Recipe</h2>
+              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Select a Recipe</h2>
                 
                 <Show when={filteredRecipes().length === 0}>
                   <div class="text-center py-8">
                     <Show when={searchQuery()}>
-                      <div class="text-gray-500">No recipes found matching "{searchQuery()}"</div>
+                      <div class="text-gray-500 dark:text-stone-400">No recipes found matching "{searchQuery()}"</div>
                     </Show>
                     <Show when={!searchQuery()}>
-                      <div class="text-gray-500 mb-4">You don't have any recipes yet</div>
+                      <div class="text-gray-500 dark:text-stone-400 mb-4">You don't have any recipes yet</div>
                       <a
                         href="/dashboard"
-                        class="text-emerald-600 hover:underline"
+                        class="text-emerald-600 dark:text-emerald-400 hover:underline"
                       >
                         Create your first recipe →
                       </a>
@@ -199,15 +199,15 @@ export default function AddRecipePage() {
                       <div 
                         class={`border-2 rounded-lg p-4 cursor-pointer transition-all ${
                           selectedRecipe()?.id === recipe.id 
-                            ? 'border-emerald-500 bg-emerald-50' 
-                            : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'
+                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20' 
+                            : 'border-gray-200 dark:border-stone-600 hover:border-gray-300 dark:hover:border-stone-500 hover:shadow-sm bg-white dark:bg-stone-700'
                         }`}
                         onClick={() => setSelectedRecipe(recipe)}
                       >
-                        <h3 class="font-semibold text-lg mb-2">{recipe.title}</h3>
+                        <h3 class="font-semibold text-lg text-gray-900 dark:text-stone-100 mb-2">{recipe.title}</h3>
                         
                         <Show when={recipe.description}>
-                          <p class="text-gray-600 text-sm mb-3 line-clamp-2">{recipe.description}</p>
+                          <p class="text-gray-600 dark:text-stone-400 text-sm mb-3 line-clamp-2">{recipe.description}</p>
                         </Show>
 
                         <div class="flex flex-wrap gap-1 mb-3">
@@ -222,13 +222,13 @@ export default function AddRecipePage() {
                             )}
                           </For>
                           <Show when={recipe.tags.length > 3}>
-                            <span class="px-2 py-1 text-xs rounded-full bg-gray-200 text-gray-700">
+                            <span class="px-2 py-1 text-xs rounded-full bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300">
                               +{recipe.tags.length - 3}
                             </span>
                           </Show>
                         </div>
 
-                        <div class="flex justify-between items-center text-xs text-gray-500">
+                        <div class="flex justify-between items-center text-xs text-gray-500 dark:text-stone-400">
                           <Show when={recipe.cookTime}>
                             <span>{recipe.cookTime} min</span>
                           </Show>
@@ -241,8 +241,8 @@ export default function AddRecipePage() {
                         </div>
 
                         <Show when={selectedRecipe()?.id === recipe.id}>
-                          <div class="mt-3 pt-3 border-t border-emerald-200">
-                            <div class="flex items-center text-emerald-600 text-sm font-medium">
+                          <div class="mt-3 pt-3 border-t border-emerald-200 dark:border-emerald-700">
+                            <div class="flex items-center text-emerald-600 dark:text-emerald-400 text-sm font-medium">
                               <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" />
                               </svg>
@@ -258,24 +258,24 @@ export default function AddRecipePage() {
 
               {/* Add Recipe Form */}
               <Show when={selectedRecipe()}>
-                <div class="bg-white rounded-lg shadow-md p-6">
-                  <h2 class="text-xl font-semibold mb-4">Add Recipe Details</h2>
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6">
+                  <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Add Recipe Details</h2>
                   
                   <div class="mb-4">
-                    <div class="text-sm text-gray-600 mb-2">
-                      Selected Recipe: <strong>{selectedRecipe()!.title}</strong>
+                    <div class="text-sm text-gray-600 dark:text-stone-400 mb-2">
+                      Selected Recipe: <strong class="text-gray-900 dark:text-stone-100">{selectedRecipe()!.title}</strong>
                     </div>
                   </div>
 
                   <div class="mb-6">
-                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                       Notes (Optional)
                     </label>
                     <textarea
                       id="notes"
                       value={notes()}
                       onInput={(e) => setNotes(e.currentTarget.value)}
-                      class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       placeholder="Add any notes about this recipe for the cookbook (e.g., modifications, serving suggestions, etc.)"
                       rows="4"
                     />
@@ -291,7 +291,7 @@ export default function AddRecipePage() {
                     </button>
                     <button
                       onClick={() => setSelectedRecipe(null)}
-                      class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                      class="bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-stone-500 transition-colors"
                     >
                       Clear Selection
                     </button>

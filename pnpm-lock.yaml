@@ -47,6 +47,9 @@ importers:
       fraction.js:
         specifier: ^5.3.4
         version: 5.3.4
+      lucide-solid:
+        specifier: ^0.548.0
+        version: 0.548.0(solid-js@1.9.9)
       resend:
         specifier: ^6.2.2
         version: 6.2.2
@@ -67,10 +70,10 @@ importers:
         version: 0.5.8(@libsql/client@0.15.15)(@types/node@24.9.1)(db0@0.3.4(@libsql/client@0.15.15)(drizzle-orm@0.44.7(@libsql/client@0.15.15)))(drizzle-orm@0.44.7(@libsql/client@0.15.15))(ioredis@5.8.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0)
     devDependencies:
       '@tailwindcss/vite':
-        specifier: ^4.1.13
+        specifier: ^4.1.16
         version: 4.1.16(vite@6.4.1(@types/node@24.9.1)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.44.0))
       tailwindcss:
-        specifier: ^4.1.13
+        specifier: ^4.1.16
         version: 4.1.16
 
 packages:
@@ -2197,6 +2200,11 @@ packages:
 
   lru-cache@5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
+
+  lucide-solid@0.548.0:
+    resolution: {integrity: sha512-EvrLuGBz7FJ3bXNVqWLCg1neF19kv2brbhSA1RqeJGOzj3UrLn0anvBj5WJCpQ6cBUlLp0LQVZeW8cZfTWaJzA==}
+    peerDependencies:
+      solid-js: ^1.4.7
 
   magic-string@0.30.21:
     resolution: {integrity: sha512-vd2F4YUyEXKGcLHoq+TEyCjxueSeHnFxyyjNp80yg0XV4vUhnDer/lvvlqM/arB5bXQN5K2/3oinyCRyx8T2CQ==}
@@ -5125,6 +5133,10 @@ snapshots:
   lru-cache@5.1.1:
     dependencies:
       yallist: 3.1.1
+
+  lucide-solid@0.548.0(solid-js@1.9.9):
+    dependencies:
+      solid-js: 1.9.9
 
   magic-string@0.30.21:
     dependencies:

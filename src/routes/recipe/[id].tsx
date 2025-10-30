@@ -897,13 +897,13 @@ export default function RecipeDetail() {
     <>
       <Title>{isNewRecipe() ? "New Recipe" : formData().title || "Recipe"} - Recipe Curator</Title>
       {authLoading() || !user() || (recipe.loading && !isNewRecipe()) ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-6xl mx-auto px-4 py-8">
             <SkeletonRecipeDetail />
           </div>
         </main>
       ) : recipe.error ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-6xl mx-auto px-4 py-8">
             <div class="text-center py-8">
               <p class="text-red-600">Error loading recipe: {recipe.error.message}</p>
@@ -916,8 +916,8 @@ export default function RecipeDetail() {
           breadcrumbs={<Breadcrumbs items={breadcrumbItems()} />}
         >
         <Show when={formData().title !== undefined || isNewRecipe()}>
-          <div class="bg-white rounded-lg shadow-lg overflow-hidden">
-            <div class="p-6 border-b">
+          <div class="bg-white dark:bg-stone-800 rounded-lg shadow-lg overflow-hidden">
+            <div class="p-6 border-b border-gray-200 dark:border-stone-700">
               <div class="space-y-4">
                 {/* Title and Variant Selector */}
                 <Show
@@ -925,12 +925,12 @@ export default function RecipeDetail() {
                   fallback={
                     <div>
                        <div class="flex items-center gap-4 mb-2">
-                         <h1 class="text-3xl font-bold text-gray-900">{formData().title}</h1>
+                          <h1 class="text-3xl font-bold text-gray-900 dark:text-stone-100">{formData().title}</h1>
                          <Show when={!isNewRecipe() && variants() && variants()!.length > 0}>
                            <select
                              value={selectedVariantId() || ""}
                              onChange={(e) => setSelectedVariantId(e.currentTarget.value || null)}
-                             class="px-3 py-1 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                              class="px-3 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                            >
                              <option value="">Original Recipe</option>
                              <For each={variants()}>
@@ -942,7 +942,7 @@ export default function RecipeDetail() {
                          </Show>
                        </div>
                       <Show when={formData().description}>
-                        <p class="text-gray-600 text-lg">{formData().description}</p>
+                         <p class="text-gray-600 dark:text-stone-400 text-lg">{formData().description}</p>
                       </Show>
                     </div>
                   }
@@ -954,7 +954,7 @@ export default function RecipeDetail() {
                       placeholder="Recipe title"
                       value={formData().title || ""}
                       onInput={(e) => setFormData({ ...formData(), title: e.currentTarget.value })}
-                      class="text-3xl font-bold text-gray-900 w-full border-none outline-none bg-transparent placeholder-gray-400"
+                       class="text-3xl font-bold text-gray-900 dark:text-stone-100 w-full border-none outline-none bg-transparent placeholder-gray-400 dark:placeholder-stone-500"
                       disabled={editingVariantId() !== null} // Can't edit title in variant mode
                     />
                     <textarea
@@ -962,7 +962,7 @@ export default function RecipeDetail() {
                       placeholder="Recipe description (optional)"
                       value={formData().description || ""}
                       onInput={(e) => setFormData({ ...formData(), description: e.currentTarget.value })}
-                      class="text-gray-600 text-lg w-full border-none outline-none bg-transparent placeholder-gray-400 resize-none"
+                       class="text-gray-600 dark:text-stone-400 text-lg w-full border-none outline-none bg-transparent placeholder-gray-400 dark:placeholder-stone-500 resize-none"
                       rows="2"
                       disabled={editingVariantId() !== null} // Can't edit description in variant mode for now
                     />
@@ -970,10 +970,10 @@ export default function RecipeDetail() {
                 </Show>
 
                 {/* Action Bar - Separate row for controls */}
-                <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+                 <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-stone-700">
                   <Show when={isEditing() && !isNewRecipe()}>
                     <div class="flex items-center gap-2">
-                      <label class="text-sm font-medium text-gray-700">Editing:</label>
+                       <label class="text-sm font-medium text-gray-700 dark:text-stone-300">Editing:</label>
                       <select
                         value={editingVariantId() || ""}
                         onChange={(e) => {
@@ -998,7 +998,7 @@ export default function RecipeDetail() {
                             }
                           }
                         }}
-                        class="px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                         class="px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                       >
                         <option value="">Original Recipe</option>
                         <For each={variants()}>
@@ -1084,7 +1084,7 @@ export default function RecipeDetail() {
               </div>
 
               <Show when={error()}>
-                <div class="mt-4 text-red-600 text-sm bg-red-50 p-3 rounded-lg">
+                <div class="mt-4 text-red-600 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
                   {error()}
                 </div>
               </Show>
@@ -1097,20 +1097,20 @@ export default function RecipeDetail() {
                      <div>
                         <div class="mb-4">
                           <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4">
-                            <h2 class="text-xl font-semibold text-gray-900">Ingredients</h2>
+                             <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">Ingredients</h2>
                             <Show when={!isNewRecipe() && !isEditing()}>
                               <div class="flex items-center gap-2">
-                                <span class="text-sm text-gray-600 font-medium">Recipe size:</span>
-                                <div class="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden">
+                                 <span class="text-sm text-gray-600 dark:text-stone-400 font-medium">Recipe size:</span>
+                                 <div class="flex items-center gap-1 border border-gray-300 dark:border-stone-600 rounded-lg overflow-hidden">
                                   <For each={[1, 1.5, 2, 3]}>
                                     {(multiplier) => (
                                       <button
                                         onClick={() => setRecipeMultiplier(multiplier)}
-                                        class={`px-3 py-1 text-sm font-medium transition-colors ${
-                                          recipeMultiplier() === multiplier
-                                            ? "bg-emerald-600 text-white"
-                                            : "bg-white text-gray-700 hover:bg-gray-50"
-                                        }`}
+                                         class={`px-3 py-1 text-sm font-medium transition-colors ${
+                                           recipeMultiplier() === multiplier
+                                             ? "bg-emerald-600 text-white"
+                                             : "bg-white dark:bg-stone-700 text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-600"
+                                         }`}
                                       >
                                         {multiplier}x
                                       </button>
@@ -1137,15 +1137,15 @@ export default function RecipeDetail() {
                                    <li class="space-y-1">
                                      <Show
                                        when={isModified}
-                                       fallback={
-                                         // No variant for this item - show current ingredient normally
-                                         <div class="text-gray-700">
-                                           <span class="font-medium">
+                                        fallback={
+                                          // No variant for this item - show current ingredient normally
+                                          <div class="text-gray-700 dark:text-stone-300">
+                                <span class="font-medium text-gray-900 dark:text-stone-100">
                                              {currentIngredient.quantity && `${formatFractionWithUnicode(multiplyQuantity(currentIngredient.quantity, recipeMultiplier()))} `}
                                              {currentIngredient.unit && `${currentIngredient.unit} `}
                                            </span>
                                            {currentIngredient.ingredient}
-                                           {currentIngredient.notes && <span class="text-gray-500 italic"> ({currentIngredient.notes})</span>}
+                                            {currentIngredient.notes && <span class="text-gray-500 dark:text-stone-400 italic"> ({currentIngredient.notes})</span>}
                                          </div>
                                        }
                                      >
@@ -1158,13 +1158,13 @@ export default function RecipeDetail() {
                                          {originalIngredient?.ingredient}
                                          {originalIngredient?.notes && <span class="italic"> ({originalIngredient.notes})</span>}
                                        </div>
-                                       <div class="text-gray-700 font-semibold text-emerald-700">
+                                        <div class="text-gray-700 dark:text-stone-300 font-semibold text-emerald-700 dark:text-emerald-400">
                                          <span class="font-medium">
                                            {variantIngredient?.quantity && `${formatFractionWithUnicode(multiplyQuantity(variantIngredient.quantity, recipeMultiplier()))} `}
                                            {variantIngredient?.unit && `${variantIngredient.unit} `}
                                          </span>
                                          {variantIngredient?.ingredient}
-                                         {variantIngredient?.notes && <span class="text-gray-500 italic"> ({variantIngredient.notes})</span>}
+                                          {variantIngredient?.notes && <span class="text-gray-500 dark:text-stone-400 italic"> ({variantIngredient.notes})</span>}
                                        </div>
                                      </Show>
                                    </li>
@@ -1183,53 +1183,53 @@ export default function RecipeDetail() {
                                 {(ingredient, index) => (
                                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
                                      <div class="sm:col-span-12 grid grid-cols-6 sm:grid-cols-12 gap-2 items-center">
-                                       <input
-                                         type="text"
-                                         name={`ingredient-${index()}-quantity`}
-                                         value={ingredient.quantity || ""}
-                                         placeholder="Amount"
-                                         class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                       />
-                                       <input
-                                         type="text"
-                                         name={`ingredient-${index()}-unit`}
-                                         value={ingredient.unit || ""}
-                                         placeholder="Unit"
-                                         class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                       />
-                                       <input
-                                         type="text"
-                                         name={`ingredient-${index()}-ingredient`}
-                                         value={ingredient.ingredient}
-                                         placeholder="Ingredient *"
-                                         class="col-span-3 sm:col-span-5 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                         required
-                                       />
+                                        <input
+                                          type="text"
+                                          name={`ingredient-${index()}-quantity`}
+                                          value={ingredient.quantity || ""}
+                                          placeholder="Amount"
+                                          class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                        />
+                                        <input
+                                          type="text"
+                                          name={`ingredient-${index()}-unit`}
+                                          value={ingredient.unit || ""}
+                                          placeholder="Unit"
+                                          class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                        />
+                                        <input
+                                          type="text"
+                                          name={`ingredient-${index()}-ingredient`}
+                                          value={ingredient.ingredient}
+                                          placeholder="Ingredient *"
+                                          class="col-span-3 sm:col-span-5 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                          required
+                                        />
                                        <button
                                          type="button"
                                          onClick={() => removeIngredient(index())}
-                                         class="col-span-1 px-2 py-2 text-gray-400 hover:bg-gray-50 rounded-lg text-sm"
+                                          class="col-span-1 px-2 py-2 text-gray-400 dark:text-stone-500 hover:bg-gray-50 dark:hover:bg-stone-600 rounded-lg text-sm"
                                          title="Remove ingredient"
                                        >
                                          ×
                                        </button>
                                      </div>
-                                     <input
-                                       type="text"
-                                       name={`ingredient-${index()}-notes`}
-                                       value={ingredient.notes || ""}
-                                       placeholder="Notes (optional)"
-                                       class="sm:col-span-11 px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                                     />
+                                      <input
+                                        type="text"
+                                        name={`ingredient-${index()}-notes`}
+                                        value={ingredient.notes || ""}
+                                        placeholder="Notes (optional)"
+                                        class="sm:col-span-11 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                      />
                                    </div>
                                 )}
                               </For>
-                              <button
-                                onClick={addIngredient}
-                                class="text-emerald-600 hover:text-emerald-700 font-medium text-sm"
-                              >
-                                + Add ingredient
-                              </button>
+                               <button
+                                 onClick={addIngredient}
+                                 class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium text-sm"
+                               >
+                                 + Add ingredient
+                               </button>
                             </div>
                           }
                         >
@@ -1241,9 +1241,9 @@ export default function RecipeDetail() {
                                 const variantIngredient = variantIngredients[index()];
                                 
                                 return (
-                                  <div class="space-y-2 p-3 border border-gray-200 rounded-lg">
-                                    <div class="text-sm text-gray-600">
-                                      <strong>Original:</strong>{" "}
+                                   <div class="space-y-2 p-3 border border-gray-200 dark:border-stone-700 rounded-lg">
+                                     <div class="text-sm text-gray-600 dark:text-stone-400">
+                                       <strong>Original:</strong>{" "}
                                       <span class="font-medium">
                                         {originalIngredient.quantity && `${originalIngredient.quantity} `}
                                         {originalIngredient.unit && `${originalIngredient.unit} `}
@@ -1253,37 +1253,37 @@ export default function RecipeDetail() {
                                     </div>
 
                                     <div class="grid grid-cols-12 gap-2 items-center">
-                                      <input
-                                        type="text"
-                                        value={variantChanges().ingredients?.[index()]?.quantity || ""}
-                                        onInput={(e) => updateVariantIngredient(index(), "quantity", e.currentTarget.value)}
-                                        placeholder="Amount"
-                                        class="col-span-2 px-2 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={variantChanges().ingredients?.[index()]?.unit || ""}
-                                        onInput={(e) => updateVariantIngredient(index(), "unit", e.currentTarget.value)}
-                                        placeholder="Unit"
-                                        class="col-span-2 px-2 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={variantChanges().ingredients?.[index()]?.ingredient || ""}
-                                        onInput={(e) => updateVariantIngredient(index(), "ingredient", e.currentTarget.value)}
-                                        placeholder="Override ingredient"
-                                        class="col-span-5 px-2 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50"
-                                      />
-                                      <input
-                                        type="text"
-                                        value={variantChanges().ingredients?.[index()]?.notes || ""}
-                                        onInput={(e) => updateVariantIngredient(index(), "notes", e.currentTarget.value)}
-                                        placeholder="Notes"
-                                        class="col-span-2 px-2 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50"
-                                      />
+                                       <input
+                                         type="text"
+                                         value={variantChanges().ingredients?.[index()]?.quantity || ""}
+                                         onInput={(e) => updateVariantIngredient(index(), "quantity", e.currentTarget.value)}
+                                         placeholder="Amount"
+                                         class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={variantChanges().ingredients?.[index()]?.unit || ""}
+                                         onInput={(e) => updateVariantIngredient(index(), "unit", e.currentTarget.value)}
+                                         placeholder="Unit"
+                                         class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={variantChanges().ingredients?.[index()]?.ingredient || ""}
+                                         onInput={(e) => updateVariantIngredient(index(), "ingredient", e.currentTarget.value)}
+                                         placeholder="Override ingredient"
+                                         class="col-span-5 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                       />
+                                       <input
+                                         type="text"
+                                         value={variantChanges().ingredients?.[index()]?.notes || ""}
+                                         onInput={(e) => updateVariantIngredient(index(), "notes", e.currentTarget.value)}
+                                         placeholder="Notes"
+                                         class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                       />
                                       <button
                                         onClick={() => clearVariantIngredient(index())}
-                                        class="col-span-1 px-2 py-2 text-gray-400 hover:bg-gray-50 rounded-lg text-sm"
+                                         class="col-span-1 px-2 py-2 text-gray-400 dark:text-stone-500 hover:bg-gray-50 dark:hover:bg-stone-600 rounded-lg text-sm"
                                         title="Reset to original"
                                       >
                                         ↺
@@ -1299,7 +1299,7 @@ export default function RecipeDetail() {
                     </div>
 
                     <div>
-                      <h2 class="text-xl font-semibold text-gray-900 mb-4">Instructions</h2>
+                       <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Instructions</h2>
                       <Show
                         when={isEditing()}
                         fallback={
@@ -1318,12 +1318,12 @@ export default function RecipeDetail() {
                                        when={isModified}
                                        fallback={
                                          // No variant for this item - show current instruction normally
-                                         <div class="text-gray-700">
-                                           <div class="flex items-start gap-2">
-                                             <span class="font-medium mr-2 text-emerald-600">{currentInstruction.step}.</span>
+                                          <div class="text-gray-700 dark:text-stone-300">
+                                            <div class="flex items-start gap-2">
+                                              <span class="font-medium mr-2 text-emerald-600 dark:text-emerald-400">{currentInstruction.step}.</span>
                                              <div class="flex-1">
                                                <p>{currentInstruction.instruction}</p>
-                                               <div class="flex gap-4 mt-1 text-sm text-gray-500">
+                                                <div class="flex gap-4 mt-1 text-sm text-gray-500 dark:text-stone-400">
                                                  {currentInstruction.time && <span>⏱️ {currentInstruction.time} min</span>}
                                                  {currentInstruction.temperature && <span>🌡️ {currentInstruction.temperature}</span>}
                                                </div>
@@ -1345,12 +1345,12 @@ export default function RecipeDetail() {
                                            </div>
                                          </div>
                                        </div>
-                                       <div class="text-gray-700 font-semibold">
-                                         <div class="flex items-start gap-2">
-                                           <span class="font-medium mr-2 text-emerald-600">{originalInstruction?.step}.</span>
+                                        <div class="text-gray-700 dark:text-stone-300 font-semibold">
+                                          <div class="flex items-start gap-2">
+                                            <span class="font-medium mr-2 text-emerald-600 dark:text-emerald-400">{originalInstruction?.step}.</span>
                                            <div class="flex-1">
-                                             <p class="text-emerald-700">{variantInstruction?.instruction}</p>
-                                             <div class="flex gap-4 mt-1 text-sm text-gray-500">
+                                              <p class="text-emerald-700 dark:text-emerald-400">{variantInstruction?.instruction}</p>
+                                              <div class="flex gap-4 mt-1 text-sm text-gray-500 dark:text-stone-400">
                                                {variantInstruction?.time && <span>⏱️ {variantInstruction.time} min</span>}
                                                {variantInstruction?.temperature && <span>🌡️ {variantInstruction.temperature}</span>}
                                              </div>
@@ -1372,27 +1372,27 @@ export default function RecipeDetail() {
                             <div class="space-y-3">
                               <For each={formData().instructions}>
                                 {(instruction, index) => (
-                                  <div class="border border-gray-200 rounded-lg p-4">
+                                   <div class="border border-gray-200 dark:border-stone-700 rounded-lg p-4">
                                     <div class="flex flex-wrap items-center gap-2 mb-3">
-                                      <span class="font-medium text-emerald-600">Step {instruction.step}</span>
+                                       <span class="font-medium text-emerald-600 dark:text-emerald-400">Step {instruction.step}</span>
                                       <input
                                         type="number"
                                         name={`instruction-${index()}-time`}
                                         value={instruction.time || ""}
                                         placeholder="Time (min)"
-                                        class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                         class="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
                                       <input
                                         type="text"
                                         name={`instruction-${index()}-temperature`}
                                         value={instruction.temperature || ""}
                                         placeholder="Temp"
-                                        class="w-16 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                                         class="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
                                       <button
                                         type="button"
                                         onClick={() => removeInstruction(index())}
-                                        class="ml-auto px-2 py-1 text-red-600 hover:bg-red-50 rounded text-sm"
+                                         class="ml-auto px-2 py-1 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 rounded text-sm"
                                       >
                                         ✕
                                       </button>
@@ -1401,18 +1401,18 @@ export default function RecipeDetail() {
                                       name={`instruction-${index()}-instruction`}
                                       value={instruction.instruction}
                                       placeholder="Enter instruction"
-                                      class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none"
+                                       class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       rows="3"
                                     />
                                   </div>
                                 )}
                               </For>
-                              <button
-                                onClick={addInstruction}
-                                class="text-emerald-600 hover:text-emerald-700 font-medium text-sm"
-                              >
-                                + Add instruction
-                              </button>
+                               <button
+                                 onClick={addInstruction}
+                                 class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 font-medium text-sm"
+                               >
+                                 + Add instruction
+                               </button>
                             </div>
                           }
                         >
@@ -1424,9 +1424,9 @@ export default function RecipeDetail() {
                                 const variantInstruction = variantInstructions[index()];
                                 
                                 return (
-                                  <div class="space-y-2 p-4 border border-gray-200 rounded-lg">
-                                    <div class="text-sm text-gray-600">
-                                      <strong>Original Step {originalInstruction.step}:</strong>{" "}
+                                   <div class="space-y-2 p-4 border border-gray-200 dark:border-stone-700 rounded-lg">
+                                     <div class="text-sm text-gray-600 dark:text-stone-400">
+                                       <strong>Original Step {originalInstruction.step}:</strong>{" "}
                                       {originalInstruction.instruction}
                                       <div class="flex gap-4 mt-1 text-xs">
                                         {originalInstruction.time && <span>⏱️ {originalInstruction.time} min</span>}
@@ -1436,24 +1436,24 @@ export default function RecipeDetail() {
 
                                     <div class="space-y-2">
                                       <div class="flex flex-wrap items-center gap-2">
-                                        <span class="font-medium text-emerald-600">Variant Step {originalInstruction.step}</span>
+                                         <span class="font-medium text-emerald-600 dark:text-emerald-400">Variant Step {originalInstruction.step}</span>
                                         <input
                                           type="number"
                                           value={variantChanges().instructions?.[index()]?.time || ""}
                                           onInput={(e) => updateVariantInstruction(index(), "time", parseInt(e.currentTarget.value) || undefined)}
                                           placeholder="Time (min)"
-                                          class="w-20 px-2 py-1 text-sm border border-emerald-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50"
+                                           class="w-20 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
                                         <input
                                           type="text"
                                           value={variantChanges().instructions?.[index()]?.temperature || ""}
                                           onInput={(e) => updateVariantInstruction(index(), "temperature", e.currentTarget.value)}
                                           placeholder="Temp"
-                                          class="w-16 px-2 py-1 text-sm border border-emerald-300 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50"
+                                           class="w-16 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
                                         <button
                                           onClick={() => clearVariantInstruction(index())}
-                                          class="ml-auto px-2 py-1 text-gray-400 hover:bg-gray-50 rounded text-sm"
+                                           class="ml-auto px-2 py-1 text-gray-400 dark:text-stone-500 hover:bg-gray-50 dark:hover:bg-stone-600 rounded text-sm"
                                           title="Reset to original"
                                         >
                                           ↺
@@ -1463,7 +1463,7 @@ export default function RecipeDetail() {
                                         value={variantChanges().instructions?.[index()]?.instruction || ""}
                                         onInput={(e) => updateVariantInstruction(index(), "instruction", e.currentTarget.value)}
                                         placeholder="Override instruction"
-                                        class="w-full px-3 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-emerald-50"
+                                         class="w-full px-3 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         rows="3"
                                       />
                                     </div>
@@ -1488,22 +1488,22 @@ export default function RecipeDetail() {
                   </Show>
 
                   <Show when={isEditing()}>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Image URL
-                      </label>
-                      <input
-                        type="url"
-                        value={formData().imageUrl || ""}
-                        onInput={(e) => setFormData({ ...formData(), imageUrl: e.currentTarget.value })}
-                        placeholder="https://example.com/image.jpg"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
+                     <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
+                       <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                         Image URL
+                       </label>
+                       <input
+                         type="url"
+                         value={formData().imageUrl || ""}
+                         onInput={(e) => setFormData({ ...formData(), imageUrl: e.currentTarget.value })}
+                         placeholder="https://example.com/image.jpg"
+                         class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                       />
                     </div>
                   </Show>
 
-                  <div class="bg-gray-50 rounded-lg p-4 space-y-4">
-                    <h3 class="font-semibold text-gray-900">Recipe Details</h3>
+                   <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4 space-y-4">
+                     <h3 class="font-semibold text-gray-900 dark:text-stone-100">Recipe Details</h3>
                     
                     <Show
                       when={isEditing()}
@@ -1511,11 +1511,11 @@ export default function RecipeDetail() {
                         <div class="space-y-2 text-sm">
                            <Show when={formData().servings}>
                              <div class="flex justify-between">
-                               <span class="text-gray-600">Servings:</span>
-                               <span class="font-medium">
-                                 {Math.round((formData().servings || 0) * recipeMultiplier())}
+                                <span class="text-gray-600 dark:text-stone-400">Servings:</span>
+                                <span class="font-medium text-gray-900 dark:text-stone-100">
+                                  {Math.round((formData().servings || 0) * recipeMultiplier())}
                                  <Show when={recipeMultiplier() !== 1}>
-                                   <span class="text-xs text-gray-500 ml-1">
+                                    <span class="text-xs text-gray-500 dark:text-stone-400 ml-1">
                                      (originally {formData().servings})
                                    </span>
                                  </Show>
@@ -1524,36 +1524,36 @@ export default function RecipeDetail() {
                            </Show>
                           <Show when={formData().prepTime}>
                             <div class="flex justify-between">
-                              <span class="text-gray-600">Prep Time:</span>
-                              <span class="font-medium">{formatTime(formData().prepTime)}</span>
+                               <span class="text-gray-600 dark:text-stone-400">Prep Time:</span>
+                               <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData().prepTime)}</span>
                             </div>
                           </Show>
                           <Show when={formData().cookTime}>
                             <div class="flex justify-between">
-                              <span class="text-gray-600">Cook Time:</span>
-                              <span class="font-medium">{formatTime(formData().cookTime)}</span>
+                               <span class="text-gray-600 dark:text-stone-400">Cook Time:</span>
+                               <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData().cookTime)}</span>
                             </div>
                           </Show>
                           <Show when={formData().difficulty}>
                             <div class="flex justify-between">
-                              <span class="text-gray-600">Difficulty:</span>
-                              <span class="font-medium">{formData().difficulty}</span>
+                               <span class="text-gray-600 dark:text-stone-400">Difficulty:</span>
+                               <span class="font-medium text-gray-900 dark:text-stone-100">{formData().difficulty}</span>
                             </div>
                           </Show>
                           <Show when={formData().cuisine}>
                             <div class="flex justify-between">
-                              <span class="text-gray-600">Cuisine:</span>
-                              <span class="font-medium">{formData().cuisine}</span>
+                               <span class="text-gray-600 dark:text-stone-400">Cuisine:</span>
+                               <span class="font-medium text-gray-900 dark:text-stone-100">{formData().cuisine}</span>
                             </div>
                           </Show>
                         </div>
                       }
                     >
                       <div class="grid grid-cols-2 gap-3">
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">
-                            Servings
-                          </label>
+                         <div>
+                           <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
+                             Servings
+                           </label>
                           <Show 
                             when={editingVariantId()}
                             fallback={
@@ -1561,59 +1561,59 @@ export default function RecipeDetail() {
                                 type="number"
                                 value={formData().servings || ""}
                                 onInput={(e) => setFormData({ ...formData(), servings: parseInt(e.currentTarget.value) || undefined })}
-                                class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                                 class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                               />
                             }
                           >
                             <div class="space-y-2">
-                              <div class="px-2 py-2 text-sm bg-gray-100 rounded border">
-                                <span class="text-gray-600">Original: </span>
-                                <span class="font-medium">{recipe()?.servings || "Not set"}</span>
+                               <div class="px-2 py-2 text-sm bg-gray-100 dark:bg-stone-700 rounded border border-gray-200 dark:border-stone-600">
+                                 <span class="text-gray-600 dark:text-stone-400">Original: </span>
+                                 <span class="font-medium text-gray-900 dark:text-stone-100">{recipe()?.servings || "Not set"}</span>
                               </div>
                               <input
                                 type="number"
                                 value={variantChanges().servings || ""}
                                 onInput={(e) => setVariantChanges({ ...variantChanges(), servings: parseInt(e.currentTarget.value) || undefined })}
                                 placeholder="Override with variant value"
-                                class="w-full px-2 py-2 text-sm border border-emerald-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50"
+                                 class="w-full px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                               />
                             </div>
                           </Show>
                         </div>
                         
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">
-                            Prep (min)
-                          </label>
-                          <input
-                            type="number"
-                            value={formData().prepTime || ""}
-                            onInput={(e) => setFormData({ ...formData(), prepTime: parseInt(e.currentTarget.value) || undefined })}
-                            class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
+                         <div>
+                           <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
+                             Prep (min)
+                           </label>
+                           <input
+                             type="number"
+                             value={formData().prepTime || ""}
+                             onInput={(e) => setFormData({ ...formData(), prepTime: parseInt(e.currentTarget.value) || undefined })}
+                             class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
+                           />
                         </div>
                         
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">
-                            Cook (min)
-                          </label>
-                          <input
-                            type="number"
-                            value={formData().cookTime || ""}
-                            onInput={(e) => setFormData({ ...formData(), cookTime: parseInt(e.currentTarget.value) || undefined })}
-                            class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
+                         <div>
+                           <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
+                             Cook (min)
+                           </label>
+                           <input
+                             type="number"
+                             value={formData().cookTime || ""}
+                             onInput={(e) => setFormData({ ...formData(), cookTime: parseInt(e.currentTarget.value) || undefined })}
+                             class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
+                           />
                         </div>
                         
-                        <div>
-                          <label class="block text-xs font-medium text-gray-700 mb-1">
-                            Difficulty
-                          </label>
-                          <select
-                            value={formData().difficulty || ""}
-                            onChange={(e) => setFormData({ ...formData(), difficulty: e.currentTarget.value || undefined })}
-                            class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          >
+                         <div>
+                           <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
+                             Difficulty
+                           </label>
+                           <select
+                             value={formData().difficulty || ""}
+                             onChange={(e) => setFormData({ ...formData(), difficulty: e.currentTarget.value || undefined })}
+                             class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
+                           >
                             <option value="">Select</option>
                             <option value="Easy">Easy</option>
                             <option value="Medium">Medium</option>
@@ -1621,24 +1621,24 @@ export default function RecipeDetail() {
                           </select>
                         </div>
                         
-                        <div class="col-span-2">
-                          <label class="block text-xs font-medium text-gray-700 mb-1">
-                            Cuisine
-                          </label>
-                          <input
-                            type="text"
-                            value={formData().cuisine || ""}
-                            onInput={(e) => setFormData({ ...formData(), cuisine: e.currentTarget.value || undefined })}
-                            placeholder="e.g., Italian, Mexican, Asian"
-                            class="w-full px-2 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                          />
+                         <div class="col-span-2">
+                           <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
+                             Cuisine
+                           </label>
+                           <input
+                             type="text"
+                             value={formData().cuisine || ""}
+                             onInput={(e) => setFormData({ ...formData(), cuisine: e.currentTarget.value || undefined })}
+                             placeholder="e.g., Italian, Mexican, Asian"
+                             class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                           />
                         </div>
                       </div>
                     </Show>
                   </div>
 
-                  <div class="bg-gray-50 rounded-lg p-4">
-                    <h3 class="font-semibold text-gray-900 mb-3">Tags</h3>
+                   <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
+                     <h3 class="font-semibold text-gray-900 dark:text-stone-100 mb-3">Tags</h3>
                     
                     <Show when={isEditing()}>
                       <div class="mb-3">
@@ -1648,7 +1648,7 @@ export default function RecipeDetail() {
                             value={newTagName()}
                             onInput={(e) => setNewTagName(e.currentTarget.value)}
                             placeholder="Create new tag"
-                            class="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                             class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                             onKeyPress={(e) => {
                               if (e.key === "Enter") {
                                 e.preventDefault();
@@ -1672,7 +1672,7 @@ export default function RecipeDetail() {
                       fallback={
                         <Show 
                           when={formData().tags && formData().tags.length > 0}
-                          fallback={<p class="text-sm text-gray-500 italic">No tags assigned</p>}
+                          fallback={                           <p class="text-sm text-gray-500 dark:text-stone-400 italic">No tags assigned</p>}
                         >
                           <div class="flex flex-wrap gap-2">
                             <For each={formData().tags?.filter(tag => tag && tag.id && tag.name) || []}>
@@ -1691,7 +1691,7 @@ export default function RecipeDetail() {
                     >
                       <Show 
                         when={tags()}
-                        fallback={<p class="text-sm text-gray-500">Loading tags...</p>}
+                        fallback={                         <p class="text-sm text-gray-500 dark:text-stone-400">Loading tags...</p>}
                       >
                         <div class="flex flex-wrap gap-2">
                           <For each={tags()?.filter(tag => tag && tag.id && tag.name) || []}>
@@ -1703,7 +1703,7 @@ export default function RecipeDetail() {
                                   class={`px-2 py-1 rounded-full text-xs transition-colors ${
                                     isSelected()
                                       ? "text-white"
-                                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                      : "bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300 hover:bg-gray-300 dark:hover:bg-stone-500"
                                   }`}
                                   style={{ "background-color": isSelected() ? tag.color : undefined }}
                                 >
@@ -1719,13 +1719,13 @@ export default function RecipeDetail() {
                   </div>
 
                   <Show when={formData().sourceUrl && !isEditing()}>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <h3 class="font-semibold text-gray-900 mb-2">Source</h3>
+                     <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
+                       <h3 class="font-semibold text-gray-900 dark:text-stone-100 mb-2">Source</h3>
                       <a
                         href={formData().sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-emerald-600 hover:text-emerald-700 text-sm break-all"
+                         class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm break-all"
                       >
                         View Original Recipe ↗
                       </a>
@@ -1733,16 +1733,16 @@ export default function RecipeDetail() {
                   </Show>
 
                   <Show when={isEditing()}>
-                    <div class="bg-gray-50 rounded-lg p-4">
-                      <label class="block text-sm font-medium text-gray-700 mb-2">
-                        Source URL
-                      </label>
+                     <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
+                       <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                         Source URL
+                       </label>
                       <input
                         type="url"
                         value={formData().sourceUrl || ""}
                         onInput={(e) => setFormData({ ...formData(), sourceUrl: e.currentTarget.value || undefined })}
                         placeholder="https://example.com/recipe"
-                        class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                         class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                       />
                     </div>
                   </Show>
@@ -1755,8 +1755,8 @@ export default function RecipeDetail() {
         {/* Create New Variant Dialog */}
         <Show when={showCreateVariantDialog()}>
           <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-sm w-full p-6">
-              <h2 class="text-xl font-bold text-gray-900 mb-4">Create New Variant</h2>
+             <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-sm w-full p-6">
+               <h2 class="text-xl font-bold text-gray-900 dark:text-stone-100 mb-4">Create New Variant</h2>
               
               <div class="space-y-4">
                 <input
@@ -1764,7 +1764,7 @@ export default function RecipeDetail() {
                   placeholder="Variant name (e.g., Vegan Version)"
                   value={newVariantName()}
                   onInput={(e) => setNewVariantName(e.currentTarget.value)}
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                   class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                   onKeyPress={(e) => {
                     if (e.key === "Enter" && newVariantName().trim()) {
                       handleCreateVariant();
@@ -1785,7 +1785,7 @@ export default function RecipeDetail() {
                       setShowCreateVariantDialog(false);
                       setNewVariantName("");
                     }}
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                     class="px-4 py-2 bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 rounded-lg hover:bg-gray-400 dark:hover:bg-stone-500 focus:outline-none focus:ring-2 focus:ring-gray-500"
                   >
                     Cancel
                   </button>
@@ -1798,15 +1798,15 @@ export default function RecipeDetail() {
         {/* Fork Recipe Dialog */}
         <Show when={showForkDialog()}>
           <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-              <h2 class="text-xl font-bold text-gray-900 mb-4">Fork Recipe</h2>
-              <p class="text-gray-600 mb-4">
+             <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-md w-full p-6">
+               <h2 class="text-xl font-bold text-gray-900 dark:text-stone-100 mb-4">Fork Recipe</h2>
+               <p class="text-gray-600 dark:text-stone-400 mb-4">
                 This will create a copy of this recipe in your personal collection that you can edit independently.
               </p>
               
               <div class="space-y-4">
                 <div>
-                  <label for="forkTitle" class="block text-sm font-medium text-gray-700 mb-2">
+                   <label for="forkTitle" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                     Recipe Title
                   </label>
                   <input
@@ -1815,7 +1815,7 @@ export default function RecipeDetail() {
                     placeholder="Enter title for your copy"
                     value={forkTitle()}
                     onInput={(e) => setForkTitle(e.currentTarget.value)}
-                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                     class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                     onKeyPress={(e) => {
                       if (e.key === "Enter" && forkTitle().trim()) {
                         handleFork();
@@ -1838,7 +1838,7 @@ export default function RecipeDetail() {
                       setForkTitle("");
                     }}
                     disabled={isForking()}
-                    class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
+                     class="px-4 py-2 bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 rounded-lg hover:bg-gray-400 dark:hover:bg-stone-500 focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50"
                   >
                     Cancel
                   </button>

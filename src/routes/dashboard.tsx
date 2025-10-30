@@ -89,7 +89,7 @@ export default function Dashboard() {
       <select
         value={sortBy()}
         onChange={(e) => setSortBy(e.currentTarget.value)}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
       >
         <option value="createdAt">Sort by Date</option>
         <option value="title">Sort by Title</option>
@@ -99,7 +99,7 @@ export default function Dashboard() {
       <select
         value={sortOrder()}
         onChange={(e) => setSortOrder(e.currentTarget.value)}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
       >
         <option value="desc">Descending</option>
         <option value="asc">Ascending</option>
@@ -170,9 +170,9 @@ export default function Dashboard() {
                   placeholder="https://example.com/recipe"
                   value={scrapeUrl()}
                   onInput={(e) => setScrapeUrl(e.currentTarget.value)}
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                 />
-                <p class="text-xs text-gray-500 mt-1">
+                <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
                   Paste a URL from a recipe website to automatically extract the recipe
                 </p>
               </div>
@@ -205,7 +205,7 @@ export default function Dashboard() {
                     setScrapeUrl("");
                     setError("");
                   }}
-                  class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  class="px-4 py-2 bg-white dark:bg-stone-700 border border-gray-300 dark:border-stone-600 text-gray-700 dark:text-stone-100 rounded-lg hover:bg-gray-50 dark:hover:bg-stone-600 focus:outline-none focus:ring-2 focus:ring-gray-500 dark:focus:ring-stone-400"
                 >
                   Cancel
                 </button>

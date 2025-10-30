@@ -72,14 +72,14 @@ export default function Register() {
   }
 
   return (
-    <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center pt-16">
+    <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-stone-900 dark:to-stone-800 flex items-center justify-center pt-16">
       <Title>Sign Up - Recipe Curator</Title>
-      <div class="max-w-md w-full bg-white rounded-lg shadow-xl p-8">
-        <h1 class="text-3xl font-bold text-center text-gray-900 mb-8">Create Account</h1>
+      <div class="max-w-md w-full bg-white dark:bg-stone-800 rounded-lg shadow-xl p-8">
+        <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-stone-100 mb-8">Create Account</h1>
         
         <form onSubmit={handleSubmit} class="space-y-6">
           <div>
-            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="name" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
               Name (Optional)
             </label>
             <input
@@ -88,7 +88,7 @@ export default function Register() {
               value={name()}
               onInput={(e) => setName(e.currentTarget.value)}
               placeholder="John Doe"
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
             />
           </div>
 

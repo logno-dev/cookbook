@@ -4,6 +4,7 @@ import { MetaProvider } from "@solidjs/meta";
 import { Suspense, SuspenseList } from "solid-js";
 import { AuthProvider } from "./lib/auth-context";
 import { BreadcrumbProvider } from "./lib/breadcrumb-context";
+import { ThemeProvider } from "./lib/theme-context";
 import Nav from "./components/Nav";
 import ErrorNotification from "./components/Error";
 import { ConfirmModalProvider } from "./components/ConfirmModal";
@@ -17,21 +18,23 @@ export default function App() {
       root={props => (
         <MetaProvider>
           <AuthProvider>
-            <BreadcrumbProvider>
-              <ToastProvider>
-                <ConfirmModalProvider>
-                  <SuspenseList revealOrder="forwards" tail="collapsed">
-                    <Suspense fallback={<SkeletonNav />}>
-                      <Nav />
-                    </Suspense>
-                    <Suspense>
-                      {props.children}
-                    </Suspense>
-                  </SuspenseList>
-                  <ErrorNotification />
-                </ConfirmModalProvider>
-              </ToastProvider>
-            </BreadcrumbProvider>
+            <ThemeProvider>
+              <BreadcrumbProvider>
+                <ToastProvider>
+                  <ConfirmModalProvider>
+                    <SuspenseList revealOrder="forwards" tail="collapsed">
+                      <Suspense fallback={<SkeletonNav />}>
+                        <Nav />
+                      </Suspense>
+                      <Suspense>
+                        {props.children}
+                      </Suspense>
+                    </SuspenseList>
+                    <ErrorNotification />
+                  </ConfirmModalProvider>
+                </ToastProvider>
+              </BreadcrumbProvider>
+            </ThemeProvider>
           </AuthProvider>
         </MetaProvider>
       )}

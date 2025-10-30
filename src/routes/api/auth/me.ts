@@ -22,7 +22,28 @@ export async function GET(event: APIEvent) {
       });
     }
 
-    return new Response(JSON.stringify({ user }), {
+    // Debug logging
+    console.log('🔍 Auth check for user:', {
+      email: user.email,
+      isSuperAdmin: user.isSuperAdmin,
+      userObject: user
+    });
+
+    // Create response exactly like debug endpoint
+    const responseData = { 
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isSuperAdmin: user.isSuperAdmin
+      }
+    };
+    
+    const jsonString = JSON.stringify(responseData);
+    console.log('🔍 JSON response string:', jsonString);
+    console.log('🔍 Parsed back:', JSON.parse(jsonString));
+
+    return new Response(jsonString, {
       status: 200,
       headers: { 'Content-Type': 'application/json' }
     });

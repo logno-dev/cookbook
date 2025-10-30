@@ -5,6 +5,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  isSuperAdmin?: boolean;
 }
 
 interface AuthContextType {
@@ -27,6 +28,14 @@ export function AuthProvider(props: { children: JSX.Element }) {
   const [user, setUser] = createSignal<User | null>(null);
   const [loading, setLoading] = createSignal(true);
   const [hasCheckedAuth, setHasCheckedAuth] = createSignal(false);
+  
+  // Aggressive timeout to prevent hanging - set loading to false after 1 second regardless
+  setTimeout(() => {
+    if (loading()) {
+      console.warn('🚨 Emergency timeout: forcing loading to false after 1 second');
+      setLoading(false);
+    }
+  }, 1000);
 
   // Get cached auth status
   const getCachedAuth = (): User | null => {
@@ -73,20 +82,41 @@ export function AuthProvider(props: { children: JSX.Element }) {
     }
   };
 
+  // Dispatch auth state change event
+  const dispatchAuthChange = () => {
+    if (typeof window !== 'undefined') {
+      console.log('🔄 Dispatching auth-state-changed event');
+      window.dispatchEvent(new CustomEvent('auth-state-changed'));
+    }
+  };
+
   // Check auth status from server
   const checkAuthStatus = async () => {
     try {
+      console.log('🔍 Making API call to /api/auth/me...');
       const data = await api.checkAuth();
+      console.log('🔍 Auth context received user data:', {
+        rawData: data,
+        user: data.user,
+        isSuperAdmin: data.user?.isSuperAdmin,
+        type: typeof data.user?.isSuperAdmin,
+        allUserKeys: data.user ? Object.keys(data.user) : 'no user'
+      });
       setUser(data.user);
       setCachedAuth(data.user);
+      dispatchAuthChange();
     } catch (error) {
-      console.error('Failed to check auth status:', error);
+      console.log('⚠️ Auth check failed (likely not logged in):', error.message);
       setUser(null);
       setCachedAuth(null);
+      dispatchAuthChange();
     } finally {
+      console.log('✅ Auth check complete, setting loading to false');
       setLoading(false);
     }
   };
+
+
 
   // Force refresh auth status (used after login/logout)
   const refreshAuth = async () => {
@@ -109,34 +139,66 @@ export function AuthProvider(props: { children: JSX.Element }) {
       
       if (cachedAuth !== undefined) {
         // We have cached data (either user or null)
+        console.log('📦 Using cached auth data:', cachedAuth);
         setUser(cachedAuth);
         setLoading(false);
       } else {
-        // No cached data, check the server
-        checkAuthStatus();
+        // No cached data, assume user is not logged in and show login form quickly
+        console.log('🚫 No cached auth, defaulting to not logged in');
+        setUser(null);
+        setLoading(false);
+        
+        // Check the server in the background without blocking the UI
+        checkAuthStatus().catch(() => {
+          // Ignore errors - user can try to login if they want
+          console.log('Background auth check failed, but UI already showing');
+        });
       }
     }
   });
 
   const login = async (email: string, password: string) => {
-    const data = await api.login(email, password);
-    setUser(data.user);
-    setCachedAuth(data.user);
+    console.log('🔍 Auth context login attempt:', { email, passwordLength: password.length });
     
-    // Ensure loading is false after successful login
-    setLoading(false);
+    try {
+      // Clear any existing user state first
+      setUser(null);
+      
+      const data = await api.login(email, password);
+      console.log('✅ Auth context login successful:', data);
+      
+      if (!data || !data.user) {
+        throw new Error('Invalid response from login API');
+      }
+      
+      setUser(data.user);
+      setCachedAuth(data.user);
+      dispatchAuthChange();
+      
+      // Ensure loading is false after successful login
+      setLoading(false);
+      
+      return data;
+    } catch (error) {
+      console.error('❌ Auth context login failed:', error);
+      setUser(null);
+      setCachedAuth(null);
+      throw error;
+    }
   };
 
   const register = async (email: string, password: string, name?: string) => {
     const data = await api.register(email, password, name);
     setUser(data.user);
     setCachedAuth(data.user);
+    dispatchAuthChange();
   };
 
   const logout = async () => {
     await api.logout();
     setUser(null);
     clearAuthCache();
+    dispatchAuthChange();
   };
 
   return (

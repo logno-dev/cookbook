@@ -110,11 +110,11 @@ export default function CookbooksPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'bg-purple-100 text-purple-800';
-      case 'editor': return 'bg-blue-100 text-blue-800';
-      case 'contributor': return 'bg-green-100 text-green-800';
-      case 'reader': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'owner': return 'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200';
+      case 'editor': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+      case 'contributor': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      case 'reader': return 'bg-gray-100 text-gray-800 dark:bg-stone-700 dark:text-stone-200';
+      default: return 'bg-gray-100 text-gray-800 dark:bg-stone-700 dark:text-stone-200';
     }
   };
 
@@ -132,7 +132,7 @@ export default function CookbooksPage() {
       <Title>Cookbooks - Recipe Curator</Title>
       {/* Show skeleton while auth is loading or not mounted */}
       {authLoading() || !user() || !mounted() ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-6xl mx-auto px-4 py-8">
             <SkeletonPageHeader />
             <SkeletonCardGrid count={6} />
@@ -146,11 +146,11 @@ export default function CookbooksPage() {
         >
 
         <Show when={showCreateForm()}>
-          <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-            <h2 class="text-xl font-semibold mb-4">Create New Cookbook</h2>
+          <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Create New Cookbook</h2>
             <form onSubmit={handleCreateCookbook}>
               <div class="mb-4">
-                <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                <label for="title" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                   Title *
                 </label>
                 <input
@@ -158,19 +158,19 @@ export default function CookbooksPage() {
                   type="text"
                   value={title()}
                   onInput={(e) => setTitle(e.currentTarget.value)}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                   required
                 />
               </div>
               <div class="mb-4">
-                <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                <label for="description" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                   Description
                 </label>
                 <textarea
                   id="description"
                   value={description()}
                   onInput={(e) => setDescription(e.currentTarget.value)}
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                   rows="3"
                 />
               </div>
@@ -178,7 +178,7 @@ export default function CookbooksPage() {
                 <button
                   type="button"
                   onClick={() => setShowCreateForm(false)}
-                  class="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  class="px-4 py-2 text-gray-600 hover:text-gray-800 dark:text-stone-400 dark:hover:text-stone-200"
                 >
                   Cancel
                 </button>
@@ -200,7 +200,7 @@ export default function CookbooksPage() {
 
           <Show when={cookbooksStore.error()}>
             <div class="text-center py-8">
-              <div class="text-red-600">Failed to load cookbooks</div>
+              <div class="text-red-600 dark:text-red-400">Failed to load cookbooks</div>
             </div>
           </Show>
 
@@ -208,10 +208,10 @@ export default function CookbooksPage() {
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <For each={cookbooksStore.data()}>
               {(cookbook) => (
-                <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md hover:shadow-lg transition-shadow">
                   <div class="p-6">
                     <div class="flex items-start justify-between mb-4">
-                      <h3 class="text-lg font-semibold text-gray-900 truncate flex-1">
+                      <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 truncate flex-1">
                         {cookbook.title}
                       </h3>
                       <span class={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(cookbook.userRole)} ml-2 flex-shrink-0`}>
@@ -220,12 +220,12 @@ export default function CookbooksPage() {
                     </div>
                     
                     <Show when={cookbook.description}>
-                      <p class="text-gray-600 text-sm mb-4 line-clamp-3">
+                      <p class="text-gray-600 dark:text-stone-400 text-sm mb-4 line-clamp-3">
                         {cookbook.description}
                       </p>
                     </Show>
                     
-                    <div class="text-xs text-gray-500 mb-4">
+                    <div class="text-xs text-gray-500 dark:text-stone-500 mb-4">
                       <p>Members: {cookbook.members.length}</p>
                       <p>Created: {new Date(cookbook.createdAt).toLocaleDateString()}</p>
                     </div>

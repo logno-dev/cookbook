@@ -8,6 +8,7 @@ export interface User {
   id: string;
   email: string;
   name?: string;
+  isSuperAdmin?: boolean;
 }
 
 export interface CreateUserData {
@@ -47,27 +48,53 @@ export async function createUser(userData: CreateUserData): Promise<User> {
 }
 
 export async function authenticateUser(email: string, password: string): Promise<User | null> {
-  const [user] = await db.select({
+  console.log('🔍 authenticateUser called:', { email, passwordLength: password.length });
+  
+  const [userRecord] = await db.select({
     id: users.id,
     email: users.email,
     name: users.name,
     passwordHash: users.passwordHash,
+    isSuperAdmin: users.isSuperAdmin,
   }).from(users).where(eq(users.email, email)).limit(1);
 
-  if (!user) {
+  if (!userRecord) {
+    console.log('❌ No user found with email:', email);
     return null;
   }
 
-  const isValid = await verifyPassword(password, user.passwordHash);
+  console.log('✅ User found:', {
+    email: userRecord.email,
+    hasPassword: !!userRecord.passwordHash,
+    passwordHashStart: userRecord.passwordHash.substring(0, 10) + '...'
+  });
+
+  const isValid = await verifyPassword(password, userRecord.passwordHash);
+  console.log('🔍 Password verification result:', isValid);
+  
   if (!isValid) {
+    console.log('❌ Password verification failed');
     return null;
   }
 
-  return {
-    id: user.id,
-    email: user.email,
-    name: user.name,
+  const user = {
+    id: userRecord.id,
+    email: userRecord.email,
+    name: userRecord.name,
+    isSuperAdmin: Boolean(userRecord.isSuperAdmin),
   };
+
+  // Debug logging
+  console.log('🔍 authenticateUser result:', {
+    email: user.email,
+    isSuperAdmin: user.isSuperAdmin,
+    rawIsSuperAdmin: userRecord.isSuperAdmin,
+    type: typeof user.isSuperAdmin,
+    fullUser: user,
+    allKeys: Object.keys(user)
+  });
+
+  return user;
 }
 
 export async function createSession(userId: string): Promise<string> {
@@ -84,28 +111,63 @@ export async function createSession(userId: string): Promise<string> {
 }
 
 export async function validateSession(token: string): Promise<User | null> {
-  const [session] = await db.select({
-    userId: userSessions.userId,
-    expiresAt: userSessions.expiresAt,
-    user: {
+  console.log('🔍 validateSession called with token:', token.substring(0, 8) + '...');
+  
+  try {
+    const [session] = await db.select({
+      userId: userSessions.userId,
+      expiresAt: userSessions.expiresAt,
       id: users.id,
       email: users.email,
       name: users.name,
-    },
-  })
-  .from(userSessions)
-  .innerJoin(users, eq(userSessions.userId, users.id))
-  .where(and(
-    eq(userSessions.token, token),
-    gt(userSessions.expiresAt, new Date())
-  ))
-  .limit(1);
+      isSuperAdmin: users.isSuperAdmin,
+    })
+    .from(userSessions)
+    .innerJoin(users, eq(userSessions.userId, users.id))
+    .where(and(
+      eq(userSessions.token, token),
+      gt(userSessions.expiresAt, new Date())
+    ))
+    .limit(1);
 
-  if (!session) {
+    if (!session) {
+      console.log('❌ No session found for token:', token.substring(0, 8) + '...');
+      
+      // Debug: Check what tokens actually exist in Turso
+      try {
+        const allTokens = await db.select({ token: userSessions.token }).from(userSessions);
+        console.log('🔍 Available tokens in Turso DB:', allTokens.map(t => t.token.substring(0, 8) + '...'));
+        console.log('🔍 Total sessions in Turso:', allTokens.length);
+      } catch (debugError) {
+        console.log('❌ Error checking existing tokens:', debugError);
+      }
+      
+      return null;
+    }
+
+    const user = {
+      id: session.id,
+      email: session.email,
+      name: session.name,
+      isSuperAdmin: Boolean(session.isSuperAdmin),
+    };
+
+    // Debug logging
+    console.log('🔍 validateSession result:', {
+      email: user.email,
+      isSuperAdmin: user.isSuperAdmin,
+      rawIsSuperAdmin: session.isSuperAdmin,
+      rawType: typeof session.isSuperAdmin,
+      convertedType: typeof user.isSuperAdmin,
+      fullUser: user,
+      allKeys: Object.keys(user)
+    });
+
+    return user;
+  } catch (error) {
+    console.error('❌ Database error during session validation:', error);
     return null;
   }
-
-  return session.user;
 }
 
 export async function deleteSession(token: string): Promise<void> {

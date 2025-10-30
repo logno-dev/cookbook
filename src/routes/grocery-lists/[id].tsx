@@ -565,8 +565,8 @@ export default function GroceryListPage() {
             {/* Main Content */}
             <div class="lg:col-span-2 space-y-6">
               {/* Add Item Form */}
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h2 class="text-lg font-semibold text-gray-900 mb-4">Add Item</h2>
+              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Add Item</h2>
                 <form onSubmit={handleAddItem}>
                   <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div class="md:col-span-2">
@@ -575,32 +575,32 @@ export default function GroceryListPage() {
                         placeholder="Item name"
                         value={newItemName()}
                         onInput={(e) => setNewItemName(e.target.value)}
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                         class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                         required
                       />
                     </div>
                     <div class="grid grid-cols-2 gap-2">
-                      <input
-                        type="text"
-                        placeholder="Qty"
-                        value={newItemQuantity()}
-                        onInput={(e) => setNewItemQuantity(e.target.value)}
-                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Unit"
-                        value={newItemUnit()}
-                        onInput={(e) => setNewItemUnit(e.target.value)}
-                        class="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
+                       <input
+                         type="text"
+                         placeholder="Qty"
+                         value={newItemQuantity()}
+                         onInput={(e) => setNewItemQuantity(e.target.value)}
+                         class="px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                       />
+                       <input
+                         type="text"
+                         placeholder="Unit"
+                         value={newItemUnit()}
+                         onInput={(e) => setNewItemUnit(e.target.value)}
+                         class="px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                       />
                     </div>
                   </div>
                   <div class="mt-4">
                     <button
                       type="submit"
                       disabled={isAddingItem() || !newItemName().trim()}
-                      class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+                       class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 disabled:opacity-50"
                     >
                       {isAddingItem() ? 'Adding...' : 'Add Item'}
                     </button>
@@ -609,15 +609,15 @@ export default function GroceryListPage() {
               </div>
 
               {/* Shopping List */}
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
-                  <h2 class="text-lg font-semibold text-gray-900">Shopping List</h2>
-                  <p class="text-sm text-gray-500 mt-1">
+              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700">
+                <div class="p-6 border-b border-gray-200 dark:border-stone-700">
+                  <h2 class="text-lg font-semibold text-gray-900 dark:text-stone-100">Shopping List</h2>
+                  <p class="text-sm text-gray-500 dark:text-stone-400 mt-1">
                     {pendingItems().length} items to buy, {completedItems().length} completed
                   </p>
                 </div>
 
-                <div class="divide-y divide-gray-200">
+                 <div class="divide-y divide-gray-200 dark:divide-stone-700">
                   {/* Pending Items */}
                   <For each={pendingItems()}>
                     {(item) => (
@@ -627,28 +627,28 @@ export default function GroceryListPage() {
                           fallback={
                             <div class="flex items-center justify-between">
                               <div class="flex items-center space-x-3">
-                                <input
-                                  type="checkbox"
-                                  checked={item.isCompleted}
-                                  onChange={(e) => handleToggleItem(item.id, e.target.checked)}
-                                  class="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                                />
+                               <input
+                                 type="checkbox"
+                                 checked={item.isCompleted}
+                                 onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                                 class="h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500"
+                               />
                                 <div class="cursor-pointer" onClick={() => handleEditItem(item)}>
-                                  <span class="font-medium text-gray-900 hover:text-blue-600">{item.name}</span>
+                                   <span class="font-medium text-gray-900 dark:text-stone-100 hover:text-emerald-600 dark:hover:text-emerald-400">{item.name}</span>
                                   <Show when={item.quantity || item.unit}>
-                                    <span class="text-gray-500 ml-2">
+                                     <span class="text-gray-500 dark:text-stone-400 ml-2">
                                       {formatQuantity(item.quantity)} {item.unit || ''}
                                     </span>
                                   </Show>
                                   <Show when={item.notes}>
-                                    <div class="text-sm text-gray-500">{item.notes}</div>
+                                     <div class="text-sm text-gray-500 dark:text-stone-400">{item.notes}</div>
                                   </Show>
                                 </div>
                               </div>
                               <div class="flex items-center space-x-2">
                                 <button
                                   onClick={() => handleEditItem(item)}
-                                  class="opacity-0 group-hover:opacity-100 text-blue-500 hover:text-blue-700 transition-opacity"
+                                   class="opacity-0 group-hover:opacity-100 text-emerald-500 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-opacity"
                                   title="Edit item"
                                 >
                                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -657,7 +657,7 @@ export default function GroceryListPage() {
                                 </button>
                                 <button
                                   onClick={() => handleDeleteItem(item.id)}
-                                  class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"
+                                   class="opacity-0 group-hover:opacity-100 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-opacity"
                                   title="Delete item"
                                 >
                                   <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -682,33 +682,33 @@ export default function GroceryListPage() {
                                   type="text"
                                   value={editingValues().name}
                                   onInput={(e) => setEditingValues(prev => ({ ...prev, name: e.target.value }))}
-                                  class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                   class="w-full px-2 py-1 border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                   placeholder="Item name"
                                 />
                               </div>
                             </div>
                             <div class="ml-7 grid grid-cols-2 gap-2">
-                              <input
-                                type="text"
-                                value={editingValues().quantity}
-                                onInput={(e) => setEditingValues(prev => ({ ...prev, quantity: e.target.value }))}
-                                class="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Quantity"
-                              />
-                              <input
-                                type="text"
-                                value={editingValues().unit}
-                                onInput={(e) => setEditingValues(prev => ({ ...prev, unit: e.target.value }))}
-                                class="px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                placeholder="Unit"
-                              />
+                               <input
+                                 type="text"
+                                 value={editingValues().quantity}
+                                 onInput={(e) => setEditingValues(prev => ({ ...prev, quantity: e.target.value }))}
+                                 class="px-2 py-1 border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                 placeholder="Quantity"
+                               />
+                               <input
+                                 type="text"
+                                 value={editingValues().unit}
+                                 onInput={(e) => setEditingValues(prev => ({ ...prev, unit: e.target.value }))}
+                                 class="px-2 py-1 border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                 placeholder="Unit"
+                               />
                             </div>
                             <div class="ml-7">
                               <input
                                 type="text"
                                 value={editingValues().notes}
                                 onInput={(e) => setEditingValues(prev => ({ ...prev, notes: e.target.value }))}
-                                class="w-full px-2 py-1 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                 class="w-full px-2 py-1 border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                 placeholder="Notes (optional)"
                               />
                             </div>
@@ -721,7 +721,7 @@ export default function GroceryListPage() {
                               </button>
                               <button
                                 onClick={handleCancelEdit}
-                                class="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400"
+                                 class="px-3 py-1 bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 rounded text-sm hover:bg-gray-400 dark:hover:bg-stone-500"
                               >
                                 Cancel
                               </button>
@@ -734,24 +734,24 @@ export default function GroceryListPage() {
 
                   {/* Completed Items */}
                   <Show when={completedItems().length > 0}>
-                    <div class="bg-gray-50">
-                      <div class="p-4 border-b border-gray-200">
-                        <h3 class="text-sm font-medium text-gray-700">Completed ({completedItems().length})</h3>
-                      </div>
+                     <div class="bg-gray-50 dark:bg-stone-800">
+                       <div class="p-4 border-b border-gray-200 dark:border-stone-700">
+                         <h3 class="text-sm font-medium text-gray-700 dark:text-stone-300">Completed ({completedItems().length})</h3>
+                       </div>
                       <For each={completedItems()}>
                         {(item) => (
                           <div class="p-4 flex items-center justify-between group opacity-60">
                             <div class="flex items-center space-x-3">
-                              <input
-                                type="checkbox"
-                                checked={item.isCompleted}
-                                onChange={(e) => handleToggleItem(item.id, e.target.checked)}
-                                class="h-4 w-4 text-blue-600 rounded focus:ring-blue-500"
-                              />
-                              <div>
-                                <span class="font-medium text-gray-900 line-through">{item.name}</span>
+                               <input
+                                 type="checkbox"
+                                 checked={item.isCompleted}
+                                 onChange={(e) => handleToggleItem(item.id, e.target.checked)}
+                                 class="h-4 w-4 text-emerald-600 rounded focus:ring-emerald-500"
+                               />
+                               <div>
+                                 <span class="font-medium text-gray-900 dark:text-stone-100 line-through">{item.name}</span>
                                 <Show when={item.quantity || item.unit}>
-                                  <span class="text-gray-500 ml-2">
+                                   <span class="text-gray-500 dark:text-stone-400 ml-2">
                                     {formatQuantity(item.quantity)} {item.unit || ''}
                                   </span>
                                 </Show>
@@ -759,7 +759,7 @@ export default function GroceryListPage() {
                             </div>
                             <button
                               onClick={() => handleDeleteItem(item.id)}
-                              class="opacity-0 group-hover:opacity-100 text-red-500 hover:text-red-700 transition-opacity"
+                               class="opacity-0 group-hover:opacity-100 text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 transition-opacity"
                             >
                               <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
@@ -773,7 +773,7 @@ export default function GroceryListPage() {
 
                   <Show when={items().length === 0}>
                     <div class="p-8 text-center">
-                      <p class="text-gray-500">No items yet. Add some items or recipes to get started!</p>
+                       <p class="text-gray-500 dark:text-stone-400">No items yet. Add some items or recipes to get started!</p>
                     </div>
                   </Show>
                 </div>
@@ -782,11 +782,11 @@ export default function GroceryListPage() {
             {/* Sidebar */}
             <div class="lg:col-span-1 space-y-6">
               {/* Add Recipe */}
-              <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Recipe</h3>
+               <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
+                 <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h3>
                 <button
                   onClick={() => setShowRecipeModal(true)}
-                  class="w-full px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700"
+                   class="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
                 >
                   Add Recipe Ingredients
                 </button>
@@ -794,19 +794,19 @@ export default function GroceryListPage() {
 
               {/* Added Recipes */}
               <Show when={recipes().length > 0}>
-                <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h3 class="text-lg font-semibold text-gray-900 mb-4">Added Recipes</h3>
+                 <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
+                   <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Added Recipes</h3>
                   <div class="space-y-3">
                     <For each={recipes()}>
                       {(recipe) => (
-                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-md">
-                          <div>
-                            <div class="font-medium text-gray-900">{recipe.recipe?.title}</div>
-                            <div class="text-sm text-gray-500">×{recipe.multiplier}</div>
-                          </div>
+                         <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-stone-700 rounded-md">
+                           <div>
+                             <div class="font-medium text-gray-900 dark:text-stone-100">{recipe.recipe?.title}</div>
+                             <div class="text-sm text-gray-500 dark:text-stone-400">×{recipe.multiplier}</div>
+                           </div>
                           <button
                             onClick={() => handleRemoveRecipe(recipe.id)}
-                            class="text-red-500 hover:text-red-700"
+                             class="text-red-500 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300"
                           >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -835,12 +835,12 @@ export default function GroceryListPage() {
           {/* Ingredient Matching Modal */}
           <Show when={showMatchingModal()}>
             <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div class="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Smart Ingredient Matching</h3>
-                <p class="text-sm text-gray-600 mb-4">
+               <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+                 <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Smart Ingredient Matching</h3>
+                 <p class="text-sm text-gray-600 dark:text-stone-400 mb-4">
                   We found some ingredients that might match existing items. Choose how to handle each:
                   <Show when={pendingExactMatches().length > 0 || pendingNewItems().length > 0}>
-                    <span class="block mt-1 text-blue-600 text-xs">
+                     <span class="block mt-1 text-emerald-600 dark:text-emerald-400 text-xs">
                       Note: {pendingExactMatches().length} exact matches and {pendingNewItems().length} new ingredients will be processed automatically after this review.
                     </span>
                   </Show>
@@ -849,21 +849,21 @@ export default function GroceryListPage() {
                   {/* Show only partial matches that need user confirmation */}
                   <For each={pendingMatches()}>
                     {(match, index) => (
-                       <div class="border border-gray-200 rounded-md p-4">
-                          <div class="font-medium text-gray-900 mb-2">
+                        <div class="border border-gray-200 dark:border-stone-700 rounded-md p-4">
+                           <div class="font-medium text-gray-900 dark:text-stone-100 mb-2">
                             New: {match.ingredient.ingredient}
                           </div>
                           
                           {/* Show matching ingredients from different recipes */}
                           <Show when={match.recipes && match.recipes.length > 0}>
                             <div class="mb-3">
-                              <div class="text-xs text-gray-500 mb-1">Ingredients to combine:</div>
-                              <div class="text-sm text-gray-700 space-y-1">
+                               <div class="text-xs text-gray-500 dark:text-stone-400 mb-1">Ingredients to combine:</div>
+                               <div class="text-sm text-gray-700 dark:text-stone-300 space-y-1">
                                 <For each={match.recipes}>
                                   {(recipe) => (
                                     <div class="flex justify-between">
                                       <span>• {recipe.ingredient}</span>
-                                      <span class="text-gray-500 text-xs">from {recipe.title}</span>
+                                       <span class="text-gray-500 dark:text-stone-400 text-xs">from {recipe.title}</span>
                                     </div>
                                   )}
                                 </For>
@@ -873,10 +873,10 @@ export default function GroceryListPage() {
                           
                           {/* Show existing item info only if this is a match with existing grocery list item */}
                           <Show when={match.existingItem}>
-                            <div class="text-sm text-gray-600 mb-3">
+                             <div class="text-sm text-gray-600 dark:text-stone-400 mb-3">
                               Existing: {match.existingItem?.name}
                               ({formatQuantity(match.existingItem?.quantity)} {match.existingItem?.unit || ''})
-                              <span class="ml-2 text-yellow-600">
+                               <span class="ml-2 text-yellow-600 dark:text-yellow-400">
                                 {Math.round(match.confidence * 100)}% match
                               </span>
                             </div>
@@ -884,7 +884,7 @@ export default function GroceryListPage() {
                           
                           {/* Show recipe-to-recipe match indicator */}
                           <Show when={!match.existingItem && match.recipes && match.recipes.length > 1}>
-                            <div class="text-sm text-orange-600 mb-3">
+                             <div class="text-sm text-orange-600 dark:text-orange-400 mb-3">
                               ⚠️ Multiple recipes contain similar ingredients
                             </div>
                           </Show>
@@ -893,7 +893,7 @@ export default function GroceryListPage() {
                              onClick={() => setMatchDecision(index(), 'merge')}
                              class={`px-3 py-1 text-sm rounded ${matchDecisions().get(index()) === 'merge'
                                ? 'bg-green-600 text-white'
-                               : 'bg-green-100 text-green-800 hover:bg-green-200'
+                                 : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
                                }`}
                            >
                              {match.existingItem ? 'Merge Quantities' : 'Combine Into One'}
@@ -902,7 +902,7 @@ export default function GroceryListPage() {
                              onClick={() => setMatchDecision(index(), 'separate')}
                              class={`px-3 py-1 text-sm rounded ${matchDecisions().get(index()) === 'separate'
                                ? 'bg-blue-600 text-white'
-                               : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
+                                : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
                                }`}
                            >
                              {match.existingItem ? 'Keep Separate' : 'Add Separately'}
@@ -911,7 +911,7 @@ export default function GroceryListPage() {
                             onClick={() => setMatchDecision(index(), 'skip')}
                             class={`px-3 py-1 text-sm rounded ${matchDecisions().get(index()) === 'skip'
                               ? 'bg-gray-600 text-white'
-                              : 'bg-gray-100 text-gray-800 hover:bg-gray-200'
+                               : 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300 hover:bg-gray-200 dark:hover:bg-stone-600'
                               }`}
                           >
                             Skip
@@ -922,7 +922,7 @@ export default function GroceryListPage() {
                   </For>
                 </div>
                 <div class="flex justify-between items-center mt-6">
-                  <div class="text-sm text-gray-600">
+                   <div class="text-sm text-gray-600 dark:text-stone-400">
                     {allMatchesResolved() 
                       ? "✓ All partial matches addressed" 
                       : `${Array.from(matchDecisions().values()).filter(action => action !== undefined).length} of ${pendingMatches().length} partial matches addressed`
@@ -938,7 +938,7 @@ export default function GroceryListPage() {
                         setPendingRecipeSelections([]);
                         setMatchDecisions(new Map());
                       }}
-                      class="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50"
+                       class="px-4 py-2 text-gray-700 dark:text-stone-300 border border-gray-300 dark:border-stone-600 rounded-md hover:bg-gray-50 dark:hover:bg-stone-700"
                     >
                       Cancel
                     </button>
@@ -946,9 +946,9 @@ export default function GroceryListPage() {
                       onClick={handleProcessMatches}
                       disabled={!allMatchesResolved()}
                       class={`px-4 py-2 rounded-md transition-colors ${
-                        allMatchesResolved()
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                         allMatchesResolved()
+                           ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                           : 'bg-gray-300 dark:bg-stone-600 text-gray-500 dark:text-stone-400 cursor-not-allowed'
                       }`}
                     >
                       Apply Choices
@@ -962,16 +962,16 @@ export default function GroceryListPage() {
           {/* Delete Confirmation Modal */}
           <Show when={showDeleteConfirm()}>
             <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
-                <h3 class="text-lg font-semibold text-gray-900 mb-4">Delete Grocery List</h3>
-                <p class="text-gray-600 mb-6">
+               <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-md mx-4">
+                 <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Delete Grocery List</h3>
+                 <p class="text-gray-600 dark:text-stone-400 mb-6">
                   Are you sure you want to delete "{groceryList()?.name}"? This action cannot be undone and will remove all items and recipes from this list.
                 </p>
                 <div class="flex justify-end space-x-3">
                   <button
                     onClick={() => setShowDeleteConfirm(false)}
                     disabled={isDeleting()}
-                    class="px-4 py-2 text-gray-700 border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                     class="px-4 py-2 text-gray-700 dark:text-stone-300 border border-gray-300 dark:border-stone-600 rounded-md hover:bg-gray-50 dark:hover:bg-stone-700 disabled:opacity-50"
                   >
                     Cancel
                   </button>

@@ -7,7 +7,15 @@ export async function POST(event: APIEvent) {
     const body = await event.request.json();
     const { email, password } = body;
 
+    console.log('🔍 Login API called:', {
+      email,
+      passwordLength: password?.length,
+      hasEmail: !!email,
+      hasPassword: !!password
+    });
+
     if (!email || !password) {
+      console.log('❌ Missing email or password');
       return new Response(JSON.stringify({ error: 'Email and password are required' }), {
         status: 400,
         headers: { 'Content-Type': 'application/json' }
@@ -17,11 +25,14 @@ export async function POST(event: APIEvent) {
     const user = await authenticateUser(email, password);
 
     if (!user) {
+      console.log('❌ Authentication failed for:', email);
       return new Response(JSON.stringify({ error: 'Invalid credentials' }), {
         status: 401,
         headers: { 'Content-Type': 'application/json' }
       });
     }
+
+    console.log('✅ Authentication successful for:', email);
 
     const sessionToken = await createSession(user.id);
 

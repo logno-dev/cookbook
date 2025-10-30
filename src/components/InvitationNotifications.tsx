@@ -90,10 +90,10 @@ export default function InvitationNotifications() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'editor': return 'bg-blue-100 text-blue-800';
-      case 'contributor': return 'bg-green-100 text-green-800';
-      case 'reader': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'editor': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+      case 'contributor': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'reader': return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
+      default: return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
     }
   };
 
@@ -118,55 +118,55 @@ export default function InvitationNotifications() {
       </button>
 
       <Show when={showInvitations()}>
-        <div class="absolute right-0 top-full mt-2 w-96 bg-white rounded-lg shadow-lg border border-gray-200 z-50">
-          <div class="p-4 border-b border-gray-200">
-            <h3 class="font-semibold text-gray-900">Cookbook Invitations</h3>
+        <div class="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-gray-200 dark:border-stone-600 z-50">
+          <div class="p-4 border-b border-gray-200 dark:border-stone-600">
+            <h3 class="font-semibold text-gray-900 dark:text-stone-100">Cookbook Invitations</h3>
           </div>
           
           <div class="max-h-96 overflow-y-auto">
             <Show when={invitations.loading}>
-              <div class="p-4 text-center text-gray-500">Loading invitations...</div>
+              <div class="p-4 text-center text-gray-500 dark:text-stone-400">Loading invitations...</div>
             </Show>
 
             <Show when={invitations.error}>
-              <div class="p-4 text-center text-red-600">
+              <div class="p-4 text-center text-red-600 dark:text-red-400">
                 <div class="text-sm">Failed to load invitations</div>
-                <div class="text-xs text-gray-500 mt-1">{invitations.error.message}</div>
+                <div class="text-xs text-gray-500 dark:text-stone-400 mt-1">{invitations.error.message}</div>
               </div>
             </Show>
 
             <Show when={invitations() && pendingCount() === 0}>
-              <div class="p-4 text-center text-gray-500">No pending invitations</div>
+              <div class="p-4 text-center text-gray-500 dark:text-stone-400">No pending invitations</div>
             </Show>
 
             <Show when={invitations() && pendingCount() > 0}>
               <For each={invitations()}>
                 {(invitation) => (
-                  <div class="p-4 border-b border-gray-100 last:border-b-0">
+                  <div class="p-4 border-b border-gray-100 dark:border-stone-700 last:border-b-0">
                     <div class="space-y-3">
                       <div>
-                        <div class="font-medium text-gray-900">{invitation.cookbook.title}</div>
-                        <div class="text-sm text-gray-600">
+                        <div class="font-medium text-gray-900 dark:text-stone-100">{invitation.cookbook.title}</div>
+                        <div class="text-sm text-gray-600 dark:text-stone-400">
                           Invited by {invitation.inviter.name || invitation.inviter.email}
                         </div>
                         <div class="flex items-center space-x-2 mt-1">
                           <span class={`px-2 py-1 text-xs font-medium rounded-full ${getRoleColor(invitation.role)}`}>
                             {invitation.role}
                           </span>
-                          <span class="text-xs text-gray-400">
+                          <span class="text-xs text-gray-400 dark:text-stone-500">
                             {new Date(invitation.createdAt).toLocaleDateString()}
                           </span>
                         </div>
                       </div>
 
                       <Show when={invitation.message}>
-                        <div class="text-sm text-gray-600 italic">
+                        <div class="text-sm text-gray-600 dark:text-stone-400 italic">
                           "{invitation.message}"
                         </div>
                       </Show>
 
                       <Show when={invitation.cookbook.description}>
-                        <div class="text-sm text-gray-500">
+                        <div class="text-sm text-gray-500 dark:text-stone-400">
                           {invitation.cookbook.description}
                         </div>
                       </Show>
@@ -182,7 +182,7 @@ export default function InvitationNotifications() {
                         <button
                           onClick={() => handleInvitationResponse(invitation.id, 'declined')}
                           disabled={isResponding() === invitation.id}
-                          class="flex-1 bg-gray-300 text-gray-700 py-2 px-3 rounded-md text-sm hover:bg-gray-400 disabled:opacity-50 transition-colors"
+                          class="flex-1 bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 py-2 px-3 rounded-md text-sm hover:bg-gray-400 dark:hover:bg-stone-500 disabled:opacity-50 transition-colors"
                         >
                           {isResponding() === invitation.id ? 'Declining...' : 'Decline'}
                         </button>

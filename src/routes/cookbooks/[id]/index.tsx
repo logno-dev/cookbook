@@ -214,31 +214,31 @@ function MemberRow(props: {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'bg-purple-100 text-purple-800';
-      case 'editor': return 'bg-blue-100 text-blue-800';
-      case 'contributor': return 'bg-green-100 text-green-800';
-      case 'reader': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'owner': return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
+      case 'editor': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+      case 'contributor': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'reader': return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
+      default: return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
     }
   };
 
   return (
-    <div class="flex justify-between items-center py-3 border-b border-gray-100 last:border-b-0">
+    <div class="flex justify-between items-center py-3 border-b border-gray-100 dark:border-stone-700 last:border-b-0">
       <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
-          <span class="text-sm font-medium text-gray-600">
+        <div class="w-10 h-10 bg-gray-200 dark:bg-stone-600 rounded-full flex items-center justify-center">
+          <span class="text-sm font-medium text-gray-600 dark:text-stone-300">
             {(props.member.user.name || props.member.user.email)[0].toUpperCase()}
           </span>
         </div>
         <div>
-          <div class="font-medium flex items-center space-x-2">
+          <div class="font-medium flex items-center space-x-2 text-gray-900 dark:text-stone-100">
             <span>{props.member.user.name || props.member.user.email}</span>
             <Show when={isSelf()}>
-              <span class="text-xs text-gray-500">(You)</span>
+              <span class="text-xs text-gray-500 dark:text-stone-400">(You)</span>
             </Show>
           </div>
-          <div class="text-sm text-gray-500">{props.member.user.email}</div>
-          <div class="text-xs text-gray-400">
+          <div class="text-sm text-gray-500 dark:text-stone-400">{props.member.user.email}</div>
+          <div class="text-xs text-gray-400 dark:text-stone-500">
             Joined {new Date(props.member.joinedAt).toLocaleDateString()}
           </div>
         </div>
@@ -252,7 +252,7 @@ function MemberRow(props: {
           <Show when={canEditRole()}>
             <button
               onClick={() => setIsEditing(true)}
-              class="text-gray-400 hover:text-gray-600 transition-colors"
+              class="text-gray-400 dark:text-stone-500 hover:text-gray-600 dark:hover:text-stone-300 transition-colors"
               title="Edit role"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -264,7 +264,7 @@ function MemberRow(props: {
             <button
               onClick={handleRemoveMember}
               disabled={isUpdating()}
-              class="text-red-400 hover:text-red-600 transition-colors disabled:opacity-50"
+              class="text-red-400 dark:text-red-500 hover:text-red-600 dark:hover:text-red-400 transition-colors disabled:opacity-50"
               title="Remove member"
             >
               <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
@@ -278,7 +278,7 @@ function MemberRow(props: {
           <select
             value={selectedRole()}
             onChange={(e) => setSelectedRole(e.currentTarget.value as 'editor' | 'contributor' | 'reader')}
-            class="text-xs border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-emerald-500"
+            class="text-xs border border-gray-300 dark:border-stone-600 rounded px-2 py-1 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-1 focus:ring-emerald-500"
           >
             <option value="reader">Reader</option>
             <option value="contributor">Contributor</option>
@@ -287,7 +287,7 @@ function MemberRow(props: {
           <button
             onClick={handleRoleUpdate}
             disabled={isUpdating()}
-            class="text-emerald-600 hover:text-emerald-700 disabled:opacity-50 text-xs"
+            class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 disabled:opacity-50 text-xs"
           >
             {isUpdating() ? '...' : 'Save'}
           </button>
@@ -296,7 +296,7 @@ function MemberRow(props: {
               setIsEditing(false);
               setSelectedRole(props.member.role);
             }}
-            class="text-gray-400 hover:text-gray-600 text-xs"
+            class="text-gray-400 dark:text-stone-500 hover:text-gray-600 dark:hover:text-stone-300 text-xs"
           >
             Cancel
           </button>
@@ -607,11 +607,11 @@ export default function CookbookDetailPage() {
 
   const getRoleColor = (role: string) => {
     switch (role) {
-      case 'owner': return 'bg-purple-100 text-purple-800';
-      case 'editor': return 'bg-blue-100 text-blue-800';
-      case 'contributor': return 'bg-green-100 text-green-800';
-      case 'reader': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'owner': return 'bg-purple-100 dark:bg-purple-900 text-purple-800 dark:text-purple-200';
+      case 'editor': return 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200';
+      case 'contributor': return 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200';
+      case 'reader': return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
+      default: return 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-300';
     }
   };
 
@@ -689,7 +689,7 @@ export default function CookbookDetailPage() {
       <Title>{cookbook()?.title || 'Loading...'} - Recipe Curator</Title>
       {/* Show skeleton while auth is loading */}
       {authLoading() || !user() || cookbook.loading ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-7xl mx-auto px-4 py-8">
             <SkeletonPageHeader />
             <SkeletonFilters />
@@ -707,7 +707,7 @@ export default function CookbookDetailPage() {
         >
 
                 {/* Search and Filters */}
-                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6 mb-8">
                   <div class="flex flex-col lg:flex-row gap-4 mb-6">
                     <div class="flex-1">
                       <input
@@ -715,7 +715,7 @@ export default function CookbookDetailPage() {
                         placeholder="Search recipes in this cookbook..."
                         value={searchQuery()}
                         onInput={(e) => setSearchQuery(e.currentTarget.value)}
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       />
                     </div>
                     
@@ -723,7 +723,7 @@ export default function CookbookDetailPage() {
                       <select
                         value={sortBy()}
                         onChange={(e) => setSortBy(e.currentTarget.value)}
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="addedAt">Sort by Date Added</option>
                         <option value="title">Sort by Title</option>
@@ -734,7 +734,7 @@ export default function CookbookDetailPage() {
                       <select
                         value={sortOrder()}
                         onChange={(e) => setSortOrder(e.currentTarget.value)}
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="desc">Descending</option>
                         <option value="asc">Ascending</option>
@@ -743,7 +743,7 @@ export default function CookbookDetailPage() {
                       <select
                         value={selectedDifficulty()}
                         onChange={(e) => setSelectedDifficulty(e.currentTarget.value)}
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="">All Difficulties</option>
                         <For each={getUniqueValues('difficulty')}>
@@ -754,7 +754,7 @@ export default function CookbookDetailPage() {
                       <select
                         value={selectedCuisine()}
                         onChange={(e) => setSelectedCuisine(e.currentTarget.value)}
-                        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       >
                         <option value="">All Cuisines</option>
                         <For each={getUniqueValues('cuisine')}>
@@ -766,7 +766,7 @@ export default function CookbookDetailPage() {
 
                   <Show when={tagsStore.data()}>
                     <div>
-                      <h3 class="text-sm font-medium text-gray-700 mb-2">Filter by tags:</h3>
+                      <h3 class="text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">Filter by tags:</h3>
                       <div class="flex flex-wrap gap-2">
                         <For each={tagsStore.data()}>
                           {(tag) => (
@@ -775,7 +775,7 @@ export default function CookbookDetailPage() {
                               class={`px-3 py-1 rounded-full text-sm transition-colors ${
                                 selectedTags().includes(tag.id)
                                   ? "bg-emerald-600 text-white"
-                                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                                  : "bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300 hover:bg-gray-300 dark:hover:bg-stone-500"
                               }`}
                               style={{ "background-color": selectedTags().includes(tag.id) ? tag.color : undefined }}
                             >
@@ -790,12 +790,12 @@ export default function CookbookDetailPage() {
 
                 {/* Invite Form */}
                 <Show when={showInviteForm()}>
-                  <div class="bg-white rounded-lg shadow-md p-6 mb-8">
-                    <h2 class="text-xl font-semibold mb-4">Invite Member</h2>
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Invite Member</h2>
                     <form onSubmit={handleInviteUser}>
                       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                          <label for="inviteEmail" class="block text-sm font-medium text-gray-700 mb-2">
+                          <label for="inviteEmail" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                             Email Address *
                           </label>
                           <input
@@ -803,20 +803,20 @@ export default function CookbookDetailPage() {
                             type="email"
                             value={inviteEmail()}
                             onInput={(e) => setInviteEmail(e.currentTarget.value)}
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                             placeholder="Enter email address"
                             required
                           />
                         </div>
                         <div>
-                          <label for="inviteRole" class="block text-sm font-medium text-gray-700 mb-2">
+                          <label for="inviteRole" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                             Role *
                           </label>
                           <select
                             id="inviteRole"
                             value={inviteRole()}
                             onChange={(e) => setInviteRole(e.currentTarget.value as 'editor' | 'contributor' | 'reader')}
-                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                            class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           >
                             <option value="reader">Reader (view only)</option>
                             <option value="contributor">Contributor (can add recipes)</option>
@@ -825,14 +825,14 @@ export default function CookbookDetailPage() {
                         </div>
                       </div>
                       <div class="mb-4">
-                        <label for="inviteMessage" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="inviteMessage" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                           Optional Message
                         </label>
                         <textarea
                           id="inviteMessage"
                           value={inviteMessage()}
                           onInput={(e) => setInviteMessage(e.currentTarget.value)}
-                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                          class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-500 dark:placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                           placeholder="Add a personal message to the invitation"
                           rows="3"
                         />
@@ -848,7 +848,7 @@ export default function CookbookDetailPage() {
                         <button
                           type="button"
                           onClick={() => setShowInviteForm(false)}
-                          class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                          class="bg-gray-300 dark:bg-stone-600 text-gray-700 dark:text-stone-300 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-stone-500 transition-colors"
                         >
                           Cancel
                         </button>
@@ -862,7 +862,7 @@ export default function CookbookDetailPage() {
                   {/* Recipes */}
                   <div class="mb-8">
                   <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-2xl font-bold text-gray-900">
+                    <h2 class="text-2xl font-bold text-gray-900 dark:text-stone-100">
                       Recipes {recipes() ? `(${recipes()!.length})` : ''}
                     </h2>
                   </div>
@@ -873,15 +873,15 @@ export default function CookbookDetailPage() {
 
                   <Show when={recipes.error}>
                     <div class="text-center py-8">
-                      <div class="text-red-600">Failed to load recipes</div>
+                      <div class="text-red-600 dark:text-red-400">Failed to load recipes</div>
                     </div>
                   </Show>
 
                   <Show when={recipes() && recipes()!.length === 0}>
-                    <div class="text-center py-12 bg-white rounded-lg shadow-md">
-                      <div class="text-gray-400 text-6xl mb-4">🍽️</div>
-                      <h3 class="text-xl font-medium text-gray-900 mb-2">No recipes found</h3>
-                      <p class="text-gray-600 mb-6">
+                    <div class="text-center py-12 bg-white dark:bg-stone-800 rounded-lg shadow-md">
+                      <div class="text-gray-400 dark:text-stone-500 text-6xl mb-4">🍽️</div>
+                      <h3 class="text-xl font-medium text-gray-900 dark:text-stone-100 mb-2">No recipes found</h3>
+                      <p class="text-gray-600 dark:text-stone-400 mb-6">
                         {searchQuery() || selectedTags().length > 0 || selectedDifficulty() || selectedCuisine() 
                           ? "Try adjusting your search or filters" 
                           : "Add recipes to start building this cookbook"}
@@ -901,136 +901,136 @@ export default function CookbookDetailPage() {
 
                   <Show when={recipes() && recipes()!.length > 0}>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      <For each={recipes()}>
-                        {(recipeEntry) => (
-                          <div 
-                            class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                            onClick={() => navigate(`/recipe/${recipeEntry.recipe.id}?from=cookbook&cookbookId=${cookbook()!.id}`)}
-                          >
-                            <Show when={recipeEntry.recipe.imageUrl}>
-                              <img
-                                src={recipeEntry.recipe.imageUrl}
-                                alt={recipeEntry.recipe.title}
-                                class="w-full h-48 object-cover"
-                              />
-                            </Show>
-                            
-                            <div class="p-6">
-                              <h3 class="text-xl font-semibold text-gray-900 mb-2">{recipeEntry.recipe.title}</h3>
-                              
-                              <Show when={recipeEntry.recipe.description}>
-                                <p class="text-gray-600 mb-3 line-clamp-2">{recipeEntry.recipe.description}</p>
-                              </Show>
+                        <For each={recipes()}>
+                         {(recipeEntry) => (
+                           <div 
+                             class="bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                             onClick={() => navigate(`/recipe/${recipeEntry.recipe.id}?from=cookbook&cookbookId=${cookbook()!.id}`)}
+                           >
+                             <Show when={recipeEntry.recipe.imageUrl}>
+                               <img
+                                 src={recipeEntry.recipe.imageUrl}
+                                 alt={recipeEntry.recipe.title}
+                                 class="w-full h-48 object-cover"
+                               />
+                             </Show>
+                             
+                             <div class="p-6">
+                               <h3 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-2">{recipeEntry.recipe.title}</h3>
+                               
+                               <Show when={recipeEntry.recipe.description}>
+                                 <p class="text-gray-600 dark:text-stone-400 mb-3 line-clamp-2">{recipeEntry.recipe.description}</p>
+                               </Show>
 
-                              <div class="flex flex-wrap gap-2 mb-3">
-                                <Show when={recipeEntry.recipe.cookTime}>
-                                  <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                                    🕐 {formatTime(recipeEntry.recipe.cookTime)}
-                                  </span>
-                                </Show>
-                                <Show when={recipeEntry.recipe.servings}>
-                                  <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                                    👥 {recipeEntry.recipe.servings} servings
-                                  </span>
-                                </Show>
-                                <Show when={recipeEntry.recipe.difficulty}>
-                                  <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
-                                    {recipeEntry.recipe.difficulty}
-                                  </span>
-                                </Show>
-                              </div>
+                               <div class="flex flex-wrap gap-2 mb-3">
+                                 <Show when={recipeEntry.recipe.cookTime}>
+                                   <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
+                                     🕐 {formatTime(recipeEntry.recipe.cookTime)}
+                                   </span>
+                                 </Show>
+                                 <Show when={recipeEntry.recipe.servings}>
+                                   <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full">
+                                     👥 {recipeEntry.recipe.servings} servings
+                                   </span>
+                                 </Show>
+                                 <Show when={recipeEntry.recipe.difficulty}>
+                                   <span class="px-2 py-1 bg-orange-100 dark:bg-orange-900 text-orange-800 dark:text-orange-200 text-xs rounded-full">
+                                     {recipeEntry.recipe.difficulty}
+                                   </span>
+                                 </Show>
+                               </div>
 
-                              <Show when={recipeEntry.recipe.tags && recipeEntry.recipe.tags.length > 0}>
-                                <div class="flex flex-wrap gap-1 mb-4">
-                                  <For each={recipeEntry.recipe.tags}>
-                                    {(tag) => (
-                                      <span
-                                        class="px-2 py-1 text-xs rounded-full text-white"
-                                        style={{ "background-color": tag.color }}
-                                      >
-                                        {tag.name}
-                                      </span>
-                                    )}
-                                  </For>
-                                </div>
-                              </Show>
+                               <Show when={recipeEntry.recipe.tags && recipeEntry.recipe.tags.length > 0}>
+                                 <div class="flex flex-wrap gap-1 mb-4">
+                                   <For each={recipeEntry.recipe.tags}>
+                                     {(tag) => (
+                                       <span
+                                         class="px-2 py-1 text-xs rounded-full text-white"
+                                         style={{ "background-color": tag.color }}
+                                       >
+                                         {tag.name}
+                                       </span>
+                                     )}
+                                   </For>
+                                 </div>
+                               </Show>
 
-                              <div class="text-xs text-gray-500 mb-3">
-                                <div>Added by {recipeEntry.addedByUser.name || recipeEntry.addedByUser.email}</div>
-                                <div>{new Date(recipeEntry.addedAt).toLocaleDateString()}</div>
-                                <Show when={recipeEntry.isOriginalOwner}>
-                                  <div class="text-green-600 font-medium">Your Recipe</div>
-                                </Show>
-                              </div>
+                               <div class="text-xs text-gray-500 dark:text-stone-400 mb-3">
+                                 <div>Added by {recipeEntry.addedByUser.name || recipeEntry.addedByUser.email}</div>
+                                 <div>{new Date(recipeEntry.addedAt).toLocaleDateString()}</div>
+                                 <Show when={recipeEntry.isOriginalOwner}>
+                                   <div class="text-green-600 dark:text-green-400 font-medium">Your Recipe</div>
+                                 </Show>
+                               </div>
 
-                              <Show when={recipeEntry.notes}>
-                                <div class="bg-gray-50 p-2 rounded text-sm text-gray-600 mb-3">
-                                  <strong>Notes:</strong> {recipeEntry.notes}
-                                </div>
-                              </Show>
+                               <Show when={recipeEntry.notes}>
+                                 <div class="bg-gray-50 dark:bg-stone-700 p-2 rounded text-sm text-gray-600 dark:text-stone-300 mb-3">
+                                   <strong>Notes:</strong> {recipeEntry.notes}
+                                 </div>
+                               </Show>
 
-                              <div class="flex justify-between items-center">
-                                <div class="flex space-x-2">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      navigate(`/recipe/${recipeEntry.recipe.id}?from=cookbook&cookbookId=${cookbook()!.id}`);
-                                    }}
-                                    class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded hover:bg-emerald-200"
-                                  >
-                                    View
-                                  </button>
-                                  <Show when={recipeEntry.canEdit}>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        navigate(`/recipe/${recipeEntry.recipe.id}?edit=true&from=cookbook&cookbookId=${cookbook()!.id}`);
-                                      }}
-                                      class="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200"
-                                    >
-                                      Edit
-                                    </button>
-                                  </Show>
-                                   <Show when={!recipeEntry.canEdit && ['owner', 'editor'].includes(cookbook()!.userRole)}>
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        handleForkRecipe(recipeEntry.recipe.id);
-                                      }}
-                                      class="text-xs bg-orange-100 text-orange-700 px-2 py-1 rounded hover:bg-orange-200"
-                                    >
-                                      Fork
-                                    </button>
-                                  </Show>
-                                </div>
-                                <Show when={['owner', 'editor'].includes(cookbook()!.userRole) || (cookbook()!.userRole === 'contributor' && recipeEntry.addedByUserId === user()!.id)}>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveRecipe(recipeEntry.id, recipeEntry.recipe.title);
-                                    }}
-                                    disabled={removingRecipe() === recipeEntry.id}
-                                    class="text-xs bg-red-100 text-red-700 px-2 py-1 rounded hover:bg-red-200 disabled:opacity-50"
-                                    title="Remove from cookbook"
-                                  >
-                                    {removingRecipe() === recipeEntry.id ? '...' : 'Remove'}
-                                  </button>
-                                </Show>
-                              </div>
-                            </div>
-                          </div>
-                        )}
-                      </For>
+                               <div class="flex justify-between items-center">
+                                 <div class="flex space-x-2">
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       navigate(`/recipe/${recipeEntry.recipe.id}?from=cookbook&cookbookId=${cookbook()!.id}`);
+                                     }}
+                                     class="text-xs bg-emerald-100 dark:bg-emerald-900 text-emerald-700 dark:text-emerald-200 px-2 py-1 rounded hover:bg-emerald-200 dark:hover:bg-emerald-800"
+                                   >
+                                     View
+                                   </button>
+                                   <Show when={recipeEntry.canEdit}>
+                                     <button
+                                       onClick={(e) => {
+                                         e.stopPropagation();
+                                         navigate(`/recipe/${recipeEntry.recipe.id}?edit=true&from=cookbook&cookbookId=${cookbook()!.id}`);
+                                       }}
+                                       class="text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 px-2 py-1 rounded hover:bg-blue-200 dark:hover:bg-blue-800"
+                                     >
+                                       Edit
+                                     </button>
+                                   </Show>
+                                    <Show when={!recipeEntry.canEdit && ['owner', 'editor'].includes(cookbook()!.userRole)}>
+                                     <button
+                                       onClick={(e) => {
+                                         e.stopPropagation();
+                                         handleForkRecipe(recipeEntry.recipe.id);
+                                       }}
+                                       class="text-xs bg-orange-100 dark:bg-orange-900 text-orange-700 dark:text-orange-200 px-2 py-1 rounded hover:bg-orange-200 dark:hover:bg-orange-800"
+                                     >
+                                       Fork
+                                     </button>
+                                   </Show>
+                                 </div>
+                                 <Show when={['owner', 'editor'].includes(cookbook()!.userRole) || (cookbook()!.userRole === 'contributor' && recipeEntry.addedByUserId === user()!.id)}>
+                                   <button
+                                     onClick={(e) => {
+                                       e.stopPropagation();
+                                       handleRemoveRecipe(recipeEntry.id, recipeEntry.recipe.title);
+                                     }}
+                                     disabled={removingRecipe() === recipeEntry.id}
+                                     class="text-xs bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-200 px-2 py-1 rounded hover:bg-red-200 dark:hover:bg-red-800 disabled:opacity-50"
+                                     title="Remove from cookbook"
+                                   >
+                                     {removingRecipe() === recipeEntry.id ? '...' : 'Remove'}
+                                   </button>
+                                 </Show>
+                               </div>
+                             </div>
+                           </div>
+                         )}
+                       </For>
                      </div>
                    </Show>
                  </div>
 
                  {/* Members & Management Section */}
-                 <div class="bg-white rounded-lg shadow-md p-6">
+                 <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6">
                   <div class="flex justify-between items-center mb-4">
                     <button
                       onClick={() => setShowMembersSection(!showMembersSection())}
-                      class="flex items-center space-x-2 text-left"
+                      class="flex items-center space-x-2 text-left text-gray-900 dark:text-stone-100"
                     >
                       <h2 class="text-xl font-semibold">Cookbook Management</h2>
                       <svg 
@@ -1042,7 +1042,7 @@ export default function CookbookDetailPage() {
                       </svg>
                     </button>
                     <div class="flex items-center space-x-2">
-                       <span class="text-sm text-gray-500">{cookbook()!.members.length} member{cookbook()!.members.length !== 1 ? 's' : ''}</span>
+                       <span class="text-sm text-gray-500 dark:text-stone-400">{cookbook()!.members.length} member{cookbook()!.members.length !== 1 ? 's' : ''}</span>
                       <Show when={canInvite()}>
                         <button
                           onClick={() => setShowInviteForm(!showInviteForm())}
@@ -1058,7 +1058,7 @@ export default function CookbookDetailPage() {
                     <div class="space-y-6">
                       {/* Members List */}
                       <div>
-                         <h3 class="text-lg font-medium mb-3">Members ({cookbook()!.members.length})</h3>
+                         <h3 class="text-lg font-medium text-gray-900 dark:text-stone-100 mb-3">Members ({cookbook()!.members.length})</h3>
                          <div class="space-y-3">
                            <For each={cookbook()!.members}>
                              {(member) => (
@@ -1073,25 +1073,25 @@ export default function CookbookDetailPage() {
                         </div>
                       </div>
 
-                      {/* Pending Invitations */}
-                       <Show when={['owner', 'editor'].includes(cookbook()!.userRole) && pendingInvitations() && pendingInvitations()!.length > 0}>
+                       {/* Pending Invitations */}
+                        <Show when={['owner', 'editor'].includes(cookbook()!.userRole) && pendingInvitations() && pendingInvitations()!.length > 0}>
                         <div>
-                          <h3 class="text-lg font-medium mb-3">Pending Invitations ({pendingInvitations()!.length})</h3>
+                          <h3 class="text-lg font-medium text-gray-900 dark:text-stone-100 mb-3">Pending Invitations ({pendingInvitations()!.length})</h3>
                           <div class="space-y-3">
                             <For each={pendingInvitations()}>
                               {(invitation) => (
-                                <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-stone-700 rounded-lg">
                                   <div class="flex-1">
                                     <div class="flex items-center gap-3">
                                       <div>
-                                        <p class="font-medium text-gray-900">{invitation.inviteeEmail}</p>
-                                        <p class="text-sm text-gray-500">
+                                        <p class="font-medium text-gray-900 dark:text-stone-100">{invitation.inviteeEmail}</p>
+                                        <p class="text-sm text-gray-500 dark:text-stone-400">
                                           Invited as {invitation.role} • {new Date(invitation.createdAt).toLocaleDateString()}
                                         </p>
                                       </div>
                                     </div>
                                     <Show when={invitation.message}>
-                                      <p class="text-sm text-gray-600 mt-1 italic">"{invitation.message}"</p>
+                                      <p class="text-sm text-gray-600 dark:text-stone-300 mt-1 italic">"{invitation.message}"</p>
                                     </Show>
                                   </div>
                                   <div class="flex items-center gap-2">
@@ -1101,7 +1101,7 @@ export default function CookbookDetailPage() {
                                     <button
                                       onClick={() => handleResendInvitation(invitation.id)}
                                       disabled={resendingInvitation() === invitation.id}
-                                      class="px-3 py-1 text-xs bg-blue-100 text-blue-700 rounded hover:bg-blue-200 disabled:opacity-50 transition-colors"
+                                      class="px-3 py-1 text-xs bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-200 rounded hover:bg-blue-200 dark:hover:bg-blue-800 disabled:opacity-50 transition-colors"
                                     >
                                       {resendingInvitation() === invitation.id ? 'Sending...' : 'Resend'}
                                     </button>

@@ -2,6 +2,7 @@ import { useMatch } from "@solidjs/router";
 import { Show, createSignal } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import InvitationNotifications from "./InvitationNotifications";
+import { Settings } from "lucide-solid";
 
 export default function Nav() {
   const { user, logout } = useAuth();
@@ -9,6 +10,7 @@ export default function Nav() {
   const isDashboard = useMatch(() => "/dashboard");
   const isCookbooks = useMatch(() => "/cookbooks");
   const isGroceryLists = useMatch(() => "/grocery-lists");
+  const isAdmin = useMatch(() => "/admin");
   const [isMenuOpen, setIsMenuOpen] = createSignal(false);
 
   const handleLogout = async () => {
@@ -24,7 +26,7 @@ export default function Nav() {
   const closeMenu = () => setIsMenuOpen(false);
 
   return (
-    <nav class="fixed top-0 left-0 w-full bg-emerald-800 shadow-sm z-50">
+    <nav class="fixed top-0 left-0 w-full bg-emerald-800 dark:bg-emerald-900 shadow-sm z-50">
       <div class="px-4 sm:px-6 lg:px-8">
         <div class="flex items-center justify-between h-16">
           {/* Logo/Brand */}
@@ -60,14 +62,24 @@ export default function Nav() {
                 >
                   Cookbooks
                 </a>
-                <a
-                  href="/grocery-lists"
-                  class={`px-3 py-2 text-sm font-medium text-emerald-100 uppercase transition-colors duration-200 border-b-2 ${
-                    isGroceryLists() ? "border-emerald-300 text-white" : "border-transparent hover:text-white"
-                  }`}
-                >
-                  Grocery Lists
-                </a>
+                 <a
+                   href="/grocery-lists"
+                   class={`px-3 py-2 text-sm font-medium text-emerald-100 uppercase transition-colors duration-200 border-b-2 ${
+                     isGroceryLists() ? "border-emerald-300 text-white" : "border-transparent hover:text-white"
+                   }`}
+                 >
+                   Grocery Lists
+                 </a>
+                 <Show when={user()?.isSuperAdmin}>
+                   <a
+                     href="/admin"
+                     class={`px-3 py-2 text-sm font-medium text-emerald-100 uppercase transition-colors duration-200 border-b-2 ${
+                       isAdmin() ? "border-emerald-300 text-white" : "border-transparent hover:text-white"
+                     }`}
+                   >
+                     Admin
+                   </a>
+                 </Show>
               </Show>
             </div>
           </div>
@@ -98,6 +110,13 @@ export default function Nav() {
                 <span class="hidden lg:inline text-sm text-emerald-100">
                   Welcome, {user()?.name || user()?.email}
                 </span>
+                <a
+                  href="/settings"
+                  class="p-2 text-emerald-100 bg-emerald-700 border border-emerald-600 rounded-md hover:bg-emerald-600 hover:text-white focus:outline-none transition-colors duration-200"
+                  title="Settings"
+                >
+                  <Settings size={18} />
+                </a>
                 <button
                   onClick={handleLogout}
                   class="px-4 py-2 text-sm text-emerald-100 bg-emerald-700 border border-emerald-600 rounded-md hover:bg-emerald-600 hover:text-white focus:outline-none transition-colors duration-200"
@@ -137,8 +156,8 @@ export default function Nav() {
 
       {/* Mobile Navigation Menu */}
       <Show when={isMenuOpen()}>
-        <div class="md:hidden">
-          <div class="px-2 pt-2 pb-3 space-y-1 bg-emerald-900 border-t border-emerald-700">
+          <div class="md:hidden">
+            <div class="px-2 pt-2 pb-3 space-y-1 bg-emerald-900 dark:bg-emerald-950 border-t border-emerald-700 dark:border-emerald-800">
             <Show when={user()}>
               <a
                 href="/dashboard"
@@ -158,22 +177,41 @@ export default function Nav() {
               >
                 Cookbooks
               </a>
-              <a
-                href="/grocery-lists"
-                class={`block px-3 py-2 text-base font-medium text-emerald-100 hover:text-white hover:bg-emerald-700 rounded-md transition-colors duration-200 ${
-                  isGroceryLists() ? "bg-emerald-700 text-white" : ""
-                }`}
-                onClick={closeMenu}
-              >
-                Grocery Lists
-              </a>
+               <a
+                 href="/grocery-lists"
+                 class={`block px-3 py-2 text-base font-medium text-emerald-100 hover:text-white hover:bg-emerald-700 rounded-md transition-colors duration-200 ${
+                   isGroceryLists() ? "bg-emerald-700 text-white" : ""
+                 }`}
+                 onClick={closeMenu}
+               >
+                 Grocery Lists
+               </a>
+               <Show when={user()?.isSuperAdmin}>
+                 <a
+                   href="/admin"
+                   class={`block px-3 py-2 text-base font-medium text-emerald-100 hover:text-white hover:bg-emerald-700 rounded-md transition-colors duration-200 ${
+                     isAdmin() ? "bg-emerald-700 text-white" : ""
+                   }`}
+                   onClick={closeMenu}
+                 >
+                   Admin
+                 </a>
+               </Show>
               <div class="border-t border-emerald-700 pt-4 pb-3">
                 <div class="flex items-center px-3">
                   <div class="text-base font-medium text-white">
                     {user()?.name || user()?.email}
                   </div>
                 </div>
-                <div class="mt-3 px-2">
+                <div class="mt-3 px-2 space-y-1">
+                  <a
+                    href="/settings"
+                    class="flex items-center w-full text-left px-3 py-2 text-base font-medium text-emerald-100 hover:text-white hover:bg-emerald-700 rounded-md transition-colors duration-200"
+                    onClick={closeMenu}
+                  >
+                    <Settings size={18} class="mr-2" />
+                    Settings
+                  </a>
                   <button
                     onClick={() => {
                       handleLogout();

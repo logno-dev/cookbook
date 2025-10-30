@@ -7,6 +7,7 @@ export const users = sqliteTable('users', {
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name'),
+  isSuperAdmin: integer('is_super_admin', { mode: 'boolean' }).$default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
@@ -172,6 +173,35 @@ export const userSessions = sqliteTable('user_sessions', {
   createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
 });
 
+export const userSettings = sqliteTable('user_settings', {
+  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  userId: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
+  // Display preferences
+  theme: text('theme').$type<'light' | 'dark' | 'system'>().$default('system'),
+  language: text('language').$default('en'),
+  timezone: text('timezone').$default('UTC'),
+  // Recipe preferences
+  defaultServingSize: integer('default_serving_size').$default(4),
+  preferredUnits: text('preferred_units').$type<'metric' | 'imperial'>().$default('metric'),
+  showNutritionInfo: integer('show_nutrition_info', { mode: 'boolean' }).$default(true),
+  showCookingTips: integer('show_cooking_tips', { mode: 'boolean' }).$default(true),
+  // Privacy settings
+  profileVisibility: text('profile_visibility').$type<'public' | 'friends' | 'private'>().$default('private'),
+  allowCookbookInvitations: integer('allow_cookbook_invitations', { mode: 'boolean' }).$default(true),
+  // Notification preferences
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).$default(true),
+  cookbookInviteNotifications: integer('cookbook_invite_notifications', { mode: 'boolean' }).$default(true),
+  recipeUpdateNotifications: integer('recipe_update_notifications', { mode: 'boolean' }).$default(false),
+  weeklyDigest: integer('weekly_digest', { mode: 'boolean' }).$default(false),
+  // Grocery list preferences
+  defaultGroceryListView: text('default_grocery_list_view').$type<'category' | 'alphabetical' | 'custom'>().$default('category'),
+  autoCompleteGroceryItems: integer('auto_complete_grocery_items', { mode: 'boolean' }).$default(false),
+  // Advanced preferences (stored as JSON for flexibility)
+  customPreferences: text('custom_preferences', { mode: 'json' }).$type<Record<string, any>>(),
+  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+});
+
 export const groceryLists = sqliteTable('grocery_lists', {
   id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
@@ -204,9 +234,10 @@ export const groceryListRecipes = sqliteTable('grocery_list_recipes', {
   addedAt: integer('added_at', { mode: 'timestamp' }).notNull(),
 });
 
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(users, ({ one, many }) => ({
   recipes: many(recipes),
   sessions: many(userSessions),
+  settings: one(userSettings),
   ownedCookbooks: many(cookbooks),
   cookbookMemberships: many(cookbookMembers),
   cookbookInvitationsSent: many(cookbookInvitations, { relationName: 'inviter' }),
@@ -250,6 +281,13 @@ export const recipeVariantsRelations = relations(recipeVariants, ({ one }) => ({
 export const userSessionsRelations = relations(userSessions, ({ one }) => ({
   user: one(users, {
     fields: [userSessions.userId],
+    references: [users.id],
+  }),
+}));
+
+export const userSettingsRelations = relations(userSettings, ({ one }) => ({
+  user: one(users, {
+    fields: [userSettings.userId],
     references: [users.id],
   }),
 }));

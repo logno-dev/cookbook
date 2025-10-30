@@ -2,7 +2,7 @@ import { JSX, For } from 'solid-js';
 
 // Base skeleton pulse animation
 const SkeletonBase = (props: { class?: string; children?: JSX.Element }) => (
-  <div class={`animate-pulse bg-gray-200 rounded ${props.class || ''}`}>
+  <div class={`animate-pulse bg-gray-200 dark:bg-stone-700 rounded ${props.class || ''}`}>
     {props.children}
   </div>
 );
@@ -20,7 +20,7 @@ export const SkeletonText = (props: { lines?: number; className?: string }) => (
 
 // Card skeleton for recipes/cookbooks
 export const SkeletonCard = () => (
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden">
     {/* Image placeholder */}
     <SkeletonBase class="w-full h-48" />
     
@@ -62,7 +62,7 @@ export const SkeletonCardGrid = (props: { count?: number; columns?: number }) =>
 
 // List item skeleton
 export const SkeletonListItem = () => (
-  <div class="flex items-center justify-between py-3 border-b border-gray-100">
+  <div class="flex items-center justify-between py-3 border-b border-gray-100 dark:border-stone-700">
     <div class="flex items-center space-x-3">
       <SkeletonBase class="w-10 h-10 rounded-full" />
       <div>
@@ -76,9 +76,9 @@ export const SkeletonListItem = () => (
 
 // Table skeleton
 export const SkeletonTable = (props: { rows?: number }) => (
-  <div class="bg-white rounded-lg shadow-md overflow-hidden">
+  <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden">
     {/* Header */}
-    <div class="border-b border-gray-200 px-6 py-4">
+    <div class="border-b border-gray-200 dark:border-stone-700 px-6 py-4">
       <div class="flex space-x-8">
         <SkeletonBase class="h-4 w-24" />
         <SkeletonBase class="h-4 w-20" />
@@ -88,7 +88,7 @@ export const SkeletonTable = (props: { rows?: number }) => (
     </div>
     
     {/* Rows */}
-    <div class="divide-y divide-gray-200">
+    <div class="divide-y divide-gray-200 dark:divide-stone-700">
       <For each={Array(props.rows || 5)}>
         {() => (
           <div class="px-6 py-4">
@@ -107,7 +107,7 @@ export const SkeletonTable = (props: { rows?: number }) => (
 
 // Page header skeleton
 export const SkeletonPageHeader = () => (
-  <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
+  <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6 mb-8">
     <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
       <div class="flex-1">
         <SkeletonBase class="h-8 w-64 mb-2" />
@@ -122,7 +122,7 @@ export const SkeletonPageHeader = () => (
 
 // Search and filters skeleton
 export const SkeletonFilters = () => (
-  <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+  <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6 mb-8">
     {/* Search bar */}
     <SkeletonBase class="h-10 w-full mb-4" />
     
@@ -148,16 +148,16 @@ export const SkeletonFilters = () => (
 export const SkeletonBreadcrumbs = () => (
   <div class="flex items-center space-x-2 mb-6">
     <SkeletonBase class="h-4 w-20" />
-    <span class="text-gray-400">/</span>
+    <span class="text-gray-400 dark:text-stone-500">/</span>
     <SkeletonBase class="h-4 w-24" />
-    <span class="text-gray-400">/</span>
+    <span class="text-gray-400 dark:text-stone-500">/</span>
     <SkeletonBase class="h-4 w-28" />
   </div>
 );
 
 // Navigation skeleton
 export const SkeletonNav = () => (
-  <nav class="bg-white shadow-sm border-b border-gray-200">
+  <nav class="bg-white dark:bg-stone-800 shadow-sm border-b border-gray-200 dark:border-stone-700">
     <div class="max-w-7xl mx-auto px-4">
       <div class="flex justify-between items-center h-16">
         <SkeletonBase class="h-8 w-32" />
@@ -173,7 +173,7 @@ export const SkeletonNav = () => (
 
 // Dashboard layout skeleton
 export const SkeletonDashboard = () => (
-  <main class="min-h-screen bg-gray-50 pt-16">
+  <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
     <div class="max-w-7xl mx-auto px-4 py-8">
       <SkeletonBreadcrumbs />
       <SkeletonPageHeader />
@@ -214,9 +214,9 @@ export const SkeletonDashboard = () => (
 
 // Recipe detail skeleton
 export const SkeletonRecipeDetail = () => (
-  <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+  <div class="bg-white dark:bg-stone-800 rounded-lg shadow-lg overflow-hidden">
     {/* Header section */}
-    <div class="p-6 border-b">
+    <div class="p-6 border-b border-gray-200 dark:border-stone-700">
       <div class="space-y-4">
         {/* Title and description */}
         <div>
@@ -225,7 +225,7 @@ export const SkeletonRecipeDetail = () => (
         </div>
         
         {/* Action buttons */}
-        <div class="flex justify-between items-center pt-2 border-t border-gray-100">
+        <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-stone-700">
           <div class="flex gap-2">
             <SkeletonBase class="h-10 w-24" />
             <SkeletonBase class="h-10 w-20" />
@@ -281,7 +281,7 @@ export const SkeletonRecipeDetail = () => (
           <SkeletonBase class="w-full h-64 rounded-lg" />
           
           {/* Recipe details */}
-          <div class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
             <SkeletonBase class="h-5 w-32 mb-4" />
             <div class="space-y-2">
               <For each={Array(5)}>
@@ -296,7 +296,7 @@ export const SkeletonRecipeDetail = () => (
           </div>
 
           {/* Tags section */}
-          <div class="bg-gray-50 rounded-lg p-4">
+          <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
             <SkeletonBase class="h-5 w-16 mb-4" />
             <div class="flex flex-wrap gap-2">
               <For each={Array(5)}>

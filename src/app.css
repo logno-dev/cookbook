@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+/* Configure Tailwind v4 dark mode */
+@variant dark (.dark &);
+
+/* Ensure dark mode works */
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+  }
+}
+
+.dark {
+  color-scheme: dark;
+}
+
 #app {
   user-select: none;
 }

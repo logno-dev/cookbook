@@ -23,14 +23,14 @@ export function SearchAndFilters(props: {
           placeholder="Search recipes..."
           value={props.searchQuery()}
           onInput={(e) => props.setSearchQuery(e.currentTarget.value)}
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+          class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
         />
       </div>
 
       {/* Tags Filter */}
       <Show when={tagsStore.data()} fallback={<SkeletonFilters />}>
         <div class="mb-6">
-          <h3 class="text-sm font-medium text-gray-700 mb-2">Filter by tags:</h3>
+          <h3 class="text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">Filter by tags:</h3>
           <div class="flex flex-wrap gap-2">
             <For each={tagsStore.data()}>
               {(tag) => (
@@ -39,7 +39,7 @@ export function SearchAndFilters(props: {
                   class={`px-3 py-1 rounded-full text-sm transition-colors ${
                     props.selectedTags().includes(tag.id)
                       ? "bg-emerald-600 text-white"
-                      : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                      : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-stone-600 dark:text-stone-100 dark:hover:bg-stone-500"
                   }`}
                   style={{ "background-color": props.selectedTags().includes(tag.id) ? tag.color : undefined }}
                 >
@@ -66,14 +66,14 @@ export function RecipesGrid(props: {
   return (
     <div class="mb-8">
       <div class="mb-4">
-        <h2 class="text-xl font-semibold text-gray-900">My Recipes</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">My Recipes</h2>
       </div>
 
       <Show when={props.filteredRecipes() && props.filteredRecipes().length === 0}>
         <div class="text-center py-12">
           <div class="text-gray-400 text-6xl mb-4">🍽️</div>
-          <h3 class="text-xl font-medium text-gray-900 mb-2">No recipes yet</h3>
-          <p class="text-gray-600 mb-4">Start building your recipe collection!</p>
+          <h3 class="text-xl font-medium text-gray-900 dark:text-stone-100 mb-2">No recipes yet</h3>
+          <p class="text-gray-600 dark:text-stone-400 mb-4">Start building your recipe collection!</p>
           <button
             onClick={() => props.setShowAddRecipe(true)}
             class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
@@ -88,7 +88,7 @@ export function RecipesGrid(props: {
           <For each={props.filteredRecipes()}>
             {(recipe) => (
               <div 
-                class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                class="bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
                 onClick={() => navigate(`/recipe/${recipe.id}?from=dashboard`)}
               >
                 <Show when={recipe.imageUrl}>
@@ -100,10 +100,10 @@ export function RecipesGrid(props: {
                 </Show>
                 
                 <div class="p-6">
-                  <h3 class="text-xl font-semibold text-gray-900 mb-2">{recipe.title}</h3>
+                  <h3 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-2">{recipe.title}</h3>
                   
                   <Show when={recipe.description}>
-                    <p class="text-gray-600 mb-3 line-clamp-2">{recipe.description}</p>
+                    <p class="text-gray-600 dark:text-stone-400 mb-3 line-clamp-2">{recipe.description}</p>
                   </Show>
 
                   <div class="flex flex-wrap gap-2 mb-3">
@@ -145,7 +145,7 @@ export function RecipesGrid(props: {
                         href={recipe.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-gray-500 hover:text-gray-700 text-sm"
+                        class="text-gray-500 hover:text-gray-700 dark:text-stone-400 dark:hover:text-stone-300 text-sm"
                         onClick={(e) => e.stopPropagation()}
                       >
                         Source ↗
@@ -207,11 +207,11 @@ export function RecentCookbooks() {
           <For each={recentCookbooks()}>
             {(cookbook) => (
               <div 
-                class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => navigate(`/cookbooks/${cookbook.id}`)}
               >
                 <div class="flex items-start justify-between mb-2">
-                  <h3 class="font-medium text-gray-900 text-sm line-clamp-2">{cookbook.title}</h3>
+                  <h3 class="font-medium text-gray-900 dark:text-stone-100 text-sm line-clamp-2">{cookbook.title}</h3>
                   <span class={`px-2 py-1 text-xs rounded-full ${
                     cookbook.userRole === 'owner' ? 'bg-purple-100 text-purple-800' :
                     cookbook.userRole === 'editor' ? 'bg-blue-100 text-blue-800' :
@@ -222,9 +222,9 @@ export function RecentCookbooks() {
                   </span>
                 </div>
                 <Show when={cookbook.description}>
-                  <p class="text-gray-600 text-xs line-clamp-2 mb-2">{cookbook.description}</p>
+                  <p class="text-gray-600 dark:text-stone-400 text-xs line-clamp-2 mb-2">{cookbook.description}</p>
                 </Show>
-                <p class="text-gray-400 text-xs">
+                <p class="text-gray-400 dark:text-stone-500 text-xs">
                   Updated {new Date(cookbook.updatedAt).toLocaleDateString()}
                 </p>
               </div>
@@ -286,14 +286,14 @@ export function RecentGroceryLists() {
           <For each={recentGroceryLists()}>
             {(list: any) => (
               <div 
-                class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 hover:shadow-md transition-shadow cursor-pointer"
+                class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-4 hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => navigate(`/grocery-lists/${list.id}`)}
               >
-                <h3 class="font-medium text-gray-900 text-sm line-clamp-2 mb-2">{list.name}</h3>
+                <h3 class="font-medium text-gray-900 dark:text-stone-100 text-sm line-clamp-2 mb-2">{list.name}</h3>
                 <Show when={list.description}>
-                  <p class="text-gray-600 text-xs line-clamp-2 mb-2">{list.description}</p>
+                  <p class="text-gray-600 dark:text-stone-400 text-xs line-clamp-2 mb-2">{list.description}</p>
                 </Show>
-                <p class="text-gray-400 text-xs">
+                <p class="text-gray-400 dark:text-stone-500 text-xs">
                   Updated {new Date(list.updatedAt).toLocaleDateString()}
                 </p>
               </div>

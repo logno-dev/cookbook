@@ -144,7 +144,7 @@ export default function GroceryListsPage() {
       <Title>Grocery Lists - Recipe Curator</Title>
       {/* Show skeleton while auth is loading */}
       {loading() || (!user() && !loading()) ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-6xl mx-auto px-4 py-8">
             <SkeletonPageHeader />
             <SkeletonCardGrid count={6} />
@@ -164,12 +164,12 @@ export default function GroceryListsPage() {
           ) : (
             <>
           {/* Create New List Form */}
-          <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-8">
-            <h2 class="text-lg font-semibold text-gray-900 mb-4">Create New List</h2>
+          <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6 mb-8">
+            <h2 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Create New List</h2>
             <form onSubmit={handleCreateList}>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label for="name" class="block text-sm font-medium text-gray-700 mb-1">
+                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                     List Name *
                   </label>
                   <input
@@ -177,13 +177,13 @@ export default function GroceryListsPage() {
                     id="name"
                     value={newListName()}
                     onInput={(e) => setNewListName(e.target.value)}
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                     placeholder="e.g., Weekly Groceries, Dinner Party"
                     required
                   />
                 </div>
                 <div>
-                  <label for="description" class="block text-sm font-medium text-gray-700 mb-1">
+                  <label for="description" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">
                     Description
                   </label>
                   <input
@@ -191,7 +191,7 @@ export default function GroceryListsPage() {
                     id="description"
                     value={newListDescription()}
                     onInput={(e) => setNewListDescription(e.target.value)}
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                     placeholder="Optional description"
                   />
                 </div>
@@ -200,7 +200,7 @@ export default function GroceryListsPage() {
                 <button
                   type="submit"
                   disabled={isCreating() || !newListName().trim()}
-                  class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-stone-800 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isCreating() ? 'Creating...' : 'Create List'}
                 </button>
@@ -213,7 +213,7 @@ export default function GroceryListsPage() {
             when={groceryLists().length > 0}
             fallback={
               <div class="text-center py-12">
-                <div class="mx-auto h-12 w-12 text-gray-400 mb-4">
+                <div class="mx-auto h-12 w-12 text-gray-400 dark:text-stone-500 mb-4">
                   <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path
                       stroke-linecap="round"
@@ -223,8 +223,8 @@ export default function GroceryListsPage() {
                     />
                   </svg>
                 </div>
-                <h3 class="text-lg font-medium text-gray-900 mb-2">No grocery lists yet</h3>
-                <p class="text-gray-500 mb-4">Create your first grocery list to get started</p>
+                <h3 class="text-lg font-medium text-gray-900 dark:text-stone-100 mb-2">No grocery lists yet</h3>
+                <p class="text-gray-500 dark:text-stone-400 mb-4">Create your first grocery list to get started</p>
               </div>
             }
           >
@@ -232,12 +232,12 @@ export default function GroceryListsPage() {
               <For each={groceryLists()}>
                 {(list) => (
                   <div 
-                    class="bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow cursor-pointer"
+                    class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 hover:shadow-md transition-shadow cursor-pointer"
                     onClick={() => navigate(`/grocery-lists/${list.id}`)}
                   >
                     <div class="p-6">
                       <div class="flex items-start justify-between mb-4">
-                        <h3 class="text-lg font-semibold text-gray-900 truncate">
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 truncate">
                           {list.name}
                         </h3>
                         <div class="flex items-center space-x-2 ml-2">
@@ -247,7 +247,7 @@ export default function GroceryListsPage() {
                               handleDeleteList(list.id, list.name);
                             }}
                             disabled={deletingListId() === list.id}
-                            class="text-red-500 hover:text-red-700 transition-colors p-1 disabled:opacity-50"
+                            class="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-1 disabled:opacity-50"
                             title="Delete list"
                           >
                             <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -258,12 +258,12 @@ export default function GroceryListsPage() {
                       </div>
                       
                       <Show when={list.description}>
-                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">
+                        <p class="text-gray-600 dark:text-stone-400 text-sm mb-4 line-clamp-2">
                           {list.description}
                         </p>
                       </Show>
                       
-                      <div class="flex items-center justify-between text-sm text-gray-500">
+                      <div class="flex items-center justify-between text-sm text-gray-500 dark:text-stone-500">
                         <span>Created {formatDate(list.createdAt)}</span>
                         <Show when={list.updatedAt !== list.createdAt}>
                           <span>Updated {formatDate(list.updatedAt)}</span>
