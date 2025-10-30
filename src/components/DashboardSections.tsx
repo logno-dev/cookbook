@@ -180,7 +180,7 @@ export function RecentCookbooks() {
   return (
     <div class="mt-12 mb-8">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900">Recent Cookbooks</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">Recent Cookbooks</h2>
         <a
           href="/cookbooks"
           class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -190,9 +190,9 @@ export function RecentCookbooks() {
       </div>
       
       <Show when={recentCookbooks() && recentCookbooks().length === 0}>
-        <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <div class="text-gray-400 text-4xl mb-2">📚</div>
-          <p class="text-gray-600">No cookbooks yet</p>
+        <div class="text-center py-8 bg-gray-50 dark:bg-stone-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-stone-600">
+          <div class="text-gray-400 dark:text-stone-500 text-4xl mb-2">📚</div>
+          <p class="text-gray-600 dark:text-stone-400">No cookbooks yet</p>
           <a
             href="/cookbooks"
             class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -259,7 +259,7 @@ export function RecentGroceryLists() {
   return (
     <div class="mt-12 mb-8">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-xl font-semibold text-gray-900">Recent Grocery Lists</h2>
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">Recent Grocery Lists</h2>
         <a
           href="/grocery-lists"
           class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
@@ -269,9 +269,9 @@ export function RecentGroceryLists() {
       </div>
       
       <Show when={recentGroceryLists() && recentGroceryLists()!.length === 0}>
-        <div class="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
-          <div class="text-gray-400 text-4xl mb-2">🛒</div>
-          <p class="text-gray-600">No grocery lists yet</p>
+        <div class="text-center py-8 bg-gray-50 dark:bg-stone-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-stone-600">
+          <div class="text-gray-400 dark:text-stone-500 text-4xl mb-2">🛒</div>
+          <p class="text-gray-600 dark:text-stone-400">No grocery lists yet</p>
           <a
             href="/grocery-lists"
             class="text-emerald-600 hover:text-emerald-700 text-sm font-medium"
