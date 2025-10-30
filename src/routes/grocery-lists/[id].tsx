@@ -5,6 +5,7 @@ import { Title } from '@solidjs/meta';
 import RecipeSelectorModal from '../../components/RecipeSelectorModal';
 import PageLayout from '../../components/PageLayout';
 import Breadcrumbs from '../../components/Breadcrumbs';
+import { useToast } from '../../components/Toast';
 
 // Client-side function to format quantities as fractions
 function formatQuantity(quantity?: string): string {
@@ -120,6 +121,7 @@ interface IngredientMatch {
 export default function GroceryListPage() {
   const params = useParams();
   const { user, loading } = useAuth();
+  const toast = useToast();
 
   const [groceryList, setGroceryList] = createSignal<GroceryList | null>(null);
   const [items, setItems] = createSignal<GroceryListItem[]>([]);
@@ -157,6 +159,12 @@ export default function GroceryListPage() {
   const [pendingRecipeSelections, setPendingRecipeSelections] = createSignal<Array<{ recipeId: string; variantId?: string; multiplier?: number }>>([]);
   const [showMatchingModal, setShowMatchingModal] = createSignal(false);
   const [matchDecisions, setMatchDecisions] = createSignal<Map<number, 'merge' | 'separate' | 'skip'>>(new Map());
+
+  // Duplicate checking state
+  const [duplicateMatches, setDuplicateMatches] = createSignal<Array<{ primaryItem: GroceryListItem; duplicateItems: GroceryListItem[]; confidence: number }>>([]);
+  const [showDuplicateModal, setShowDuplicateModal] = createSignal(false);
+  const [duplicateDecisions, setDuplicateDecisions] = createSignal<Map<number, 'merge' | 'keep_separate'>>(new Map());
+  const [isCheckingDuplicates, setIsCheckingDuplicates] = createSignal(false);
 
   // Redirect to login if not authenticated
   if (!loading() && !user()) {
@@ -435,6 +443,74 @@ export default function GroceryListPage() {
 
   const handleProcessMatches = async () => {
     await handleCommitRecipes();
+  };
+
+  const handleCheckDuplicates = async () => {
+    if (isCheckingDuplicates()) return;
+
+    setIsCheckingDuplicates(true);
+    try {
+      const response = await fetch(`/api/grocery-lists/${params.id}/check-duplicates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setDuplicateMatches(data.duplicateMatches || []);
+        
+        if (data.duplicateMatches && data.duplicateMatches.length > 0) {
+          setDuplicateDecisions(new Map());
+          setShowDuplicateModal(true);
+        } else {
+          // No duplicates found - show success toast
+          toast.success("No duplicates found! Your grocery list looks clean and organized.", {
+            duration: 4000
+          });
+        }
+      }
+    } catch (err) {
+      console.error('Error checking duplicates:', err);
+    } finally {
+      setIsCheckingDuplicates(false);
+    }
+  };
+
+  const handleResolveDuplicates = async () => {
+    try {
+      // Build resolutions based on user decisions
+      const resolutions = duplicateMatches().map((match, index) => ({
+        action: duplicateDecisions().get(index) || 'keep_separate',
+        primaryItem: match.primaryItem,
+        duplicateItems: match.duplicateItems
+      }));
+
+      const response = await fetch(`/api/grocery-lists/${params.id}/resolve-duplicates`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ resolutions }),
+      });
+
+      if (response.ok) {
+        await loadItems(); // Refresh the items list
+        setDuplicateMatches([]);
+        setDuplicateDecisions(new Map());
+        setShowDuplicateModal(false);
+      }
+    } catch (err) {
+      console.error('Error resolving duplicates:', err);
+    }
+  };
+
+  const setDuplicateDecision = (index: number, action: 'merge' | 'keep_separate') => {
+    setDuplicateDecisions(prev => new Map(prev.set(index, action)));
+  };
+
+  // Check if all duplicate matches have been addressed
+  const allDuplicatesResolved = () => {
+    const totalMatches = duplicateMatches().length;
+    const resolvedMatches = Array.from(duplicateDecisions().values()).filter(action => action !== undefined).length;
+    return totalMatches === resolvedMatches && totalMatches > 0;
   };
 
 
@@ -782,8 +858,8 @@ export default function GroceryListPage() {
             {/* Sidebar */}
             <div class="lg:col-span-1 space-y-6">
               {/* Add Recipe */}
-               <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
-                 <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h3>
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h3>
                 <button
                   onClick={() => setShowRecipeModal(true)}
                    class="w-full px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700"
@@ -791,6 +867,29 @@ export default function GroceryListPage() {
                   Add Recipe Ingredients
                 </button>
               </div>
+
+              {/* Check for Duplicates */}
+              <Show when={items().length >= 2}>
+                <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6">
+                  <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Check for Duplicates</h3>
+                  <p class="text-sm text-gray-600 dark:text-stone-400 mb-4">
+                    Find and merge potential duplicate ingredients in your list.
+                  </p>
+                  <button
+                    onClick={handleCheckDuplicates}
+                    disabled={isCheckingDuplicates()}
+                    class="w-full px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                  >
+                    <Show when={isCheckingDuplicates()}>
+                      <svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+                      </svg>
+                    </Show>
+                    {isCheckingDuplicates() ? 'Checking...' : 'Check for Duplicates'}
+                  </button>
+                </div>
+              </Show>
 
               {/* Added Recipes */}
               <Show when={recipes().length > 0}>
@@ -952,6 +1051,107 @@ export default function GroceryListPage() {
                       }`}
                     >
                       Apply Choices
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Show>
+
+          {/* Duplicate Resolution Modal */}
+          <Show when={showDuplicateModal()}>
+            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+              <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Potential Duplicates Found</h3>
+                <p class="text-sm text-gray-600 dark:text-stone-400 mb-4">
+                  We found some items that might be duplicates. Choose how to handle each group:
+                </p>
+                <div class="space-y-4">
+                  <For each={duplicateMatches()}>
+                    {(match, index) => (
+                      <div class="border border-gray-200 dark:border-stone-700 rounded-md p-4">
+                        <div class="font-medium text-gray-900 dark:text-stone-100 mb-2">
+                          Primary: {match.primaryItem.name}
+                          <Show when={match.primaryItem.quantity || match.primaryItem.unit}>
+                            <span class="text-gray-500 dark:text-stone-400 ml-2">
+                              ({formatQuantity(match.primaryItem.quantity)} {match.primaryItem.unit || ''})
+                            </span>
+                          </Show>
+                        </div>
+                        
+                        <div class="mb-3">
+                          <div class="text-xs text-gray-500 dark:text-stone-400 mb-1">Similar items:</div>
+                          <div class="text-sm text-gray-700 dark:text-stone-300 space-y-1">
+                            <For each={match.duplicateItems}>
+                              {(item) => (
+                                <div class="flex justify-between">
+                                  <span>• {item.name}</span>
+                                  <Show when={item.quantity || item.unit}>
+                                    <span class="text-gray-500 dark:text-stone-400 text-xs">
+                                      ({formatQuantity(item.quantity)} {item.unit || ''})
+                                    </span>
+                                  </Show>
+                                </div>
+                              )}
+                            </For>
+                          </div>
+                          <div class="text-yellow-600 dark:text-yellow-400 text-xs mt-1">
+                            {Math.round(match.confidence * 100)}% similarity
+                          </div>
+                        </div>
+                        
+                        <div class="flex space-x-2">
+                          <button
+                            onClick={() => setDuplicateDecision(index(), 'merge')}
+                            class={`px-3 py-1 text-sm rounded ${duplicateDecisions().get(index()) === 'merge'
+                              ? 'bg-green-600 text-white'
+                              : 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50'
+                              }`}
+                          >
+                            Merge Into One
+                          </button>
+                          <button
+                            onClick={() => setDuplicateDecision(index(), 'keep_separate')}
+                            class={`px-3 py-1 text-sm rounded ${duplicateDecisions().get(index()) === 'keep_separate'
+                              ? 'bg-blue-600 text-white'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50'
+                              }`}
+                          >
+                            Keep Separate
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </For>
+                </div>
+                <div class="flex justify-between items-center mt-6">
+                  <div class="text-sm text-gray-600 dark:text-stone-400">
+                    {allDuplicatesResolved() 
+                      ? "✓ All duplicate groups addressed" 
+                      : `${Array.from(duplicateDecisions().values()).filter(action => action !== undefined).length} of ${duplicateMatches().length} groups addressed`
+                    }
+                  </div>
+                  <div class="flex space-x-3">
+                    <button
+                      onClick={() => {
+                        setShowDuplicateModal(false);
+                        setDuplicateMatches([]);
+                        setDuplicateDecisions(new Map());
+                      }}
+                      class="px-4 py-2 text-gray-700 dark:text-stone-300 border border-gray-300 dark:border-stone-600 rounded-md hover:bg-gray-50 dark:hover:bg-stone-700"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={handleResolveDuplicates}
+                      disabled={!allDuplicatesResolved()}
+                      class={`px-4 py-2 rounded-md transition-colors ${
+                        allDuplicatesResolved()
+                          ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                          : 'bg-gray-300 dark:bg-stone-600 text-gray-500 dark:text-stone-400 cursor-not-allowed'
+                      }`}
+                    >
+                      Apply Changes
                     </button>
                   </div>
                 </div>

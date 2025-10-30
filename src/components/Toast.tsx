@@ -75,28 +75,28 @@ export const ToastProvider: ParentComponent = (props) => {
     switch (type) {
       case 'success':
         return {
-          container: 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800',
+          container: 'bg-green-50 dark:bg-green-900 border-green-200 dark:border-green-800',
           icon: 'text-green-400 dark:text-green-400',
           text: 'text-green-800 dark:text-green-100',
           button: 'text-green-500 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300'
         };
       case 'error':
         return {
-          container: 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800',
+          container: 'bg-red-50 dark:bg-red-900 border-red-200 dark:border-red-800',
           icon: 'text-red-400 dark:text-red-400',
           text: 'text-red-800 dark:text-red-100',
           button: 'text-red-500 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300'
         };
       case 'warning':
         return {
-          container: 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800',
+          container: 'bg-yellow-50 dark:bg-yellow-900 border-yellow-200 dark:border-yellow-800',
           icon: 'text-yellow-400 dark:text-yellow-400',
           text: 'text-yellow-800 dark:text-yellow-100',
           button: 'text-yellow-500 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300'
         };
       default:
         return {
-          container: 'bg-blue-50 dark:bg-blue-900/20 border-blue-200 dark:border-blue-800',
+          container: 'bg-blue-50 dark:bg-blue-900 border-blue-200 dark:border-blue-800',
           icon: 'text-blue-400 dark:text-blue-400',
           text: 'text-blue-800 dark:text-blue-100',
           button: 'text-blue-500 hover:text-blue-600 dark:text-blue-400 dark:hover:text-blue-300'

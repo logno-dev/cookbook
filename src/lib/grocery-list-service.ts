@@ -438,29 +438,111 @@ export class GroceryListService {
   }
 
   static calculateIngredientSimilarity(a: string, b: string): number {
-    // Simple similarity calculation based on common words and string distance
-    const wordsA = a.split(/\s+/);
-    const wordsB = b.split(/\s+/);
+    // Normalize inputs - convert to lowercase and split into words
+    const wordsA = a.toLowerCase().split(/\s+/).filter(word => word.length > 0);
+    const wordsB = b.toLowerCase().split(/\s+/).filter(word => word.length > 0);
     
     // Check for exact matches
-    if (a === b) return 1.0;
+    if (a.toLowerCase() === b.toLowerCase()) return 1.0;
     
     // Check if one contains the other
-    if (a.includes(b) || b.includes(a)) return 0.9;
+    if (a.toLowerCase().includes(b.toLowerCase()) || b.toLowerCase().includes(a.toLowerCase())) return 0.9;
     
-    // Check for common words
-    const commonWords = wordsA.filter(word => wordsB.includes(word));
-    const maxWords = Math.max(wordsA.length, wordsB.length);
+    // Define common food synonyms and related terms
+    const synonymGroups = [
+      ['milk', 'dairy', 'cream'],
+      ['plant', 'vegan', 'non-dairy', 'alternative'],
+      ['unsweetened', 'plain', 'natural'],
+      ['soy', 'soya'],
+      ['almond', 'almonds'],
+      ['oat', 'oats'],
+      ['coconut', 'coco'],
+      ['rice', 'ricemilk'],
+      ['cheese', 'cheddar', 'mozzarella', 'swiss', 'gouda'],
+      ['butter', 'margarine'],
+      ['sugar', 'sweetener', 'sweetened'],
+      ['salt', 'sodium'],
+      ['pepper', 'peppercorn'],
+      ['onion', 'onions'],
+      ['garlic', 'garlic powder'],
+      ['tomato', 'tomatoes'],
+      ['potato', 'potatoes'],
+      ['carrot', 'carrots'],
+      ['chicken', 'poultry'],
+      ['beef', 'steak', 'ground beef'],
+      ['pork', 'bacon', 'ham'],
+      ['fish', 'salmon', 'tuna', 'cod'],
+      ['bread', 'loaf', 'slice'],
+      ['flour', 'all-purpose', 'wheat'],
+      ['oil', 'olive oil', 'vegetable oil', 'canola'],
+      ['vinegar', 'balsamic', 'white vinegar', 'apple cider vinegar']
+    ];
     
-    if (commonWords.length > 0) {
-      return commonWords.length / maxWords;
+    // Helper function to check if two words are synonyms
+    const areSynonyms = (word1: string, word2: string): boolean => {
+      return synonymGroups.some(group => 
+        group.includes(word1) && group.includes(word2)
+      );
+    };
+    
+    // Find exact word matches and synonym matches
+    let exactMatches = 0;
+    let synonymMatches = 0;
+    let totalScore = 0;
+    
+    for (const wordA of wordsA) {
+      for (const wordB of wordsB) {
+        if (wordA === wordB) {
+          exactMatches++;
+          // Give high weight to exact matches
+          totalScore += 0.8;
+        } else if (areSynonyms(wordA, wordB)) {
+          synonymMatches++;
+          // Give medium weight to synonym matches
+          totalScore += 0.6;
+        } else if (wordA.includes(wordB) || wordB.includes(wordA)) {
+          // Give some credit for partial word matches
+          totalScore += 0.3;
+        }
+      }
     }
     
-    // Levenshtein distance based similarity
-    const distance = this.levenshteinDistance(a, b);
+    // If we have any exact word matches, boost the score significantly
+    if (exactMatches > 0) {
+      const maxWords = Math.max(wordsA.length, wordsB.length);
+      const matchRatio = (exactMatches + (synonymMatches * 0.75)) / maxWords;
+      
+      // Ensure exact word matches result in at least 0.6 similarity
+      const baseScore = Math.max(0.6, matchRatio);
+      
+      // Add bonus for multiple exact matches
+      const bonus = exactMatches > 1 ? 0.1 : 0;
+      
+      return Math.min(1.0, baseScore + bonus);
+    }
+    
+    // If we have synonym matches but no exact matches
+    if (synonymMatches > 0) {
+      const maxWords = Math.max(wordsA.length, wordsB.length);
+      const matchRatio = synonymMatches / maxWords;
+      return Math.max(0.5, matchRatio * 0.8); // At least 0.5 for synonym matches
+    }
+    
+    // Fallback to original algorithm for partial matches
+    const commonWords = wordsA.filter(wordA => 
+      wordsB.some(wordB => wordA.includes(wordB) || wordB.includes(wordA))
+    );
+    
+    if (commonWords.length > 0) {
+      const maxWords = Math.max(wordsA.length, wordsB.length);
+      return Math.min(0.5, commonWords.length / maxWords); // Cap at 0.5 for partial matches
+    }
+    
+    // Levenshtein distance based similarity as last resort
+    const distance = this.levenshteinDistance(a.toLowerCase(), b.toLowerCase());
     const maxLength = Math.max(a.length, b.length);
     
-    return Math.max(0, 1 - distance / maxLength);
+    return Math.max(0, Math.min(0.4, 1 - distance / maxLength)); // Cap at 0.4 for character similarity
   }
 
   static levenshteinDistance(a: string, b: string): number {
