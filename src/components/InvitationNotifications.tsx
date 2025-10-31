@@ -1,6 +1,7 @@
 import { createSignal, createResource, Show, For } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useToast } from "~/lib/notifications";
+import { api } from "~/lib/api-client";
 
 interface CookbookInvitation {
   id: string;
@@ -26,28 +27,12 @@ interface CookbookInvitation {
 }
 
 async function fetchInvitations(): Promise<CookbookInvitation[]> {
-  const response = await fetch('/api/invitations');
-  if (!response.ok) {
-    const errorText = await response.text();
-    throw new Error(`Failed to fetch invitations (${response.status}): ${errorText}`);
-  }
-  const data = await response.json();
+  const data = await api.getInvitations();
   return data.invitations || [];
 }
 
 async function respondToInvitation(invitationId: string, response: 'accepted' | 'declined'): Promise<void> {
-  const apiResponse = await fetch(`/api/invitations/${invitationId}`, {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ response }),
-  });
-  
-  if (!apiResponse.ok) {
-    const error = await apiResponse.json();
-    throw new Error(error.error || 'Failed to respond to invitation');
-  }
+  await api.respondToInvitation(invitationId, response);
 }
 
 export default function InvitationNotifications() {

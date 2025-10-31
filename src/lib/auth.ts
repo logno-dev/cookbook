@@ -35,9 +35,13 @@ export async function createUser(userData: CreateUserData): Promise<User> {
   const passwordHash = await hashPassword(userData.password);
   
   const [newUser] = await db.insert(users).values({
+    id: uuidv4(),
     email: userData.email,
     passwordHash,
     name: userData.name,
+    isSuperAdmin: false,
+    createdAt: new Date(),
+    updatedAt: new Date(),
   }).returning({
     id: users.id,
     email: users.email,
@@ -102,9 +106,11 @@ export async function createSession(userId: string): Promise<string> {
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
 
   await db.insert(userSessions).values({
+    id: uuidv4(),
     userId,
     token,
     expiresAt,
+    createdAt: new Date(),
   });
 
   return token;

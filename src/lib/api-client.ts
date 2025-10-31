@@ -31,6 +31,7 @@ export async function apiCall<T = any>(
   
   const response = await fetch(url, {
     ...options,
+    credentials: 'include', // Include cookies in requests
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,
@@ -140,5 +141,16 @@ export const api = {
 
   async getGroceryLists() {
     return apiCall<{ groceryLists: any[] }>('/api/grocery-lists');
+  },
+
+  async getInvitations() {
+    return apiCall<{ invitations: any[] }>('/api/invitations');
+  },
+
+  async respondToInvitation(invitationId: string, response: 'accepted' | 'declined') {
+    return apiCall(`/api/invitations/${invitationId}`, {
+      method: 'PUT',
+      body: JSON.stringify({ response }),
+    });
   },
 };

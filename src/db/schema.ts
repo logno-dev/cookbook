@@ -3,17 +3,17 @@ import { relations } from 'drizzle-orm';
 import { v4 as uuidv4 } from 'uuid';
 
 export const users = sqliteTable('users', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   email: text('email').notNull().unique(),
   passwordHash: text('password_hash').notNull(),
   name: text('name'),
-  isSuperAdmin: integer('is_super_admin', { mode: 'boolean' }).$default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  isSuperAdmin: integer('is_super_admin', { mode: 'boolean' }),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
 
 export const recipes = sqliteTable('recipes', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
@@ -57,25 +57,25 @@ export const recipes = sqliteTable('recipes', {
     servingSize?: string;
     servingsPerContainer?: number;
   }>(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
 
 export const tags = sqliteTable('tags', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   name: text('name').notNull().unique(),
-  color: text('color').$default('#64748b'),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  color: text('color').default('#64748b'),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
 });
 
 export const recipeTags = sqliteTable('recipe_tags', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
   tagId: text('tag_id').notNull().references(() => tags.id, { onDelete: 'cascade' }),
 });
 
 export const recipeVariants = sqliteTable('recipe_variants', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
   name: text('name').notNull(), // e.g., "Vegan Version", "Low Sodium", "Spicy"
   description: text('description'),
@@ -120,8 +120,8 @@ export const recipeVariants = sqliteTable('recipe_variants', {
     servingSize?: string;
     servingsPerContainer?: number;
   }>(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
 
 export const cookbooks = sqliteTable('cookbooks', {
@@ -129,7 +129,7 @@ export const cookbooks = sqliteTable('cookbooks', {
   ownerId: text('owner_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   title: text('title').notNull(),
   description: text('description'),
-  isPublic: integer('is_public', { mode: 'boolean' }).$default(false),
+  isPublic: integer('is_public', { mode: 'boolean' }).default(false),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull(),
 });
@@ -159,56 +159,56 @@ export const cookbookInvitations = sqliteTable('cookbook_invitations', {
   inviteeEmail: text('invitee_email').notNull(),
   inviteeUserId: text('invitee_user_id').references(() => users.id, { onDelete: 'cascade' }), // null if user doesn't exist yet
   role: text('role').notNull().$type<'editor' | 'contributor' | 'reader'>(),
-  status: text('status').notNull().$type<'pending' | 'accepted' | 'declined' | 'expired'>().$default('pending'),
+  status: text('status').notNull().$type<'pending' | 'accepted' | 'declined' | 'expired'>().default('pending'),
   message: text('message'), // Optional message from inviter
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }), // Optional expiration
 });
 
 export const userSessions = sqliteTable('user_sessions', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   token: text('token').notNull().unique(),
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
 });
 
 export const passwordResetCodes = sqliteTable('password_reset_codes', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => users.id, { onDelete: 'cascade' }),
   code: text('code').notNull(), // 6-digit verification code
   expiresAt: integer('expires_at', { mode: 'timestamp' }).notNull(),
-  isUsed: integer('is_used', { mode: 'boolean' }).$default(false),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  isUsed: integer('is_used', { mode: 'boolean' }).default(false),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
 });
 
 export const userSettings = sqliteTable('user_settings', {
-  id: text('id').primaryKey().$defaultFn(() => uuidv4()),
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().unique().references(() => users.id, { onDelete: 'cascade' }),
   // Display preferences
-  theme: text('theme').$type<'light' | 'dark' | 'system'>().$default('system'),
-  language: text('language').$default('en'),
-  timezone: text('timezone').$default('UTC'),
+  theme: text('theme').$type<'light' | 'dark' | 'system'>().default('system'),
+  language: text('language').default('en'),
+  timezone: text('timezone').default('UTC'),
   // Recipe preferences
-  defaultServingSize: integer('default_serving_size').$default(4),
-  preferredUnits: text('preferred_units').$type<'metric' | 'imperial'>().$default('metric'),
-  showNutritionInfo: integer('show_nutrition_info', { mode: 'boolean' }).$default(true),
-  showCookingTips: integer('show_cooking_tips', { mode: 'boolean' }).$default(true),
+  defaultServingSize: integer('default_serving_size').default(4),
+  preferredUnits: text('preferred_units').$type<'metric' | 'imperial'>().default('metric'),
+  showNutritionInfo: integer('show_nutrition_info', { mode: 'boolean' }).default(true),
+  showCookingTips: integer('show_cooking_tips', { mode: 'boolean' }).default(true),
   // Privacy settings
-  profileVisibility: text('profile_visibility').$type<'public' | 'friends' | 'private'>().$default('private'),
-  allowCookbookInvitations: integer('allow_cookbook_invitations', { mode: 'boolean' }).$default(true),
+  profileVisibility: text('profile_visibility').$type<'public' | 'friends' | 'private'>().default('private'),
+  allowCookbookInvitations: integer('allow_cookbook_invitations', { mode: 'boolean' }).default(true),
   // Notification preferences
-  emailNotifications: integer('email_notifications', { mode: 'boolean' }).$default(true),
-  cookbookInviteNotifications: integer('cookbook_invite_notifications', { mode: 'boolean' }).$default(true),
-  recipeUpdateNotifications: integer('recipe_update_notifications', { mode: 'boolean' }).$default(false),
-  weeklyDigest: integer('weekly_digest', { mode: 'boolean' }).$default(false),
+  emailNotifications: integer('email_notifications', { mode: 'boolean' }).default(true),
+  cookbookInviteNotifications: integer('cookbook_invite_notifications', { mode: 'boolean' }).default(true),
+  recipeUpdateNotifications: integer('recipe_update_notifications', { mode: 'boolean' }).default(false),
+  weeklyDigest: integer('weekly_digest', { mode: 'boolean' }).default(false),
   // Grocery list preferences
-  defaultGroceryListView: text('default_grocery_list_view').$type<'category' | 'alphabetical' | 'custom'>().$default('category'),
-  autoCompleteGroceryItems: integer('auto_complete_grocery_items', { mode: 'boolean' }).$default(false),
+  defaultGroceryListView: text('default_grocery_list_view').$type<'category' | 'alphabetical' | 'custom'>().default('category'),
+  autoCompleteGroceryItems: integer('auto_complete_grocery_items', { mode: 'boolean' }).default(false),
   // Advanced preferences (stored as JSON for flexibility)
   customPreferences: text('custom_preferences', { mode: 'json' }).$type<Record<string, any>>(),
-  createdAt: integer('created_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).$defaultFn(() => new Date()),
+  createdAt: integer('created_at', { mode: 'timestamp' }),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }),
 });
 
 export const groceryLists = sqliteTable('grocery_lists', {
@@ -227,9 +227,9 @@ export const groceryListItems = sqliteTable('grocery_list_items', {
   quantity: text('quantity'),
   unit: text('unit'),
   notes: text('notes'),
-  isCompleted: integer('is_completed', { mode: 'boolean' }).$default(false),
+  isCompleted: integer('is_completed', { mode: 'boolean' }).default(false),
   category: text('category'),
-  order: integer('order').$default(0),
+  order: integer('order').default(0),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull(),
   completedAt: integer('completed_at', { mode: 'timestamp' }),
 });
@@ -239,7 +239,7 @@ export const groceryListRecipes = sqliteTable('grocery_list_recipes', {
   groceryListId: text('grocery_list_id').notNull().references(() => groceryLists.id, { onDelete: 'cascade' }),
   recipeId: text('recipe_id').notNull().references(() => recipes.id, { onDelete: 'cascade' }),
   variantId: text('variant_id').references(() => recipeVariants.id, { onDelete: 'set null' }),
-  multiplier: real('multiplier').$default(1),
+  multiplier: real('multiplier').default(1),
   addedAt: integer('added_at', { mode: 'timestamp' }).notNull(),
 });
 

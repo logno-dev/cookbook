@@ -1,7 +1,8 @@
 import { APIEvent } from '@solidjs/start/server';
-import { createUser } from '~/lib/auth';
+import { createUser, createSession } from '~/lib/auth';
 import { sendWelcomeEmail } from '~/lib/email';
 import { linkPendingInvitations } from '~/lib/cookbook-service';
+import { setCookie } from 'vinxi/http';
 
 export async function POST(event: APIEvent) {
   try {
@@ -23,6 +24,17 @@ export async function POST(event: APIEvent) {
     }
 
     const user = await createUser({ email, password, name });
+
+    // Create a session for the newly registered user (auto-login)
+    const sessionToken = await createSession(user.id);
+
+    setCookie(event.nativeEvent, 'session', sessionToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60, // 30 days
+      path: '/'
+    });
 
     // Link any pending cookbook invitations to this new user
     try {
