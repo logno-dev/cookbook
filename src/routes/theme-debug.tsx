@@ -6,7 +6,7 @@ import PageLayout from "~/components/PageLayout";
 
 export default function ThemeDebug() {
   const { theme, isDark, resolvedTheme, setTheme } = useTheme();
-  const { user } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [htmlClasses, setHtmlClasses] = createSignal<string[]>([]);
   const [systemTheme, setSystemTheme] = createSignal<string>('');
   
@@ -15,14 +15,12 @@ export default function ThemeDebug() {
       const response = await fetch('/api/settings');
       if (response.ok) {
         const data = await response.json();
-        console.log('Force reload - got settings:', data);
         if (data.settings?.theme) {
-          console.log('Force setting theme to:', data.settings.theme);
           await setTheme(data.settings.theme);
         }
       }
     } catch (error) {
-      console.error('Failed to force reload theme:', error);
+
     }
   };
   
@@ -35,7 +33,7 @@ export default function ThemeDebug() {
     // Clear sessionStorage
     sessionStorage.clear();
     
-    console.log('Cleared all cached data');
+
     
     // Reload page
     window.location.reload();
@@ -86,12 +84,9 @@ export default function ThemeDebug() {
               <p><strong>Auth Loading:</strong> {authLoading() ? 'Yes' : 'No'}</p>
             </div>
             <div class="mt-4">
-              <button 
-                onClick={() => console.log('Current auth state:', { user: user(), loading: authLoading() })}
-                class="px-3 py-1 bg-blue-600 text-white rounded text-sm"
-              >
-                Log Auth State
-              </button>
+              <div class="text-sm text-gray-600 dark:text-stone-400">
+                Auth state available in display above
+              </div>
             </div>
           </div>
 
@@ -104,12 +99,9 @@ export default function ThemeDebug() {
               <p><strong>Session Cookie:</strong> {document.cookie.includes('session') ? 'Present' : 'Missing'}</p>
             </div>
             <div class="mt-4">
-              <button 
-                onClick={() => console.log('All cookies:', document.cookie)}
-                class="px-3 py-1 bg-green-600 text-white rounded text-sm"
-              >
-                Log Cookies
-              </button>
+              <div class="text-sm text-gray-600 dark:text-stone-400">
+                Cookies: {document.cookie || 'None'}
+              </div>
             </div>
           </div>
 
@@ -117,16 +109,15 @@ export default function ThemeDebug() {
           <div class="bg-white dark:bg-stone-800 rounded-lg shadow p-6">
             <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-4">Debug Actions</h2>
             <div class="space-y-2">
-              <button 
-                onClick={() => console.log('Theme Debug Info:', { theme: theme(), resolved: resolvedTheme(), isDark: isDark(), htmlClasses: htmlClasses() })}
-                class="block w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
-              >
-                Log to Console
-              </button>
+              <div class="block w-full px-4 py-2 bg-gray-100 dark:bg-stone-700 rounded text-sm">
+                <div><strong>Theme:</strong> {theme()}</div>
+                <div><strong>Resolved:</strong> {resolvedTheme()}</div>
+                <div><strong>Dark:</strong> {isDark() ? 'Yes' : 'No'}</div>
+                <div><strong>Classes:</strong> {htmlClasses().join(', ')}</div>
+              </div>
               <button 
                 onClick={() => {
                   document.documentElement.classList.remove('dark');
-                  console.log('Manually removed dark class');
                 }}
                 class="block w-full px-4 py-2 bg-yellow-600 text-white rounded hover:bg-yellow-700"
               >
@@ -135,7 +126,6 @@ export default function ThemeDebug() {
               <button 
                 onClick={() => {
                   document.documentElement.classList.add('dark');
-                  console.log('Manually added dark class');
                 }}
                 class="block w-full px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700"
               >
@@ -158,10 +148,8 @@ export default function ThemeDebug() {
                   const html = document.documentElement;
                   if (html.classList.contains('dark')) {
                     html.classList.remove('dark');
-                    console.log('Manually removed dark class for Tailwind test');
                   } else {
                     html.classList.add('dark');
-                    console.log('Manually added dark class for Tailwind test');
                   }
                 }}
                 class="block w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"

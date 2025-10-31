@@ -32,7 +32,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
   // Aggressive timeout to prevent hanging - set loading to false after 1 second regardless
   setTimeout(() => {
     if (loading()) {
-      console.warn('🚨 Emergency timeout: forcing loading to false after 1 second');
+
       setLoading(false);
     }
   }, 1000);
@@ -52,7 +52,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
         return cached === 'null' ? null : JSON.parse(cached);
       }
     } catch (error) {
-      console.warn('Failed to read auth cache:', error);
+
     }
     return undefined; // undefined means we should check the server
   };
@@ -68,7 +68,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
       sessionStorage.setItem(AUTH_CACHE_KEY, user ? JSON.stringify(user) : 'null');
       sessionStorage.setItem(AUTH_CACHE_EXPIRY_KEY, (Date.now() + CACHE_DURATION).toString());
     } catch (error) {
-      console.warn('Failed to cache auth status:', error);
+
     }
   };
 
@@ -78,14 +78,14 @@ export function AuthProvider(props: { children: JSX.Element }) {
       sessionStorage.removeItem(AUTH_CACHE_KEY);
       sessionStorage.removeItem(AUTH_CACHE_EXPIRY_KEY);
     } catch (error) {
-      console.warn('Failed to clear auth cache:', error);
+
     }
   };
 
   // Dispatch auth state change event
   const dispatchAuthChange = () => {
     if (typeof window !== 'undefined') {
-      console.log('🔄 Dispatching auth-state-changed event');
+
       window.dispatchEvent(new CustomEvent('auth-state-changed'));
     }
   };
@@ -93,25 +93,17 @@ export function AuthProvider(props: { children: JSX.Element }) {
   // Check auth status from server
   const checkAuthStatus = async () => {
     try {
-      console.log('🔍 Making API call to /api/auth/me...');
       const data = await api.checkAuth();
-      console.log('🔍 Auth context received user data:', {
-        rawData: data,
-        user: data.user,
-        isSuperAdmin: data.user?.isSuperAdmin,
-        type: typeof data.user?.isSuperAdmin,
-        allUserKeys: data.user ? Object.keys(data.user) : 'no user'
-      });
       setUser(data.user);
       setCachedAuth(data.user);
       dispatchAuthChange();
     } catch (error) {
-      console.log('⚠️ Auth check failed (likely not logged in):', error.message);
+
       setUser(null);
       setCachedAuth(null);
       dispatchAuthChange();
     } finally {
-      console.log('✅ Auth check complete, setting loading to false');
+
       setLoading(false);
     }
   };
@@ -139,33 +131,27 @@ export function AuthProvider(props: { children: JSX.Element }) {
       
       if (cachedAuth !== undefined) {
         // We have cached data (either user or null)
-        console.log('📦 Using cached auth data:', cachedAuth);
         setUser(cachedAuth);
         setLoading(false);
       } else {
         // No cached data, assume user is not logged in and show login form quickly
-        console.log('🚫 No cached auth, defaulting to not logged in');
         setUser(null);
         setLoading(false);
         
         // Check the server in the background without blocking the UI
         checkAuthStatus().catch(() => {
           // Ignore errors - user can try to login if they want
-          console.log('Background auth check failed, but UI already showing');
         });
       }
     }
   });
 
   const login = async (email: string, password: string) => {
-    console.log('🔍 Auth context login attempt:', { email, passwordLength: password.length });
-    
     try {
       // Clear any existing user state first
       setUser(null);
       
       const data = await api.login(email, password);
-      console.log('✅ Auth context login successful:', data);
       
       if (!data || !data.user) {
         throw new Error('Invalid response from login API');
@@ -180,7 +166,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
       
       return data;
     } catch (error) {
-      console.error('❌ Auth context login failed:', error);
+
       setUser(null);
       setCachedAuth(null);
       throw error;
@@ -222,7 +208,7 @@ export async function getAuthenticatedUser(): Promise<User | null> {
     const data = await api.checkAuth();
     return data.user;
   } catch (error) {
-    console.error('Failed to check auth status:', error);
+
     return null;
   }
 }

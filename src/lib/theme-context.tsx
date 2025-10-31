@@ -21,7 +21,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
   const [hasLoadedUserSettings, setHasLoadedUserSettings] = createSignal(false);
   const [isInitializing, setIsInitializing] = createSignal(true);
   
-  console.log('ThemeProvider initialized');
+
 
   // Check system preference
   const getSystemTheme = (): 'light' | 'dark' => {
@@ -36,12 +36,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
     const currentTheme = theme();
     const systemTheme = getSystemTheme();
     
-    console.log('🎨 resolvedTheme called:', {
-      currentTheme,
-      systemTheme,
-      willUseSystem: currentTheme === 'system',
-      finalTheme: currentTheme === 'system' ? systemTheme : currentTheme
-    });
+
     
     if (currentTheme === 'system') {
       return systemTheme;
@@ -64,13 +59,13 @@ export function ThemeProvider(props: ThemeProviderProps) {
       });
       
       if (response.ok) {
-        console.log('✅ Theme saved to user settings:', newTheme);
+
         return; // Success - no need to use localStorage
       } else {
-        console.log('⚠️ Failed to save theme to user settings, using localStorage');
+
       }
     } catch (error) {
-      console.log('⚠️ Could not save theme to user settings, using localStorage:', error);
+
     }
     
     // Fallback to localStorage if not authenticated or save failed
@@ -81,7 +76,7 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
   // Load user's theme setting from their settings
   const loadUserTheme = async () => {
-    console.log('🎨 loadUserTheme called, hasLoadedUserSettings:', hasLoadedUserSettings());
+
     if (hasLoadedUserSettings()) return; // Prevent multiple loads
     
     let foundUserSetting = false;
@@ -90,46 +85,34 @@ export function ThemeProvider(props: ThemeProviderProps) {
     if (typeof window !== 'undefined') {
       const localTheme = localStorage.getItem('theme');
       if (localTheme) {
-        console.log('🗑️ Clearing localStorage theme:', localTheme, 'to prioritize user settings');
+
         localStorage.removeItem('theme');
       }
     }
     
     // Try to load from user settings first (only works if authenticated)
     try {
-      console.log('🔍 Attempting to fetch user settings...');
       const response = await fetch('/api/settings');
-      console.log('🔍 Settings API response status:', response.status);
       
       if (response.ok) {
         const data = await response.json();
-        console.log('🔍 Settings API response data:', data);
         
         if (data.settings?.theme) {
-            console.log('✅ Loading user theme from settings:', data.settings.theme);
             setThemeState(data.settings.theme);
             foundUserSetting = true;
-        } else {
-            console.log('⚠️ No theme found in user settings, using system default');
         }
-      } else if (response.status === 401) {
-        console.log('🔒 User not authenticated, will use system default');
-      } else {
-        console.log('❌ Settings fetch failed with status:', response.status);
       }
     } catch (error) {
-      console.log('❌ Could not load user theme from settings:', error);
+
     }
 
     // If no user setting was found, use system default
     if (!foundUserSetting) {
-      console.log('📱 Using system default theme');
       setThemeState('system');
     }
     
     setHasLoadedUserSettings(true);
     setIsInitializing(false);
-    console.log('🎨 loadUserTheme completed, final theme:', theme());
     
     // Force immediate application of theme
     setTimeout(() => applyTheme(), 0);
@@ -138,13 +121,11 @@ export function ThemeProvider(props: ThemeProviderProps) {
   // Apply theme to document
   const applyTheme = () => {
     if (typeof window === 'undefined') {
-      console.log('🎨 applyTheme skipped - SSR');
       return;
     }
 
     // Don't apply theme until we've loaded user settings (prevents flash of wrong theme)
     if (isInitializing() && !hasLoadedUserSettings()) {
-      console.log('🎨 applyTheme skipped - still initializing');
       return;
     }
 
@@ -152,32 +133,17 @@ export function ThemeProvider(props: ThemeProviderProps) {
     const currentTheme = theme();
     const resolved = resolvedTheme();
     
-    console.log('🎨 applyTheme called:', {
-      currentTheme,
-      resolved,
-      currentClassList: Array.from(root.classList),
-      willAddDark: resolved === 'dark',
-      systemTheme: getSystemTheme(),
-      isInitializing: isInitializing()
-    });
+
     
     setIsDark(resolved === 'dark');
 
     if (resolved === 'dark') {
       root.classList.add('dark');
-      console.log('✅ Added dark class to <html>');
     } else {
       root.classList.remove('dark');
-      console.log('✅ Removed dark class from <html>');
     }
     
-    // Double-check what's actually on the element after our changes
-    setTimeout(() => {
-      console.log('🔍 Final check - HTML classes:', Array.from(root.classList));
-      console.log('🔍 Has dark class?', root.classList.contains('dark'));
-      console.log('🔍 Current theme state:', currentTheme);
-      console.log('🔍 Resolved theme:', resolved);
-    }, 100);
+
   };
 
   // Listen for system theme changes
@@ -201,20 +167,15 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
   // Initialize theme on mount and listen for auth changes
   onMount(() => {
-    console.log('🎨 ThemeProvider onMount');
-    
     // Load theme immediately - no delay needed
-    console.log('🎨 Loading initial theme...');
     loadUserTheme();
     
     // Listen for custom auth events (we'll dispatch these from auth context)
     const handleAuthChange = () => {
-      console.log('🔄 Auth state changed, reloading theme...');
       setHasLoadedUserSettings(false); // Reset so we can reload
       setIsInitializing(true); // Reset initialization state
       // Small delay to ensure auth context has updated
       setTimeout(() => {
-        console.log('🔄 Reloading theme after auth change...');
         loadUserTheme();
       }, 100);
     };
@@ -231,7 +192,6 @@ export function ThemeProvider(props: ThemeProviderProps) {
 
   // Apply theme whenever it changes
   createEffect(() => {
-    console.log('🔄 createEffect triggered for applyTheme, current theme:', theme());
     applyTheme();
   });
 

@@ -21,13 +21,7 @@ export async function apiCall<T = any>(
 ): Promise<T> {
   const url = getApiUrl(path);
   
-  console.log('🔍 apiCall:', { 
-    path, 
-    url, 
-    method: options.method || 'GET',
-    hasBody: !!options.body,
-    hasSignal: !!options.signal
-  });
+
   
   const response = await fetch(url, {
     ...options,
@@ -38,19 +32,11 @@ export async function apiCall<T = any>(
     },
   });
 
-  console.log('🔍 apiCall response:', {
-    status: response.status,
-    statusText: response.statusText,
-    ok: response.ok
-  });
+
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.log('❌ apiCall error response:', { 
-      status: response.status, 
-      statusText: response.statusText, 
-      errorText 
-    });
+
     
     let errorMessage: string;
     
@@ -61,7 +47,7 @@ export async function apiCall<T = any>(
       errorMessage = `HTTP ${response.status}: ${response.statusText}`;
     }
     
-    console.log('❌ Throwing error:', errorMessage);
+
     throw new Error(errorMessage);
   }
 
@@ -92,26 +78,10 @@ export const api = {
   },
 
   async login(email: string, password: string) {
-    console.log('🔍 API client login called:', { email, passwordLength: password.length });
-    
-    const requestBody = { email, password };
-    const jsonBody = JSON.stringify(requestBody);
-    
-    console.log('🔍 Request body object:', requestBody);
-    console.log('🔍 JSON string being sent:', jsonBody);
-    
-    try {
-      const result = await apiCall<{ user: any }>('/api/auth/login', {
-        method: 'POST',
-        body: jsonBody,
-      });
-      
-      console.log('✅ API client login successful:', result);
-      return result;
-    } catch (error) {
-      console.error('❌ API client login failed:', error);
-      throw error;
-    }
+    return apiCall<{ user: any }>('/api/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ email, password }),
+    });
   },
 
   async register(email: string, password: string, name?: string) {
