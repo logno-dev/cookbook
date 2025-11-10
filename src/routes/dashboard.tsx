@@ -157,14 +157,14 @@ export default function Dashboard() {
       {/* Add Recipe Modal */}
       <Show when={showAddRecipe()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Add Recipe</h2>
+          <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-md w-full p-6">
+             <h2 class="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h2>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Recipe URL
-                </label>
+                 <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                   Recipe URL
+                 </label>
                 <input
                   type="url"
                   placeholder="https://example.com/recipe"
@@ -177,11 +177,11 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              <Show when={error()}>
-                <div class="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                  {error()}
-                </div>
-              </Show>
+               <Show when={error()}>
+                 <div class="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                   {error()}
+                 </div>
+               </Show>
 
               <div class="flex gap-3 pt-4">
                 <button

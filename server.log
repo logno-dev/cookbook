@@ -1,0 +1,26 @@
+
+> dev
+> vinxi dev
+
+vinxi v0.5.8
+vinxi starting dev server
+
+  ➜ Local:    http://localhost:3000/
+  ➜ Network:  use --host to expose
+
+Database URL: Turso (Remote)
+🔍 requireAuth called: { hasToken: false, tokenLength: undefined, tokenStart: 'undefined...' }
+❌ No session token found
+Get recipes error: Error: Authentication required
+    at requireAuth (/Users/logno/projects/cookbook/src/lib/middleware.ts:16:11)
+    at GET (/Users/logno/projects/cookbook/src/routes/api/recipes/index.ts?pick=GET:8:61)
+    at eval (/Users/logno/projects/cookbook/node_modules/.pnpm/@solidjs+start@1.2.0_solid-js@1.9.9_vinxi@0.5.8_@libsql+client@0.15.15_@types+node@24.9_b3ad34e591ca1bf013113bf7a0d56cd8/node_modules/@solidjs/start/dist/server/handler.js:36:29)
+    at async _callHandler (file:///Users/logno/projects/cookbook/node_modules/.pnpm/h3@1.15.3/node_modules/h3/dist/index.mjs:1862:16)
+    at async _callHandler (file:///Users/logno/projects/cookbook/node_modules/.pnpm/h3@1.15.3/node_modules/h3/dist/index.mjs:1862:16)
+    at async file:///Users/logno/projects/cookbook/node_modules/.pnpm/h3@1.15.3/node_modules/h3/dist/index.mjs:2003:19
+    at async Object.callAsync (file:///Users/logno/projects/cookbook/node_modules/.pnpm/unctx@2.4.1/node_modules/unctx/dist/index.mjs:72:16)
+    at async Server.toNodeHandle (file:///Users/logno/projects/cookbook/node_modules/.pnpm/h3@1.15.3/node_modules/h3/dist/index.mjs:2295:7)
+🔍 Login API called: { email: 'test', passwordLength: 4, hasEmail: true, hasPassword: true }
+🔍 authenticateUser called: { email: 'test', passwordLength: 4 }
+❌ No user found with email: test
+❌ Authentication failed for: test

@@ -186,31 +186,31 @@ export default function Dashboard() {
 
       <Show when={showAddRecipe()}>
         <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div class="bg-white rounded-lg shadow-xl max-w-md w-full p-6">
-            <h2 class="text-2xl font-bold text-gray-900 mb-4">Add Recipe</h2>
+           <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-md w-full p-6">
+             <h2 class="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h2>
             
             <div class="space-y-4">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                  Recipe URL
-                </label>
+                 <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
+                   Recipe URL
+                 </label>
                 <input
                   type="url"
                   placeholder="https://example.com/recipe"
                   value={scrapeUrl()}
                   onInput={(e) => setScrapeUrl(e.currentTarget.value)}
-                  class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                   class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
                 />
-                <p class="text-xs text-gray-500 mt-1">
-                  Paste a URL from a recipe website to automatically extract the recipe
-                </p>
+                 <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">
+                   Paste a URL from a recipe website to automatically extract the recipe
+                 </p>
               </div>
 
-              <Show when={error()}>
-                <div class="text-red-600 text-sm bg-red-50 p-3 rounded-lg">
-                  {error()}
-                </div>
-              </Show>
+               <Show when={error()}>
+                 <div class="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-3 rounded-lg">
+                   {error()}
+                 </div>
+               </Show>
 
               <div class="flex gap-3 pt-4">
                 <button

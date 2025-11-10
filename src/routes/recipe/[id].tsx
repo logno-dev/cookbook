@@ -400,44 +400,14 @@ export default function RecipeDetail() {
   });
 
   const collectFormData = () => {
-    // Collect ingredients from form inputs
-    const ingredients: RecipeIngredient[] = [];
-    const currentIngredients = formData().ingredients || [];
-    currentIngredients.forEach((_, index) => {
-      const quantityInput = document.querySelector(`input[name="ingredient-${index}-quantity"]`) as HTMLInputElement;
-      const unitInput = document.querySelector(`input[name="ingredient-${index}-unit"]`) as HTMLInputElement;
-      const ingredientInput = document.querySelector(`input[name="ingredient-${index}-ingredient"]`) as HTMLInputElement;
-      const notesInput = document.querySelector(`input[name="ingredient-${index}-notes"]`) as HTMLInputElement;
-      
-      const ingredient = ingredientInput?.value?.trim();
-      if (ingredient) {
-        ingredients.push({
-          quantity: quantityInput?.value || undefined,
-          unit: unitInput?.value || undefined,
-          ingredient: ingredient,
-          notes: notesInput?.value || undefined,
-        });
-      }
-    });
-
-    // Collect instructions from form inputs
-    const instructions: RecipeInstruction[] = [];
-    const currentInstructions = formData().instructions || [];
-    currentInstructions.forEach((instruction, index) => {
-      const timeInput = document.querySelector(`input[name="instruction-${index}-time"]`) as HTMLInputElement;
-      const temperatureInput = document.querySelector(`input[name="instruction-${index}-temperature"]`) as HTMLInputElement;
-      const instructionInput = document.querySelector(`textarea[name="instruction-${index}-instruction"]`) as HTMLTextAreaElement;
-      
-      const instructionText = instructionInput?.value?.trim();
-      if (instructionText) {
-        instructions.push({
-          step: instruction.step,
-          instruction: instructionText,
-          time: timeInput?.value ? parseInt(timeInput.value) : undefined,
-          temperature: temperatureInput?.value || undefined,
-        });
-      }
-    });
+    // Filter out empty ingredients and instructions
+    const ingredients = (formData().ingredients || []).filter(ingredient => 
+      ingredient.ingredient && ingredient.ingredient.trim() !== ""
+    );
+    
+    const instructions = (formData().instructions || []).filter(instruction => 
+      instruction.instruction && instruction.instruction.trim() !== ""
+    );
 
     return {
       ...formData(),
@@ -453,8 +423,7 @@ export default function RecipeDetail() {
 
     try {
       const data = collectFormData();
-      console.log("Saving recipe with tags:", data.tags);
-      console.log("Saving recipe with tagIds:", data.tagIds);
+      console.log("Saving recipe:", data.title);
       delete data.tags;
       delete data.id;
       delete data.createdAt;
@@ -1011,53 +980,66 @@ export default function RecipeDetail() {
                     </div>
                   </Show>
 
-                  <div class="flex gap-2 flex-wrap">
-                     <Show when={!isNewRecipe()}>
-                       <Show
-                         when={isEditing()}
-                         fallback={
+                   <div class="flex gap-2 flex-wrap">
+                      <Show when={!isNewRecipe()}>
+                        <Show
+                          when={isEditing()}
+                          fallback={
+                            <button
+                              onClick={() => {
+                                setIsEditing(true);
+                                setEditingVariantId(selectedVariantId());
+                                if (selectedVariantId()) {
+                                  // Initialize variant changes with current variant data
+                                  const variant = variants()?.find(v => v.id === selectedVariantId());
+                                  if (variant) {
+                                    const { id, recipeId, name, description, createdAt, updatedAt, ...changes } = variant;
+                                    setVariantChanges(changes);
+                                  }
+                                } else {
+                                  setVariantChanges({});
+                                }
+                              }}
+                              class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm whitespace-nowrap"
+                            >
+                              Edit Recipe
+                            </button>
+                          }
+                       >
+                         <div class="flex gap-2 flex-wrap">
                            <button
                              onClick={() => {
-                               setIsEditing(true);
-                               setEditingVariantId(selectedVariantId());
-                               if (selectedVariantId()) {
-                                 // Initialize variant changes with current variant data
-                                 const variant = variants()?.find(v => v.id === selectedVariantId());
-                                 if (variant) {
-                                   const { id, recipeId, name, description, createdAt, updatedAt, ...changes } = variant;
-                                   setVariantChanges(changes);
-                                 }
-                               } else {
-                                 setVariantChanges({});
-                               }
+                               setIsEditing(false);
+                               setEditingVariantId(null);
+                               setVariantChanges({});
                              }}
-                             class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 text-sm whitespace-nowrap"
+                             class="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm whitespace-nowrap"
                            >
-                             Edit Recipe
+                             Cancel
                            </button>
-                         }
-                      >
+                           <button
+                             onClick={editingVariantId() ? handleSaveVariant : handleSave}
+                             disabled={saving()}
+                             class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-sm whitespace-nowrap"
+                           >
+                             {saving() ? "Saving..." : editingVariantId() ? "Save Variant" : "Save Recipe"}
+                           </button>
+                         </div>
+                       </Show>
+                      </Show>
+
+                      {/* Save button for new recipes */}
+                      <Show when={isNewRecipe()}>
                         <div class="flex gap-2 flex-wrap">
-                          <button
-                            onClick={() => {
-                              setIsEditing(false);
-                              setEditingVariantId(null);
-                              setVariantChanges({});
-                            }}
-                            class="px-3 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm whitespace-nowrap"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={editingVariantId() ? handleSaveVariant : handleSave}
-                            disabled={saving()}
-                            class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-sm whitespace-nowrap"
-                          >
-                            {saving() ? "Saving..." : editingVariantId() ? "Save Variant" : "Save Recipe"}
-                          </button>
+                           <button
+                             onClick={handleSave}
+                             disabled={saving()}
+                             class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-sm whitespace-nowrap"
+                           >
+                             {saving() ? "Saving..." : "Save Recipe"}
+                           </button>
                         </div>
                       </Show>
-                    </Show>
 
                     <Show when={!isNewRecipe() && !isEditing()}>
                        <div class="flex gap-2 flex-wrap">
@@ -1187,6 +1169,11 @@ export default function RecipeDetail() {
                                           type="text"
                                           name={`ingredient-${index()}-quantity`}
                                           value={ingredient.quantity || ""}
+                                          onInput={(e) => {
+                                            const ingredients = [...(formData().ingredients || [])];
+                                            ingredients[index()] = { ...ingredients[index()], quantity: e.currentTarget.value || undefined };
+                                            setFormData({ ...formData(), ingredients });
+                                          }}
                                           placeholder="Amount"
                                           class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
@@ -1194,6 +1181,11 @@ export default function RecipeDetail() {
                                           type="text"
                                           name={`ingredient-${index()}-unit`}
                                           value={ingredient.unit || ""}
+                                          onInput={(e) => {
+                                            const ingredients = [...(formData().ingredients || [])];
+                                            ingredients[index()] = { ...ingredients[index()], unit: e.currentTarget.value || undefined };
+                                            setFormData({ ...formData(), ingredients });
+                                          }}
                                           placeholder="Unit"
                                           class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
@@ -1201,6 +1193,11 @@ export default function RecipeDetail() {
                                           type="text"
                                           name={`ingredient-${index()}-ingredient`}
                                           value={ingredient.ingredient}
+                                          onInput={(e) => {
+                                            const ingredients = [...(formData().ingredients || [])];
+                                            ingredients[index()] = { ...ingredients[index()], ingredient: e.currentTarget.value };
+                                            setFormData({ ...formData(), ingredients });
+                                          }}
                                           placeholder="Ingredient *"
                                           class="col-span-3 sm:col-span-5 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                           required
@@ -1214,13 +1211,18 @@ export default function RecipeDetail() {
                                          ×
                                        </button>
                                      </div>
-                                      <input
-                                        type="text"
-                                        name={`ingredient-${index()}-notes`}
-                                        value={ingredient.notes || ""}
-                                        placeholder="Notes (optional)"
-                                        class="sm:col-span-11 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
-                                      />
+                                       <input
+                                         type="text"
+                                         name={`ingredient-${index()}-notes`}
+                                         value={ingredient.notes || ""}
+                                         onInput={(e) => {
+                                           const ingredients = [...(formData().ingredients || [])];
+                                           ingredients[index()] = { ...ingredients[index()], notes: e.currentTarget.value || undefined };
+                                           setFormData({ ...formData(), ingredients });
+                                         }}
+                                         placeholder="Notes (optional)"
+                                         class="sm:col-span-11 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                                       />
                                    </div>
                                 )}
                               </For>
@@ -1379,6 +1381,11 @@ export default function RecipeDetail() {
                                         type="number"
                                         name={`instruction-${index()}-time`}
                                         value={instruction.time || ""}
+                                        onInput={(e) => {
+                                          const instructions = [...(formData().instructions || [])];
+                                          instructions[index()] = { ...instructions[index()], time: e.currentTarget.value ? parseInt(e.currentTarget.value) : undefined };
+                                          setFormData({ ...formData(), instructions });
+                                        }}
                                         placeholder="Time (min)"
                                          class="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
@@ -1386,6 +1393,11 @@ export default function RecipeDetail() {
                                         type="text"
                                         name={`instruction-${index()}-temperature`}
                                         value={instruction.temperature || ""}
+                                        onInput={(e) => {
+                                          const instructions = [...(formData().instructions || [])];
+                                          instructions[index()] = { ...instructions[index()], temperature: e.currentTarget.value || undefined };
+                                          setFormData({ ...formData(), instructions });
+                                        }}
                                         placeholder="Temp"
                                          class="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
@@ -1400,6 +1412,11 @@ export default function RecipeDetail() {
                                     <textarea
                                       name={`instruction-${index()}-instruction`}
                                       value={instruction.instruction}
+                                      onInput={(e) => {
+                                        const instructions = [...(formData().instructions || [])];
+                                        instructions[index()] = { ...instructions[index()], instruction: e.currentTarget.value };
+                                        setFormData({ ...formData(), instructions });
+                                      }}
                                       placeholder="Enter instruction"
                                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       rows="3"
