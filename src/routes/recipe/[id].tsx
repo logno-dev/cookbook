@@ -1,5 +1,6 @@
 import { Title } from "@solidjs/meta";
 import { Show, createSignal, createResource, For, createEffect } from "solid-js";
+import { createStore } from "solid-js/store";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
 import { multiplyQuantity, formatFractionWithUnicode } from "~/lib/fraction-utils";
@@ -120,14 +121,40 @@ export default function RecipeDetail() {
   const toast = useToast();
   
   const [isEditing, setIsEditing] = createSignal(false);
-  const [formData, setFormData] = createSignal<Partial<Recipe>>({});
+  const [formData, setFormData] = createStore<Partial<Recipe>>({});
+
+  // Helper functions to update nested arrays in the store
+  const updateFormField = (field: keyof Recipe, value: any) => {
+    setFormData(field, value);
+  };
+
+  const updateIngredientField = (index: number, field: keyof RecipeIngredient, value: any) => {
+    setFormData("ingredients", index, field, value);
+  };
+
+  const updateInstructionField = (index: number, field: keyof RecipeInstruction, value: any) => {
+    setFormData("instructions", index, field, value);
+  };
+
+  // Helper functions for variant updates
+  const updateVariantFormField = (field: keyof RecipeVariant, value: any) => {
+    setVariantChanges(field, value);
+  };
+
+  const updateVariantIngredientField = (index: number, field: keyof RecipeIngredient, value: any) => {
+    setVariantChanges("ingredients", index, field, value);
+  };
+
+  const updateVariantInstructionField = (index: number, field: keyof RecipeInstruction, value: any) => {
+    setVariantChanges("instructions", index, field, value);
+  };
   const [error, setError] = createSignal("");
   const [saving, setSaving] = createSignal(false);
   
   // Variant state
   const [selectedVariantId, setSelectedVariantId] = createSignal<string | null>(null);
   const [editingVariantId, setEditingVariantId] = createSignal<string | null>(null);
-  const [variantChanges, setVariantChanges] = createSignal<Partial<RecipeVariant>>({});
+  const [variantChanges, setVariantChanges] = createStore<Partial<RecipeVariant>>({});
   const [showCreateVariantDialog, setShowCreateVariantDialog] = createSignal(false);
   const [newVariantName, setNewVariantName] = createSignal("");
 
@@ -310,7 +337,7 @@ export default function RecipeDetail() {
   // Computed signal for the current recipe data (base or variant)
   const currentRecipeData = () => {
     const base = recipe();
-    if (!base) return formData();
+    if (!base) return formData;
     
     if (selectedVariantId() && variants()) {
       const variant = variants()!.find(v => v.id === selectedVariantId());
@@ -401,19 +428,19 @@ export default function RecipeDetail() {
 
   const collectFormData = () => {
     // Filter out empty ingredients and instructions
-    const ingredients = (formData().ingredients || []).filter(ingredient => 
+    const ingredients = (formData.ingredients || []).filter(ingredient => 
       ingredient.ingredient && ingredient.ingredient.trim() !== ""
     );
     
-    const instructions = (formData().instructions || []).filter(instruction => 
+    const instructions = (formData.instructions || []).filter(instruction => 
       instruction.instruction && instruction.instruction.trim() !== ""
     );
 
     return {
-      ...formData(),
+      ...formData,
       ingredients,
       instructions,
-      tagIds: formData().tags?.map(t => t.id) || [],
+      tagIds: formData.tags?.map(t => t.id) || [],
     };
   };
 
@@ -577,7 +604,7 @@ export default function RecipeDetail() {
   };
 
   const openForkDialog = () => {
-    const currentTitle = formData().title || "Untitled Recipe";
+     const currentTitle = formData.title || "Untitled Recipe";
     setForkTitle(`${currentTitle} (Copy)`);
     setShowForkDialog(true);
   };
@@ -588,59 +615,38 @@ export default function RecipeDetail() {
   };
 
   const addIngredient = () => {
-    const current = formData();
-    setFormData({
-      ...current,
-      ingredients: [...(current.ingredients || []), { ingredient: "" }],
-    });
+    const currentIngredients = formData.ingredients || [];
+    setFormData("ingredients", [...currentIngredients, { ingredient: "" }]);
   };
 
   const removeIngredient = (index: number) => {
-    const current = formData();
-    setFormData({
-      ...current,
-      ingredients: current.ingredients?.filter((_, i) => i !== index) || [],
-    });
-  };
-
-  const updateIngredient = (index: number, field: keyof RecipeIngredient, value: string) => {
-    const current = formData();
-    const ingredients = [...(current.ingredients || [])];
-    ingredients[index] = { ...ingredients[index], [field]: value };
-    setFormData({ ...current, ingredients });
+    const currentIngredients = formData.ingredients || [];
+    setFormData("ingredients", currentIngredients.filter((_, i) => i !== index));
   };
 
   const addInstruction = () => {
-    const current = formData();
-    const newStep = (current.instructions?.length || 0) + 1;
-    setFormData({
-      ...current,
-      instructions: [...(current.instructions || []), { step: newStep, instruction: "" }],
-    });
+    const currentInstructions = formData.instructions || [];
+    const nextStep = currentInstructions.length + 1;
+    setFormData("instructions", [...currentInstructions, { step: nextStep, instruction: "" }]);
   };
 
   const removeInstruction = (index: number) => {
-    const current = formData();
-    const newInstructions = current.instructions?.filter((_, i) => i !== index) || [];
-    // Renumber steps
-    const renumberedInstructions = newInstructions.map((inst, i) => ({ ...inst, step: i + 1 }));
-    setFormData({
-      ...current,
-      instructions: renumberedInstructions,
-    });
+    const currentInstructions = formData.instructions || [];
+    const filteredInstructions = currentInstructions.filter((_, i) => i !== index);
+    // Renumber the steps
+    const renumberedInstructions = filteredInstructions.map((instruction, i) => ({
+      ...instruction,
+      step: i + 1
+    }));
+    setFormData("instructions", renumberedInstructions);
   };
 
-  const updateInstruction = (index: number, field: keyof RecipeInstruction, value: string | number) => {
-    const current = formData();
-    const instructions = [...(current.instructions || [])];
-    instructions[index] = { ...instructions[index], [field]: value };
-    setFormData({ ...current, instructions });
-  };
+
 
   // Variant ingredient helpers
   const updateVariantIngredient = (index: number, field: keyof RecipeIngredient, value: string) => {
-    const currentChanges = variantChanges();
-    const variantIngredients = [...(currentChanges.ingredients || [])];
+    const currentIngredients = variantChanges.ingredients || [];
+    const variantIngredients = [...currentIngredients];
     
     // Ensure we have an array that's at least as long as the original
     const originalLength = recipe()?.ingredients?.length || 0;
@@ -648,26 +654,26 @@ export default function RecipeDetail() {
       variantIngredients.push({ ingredient: "" });
     }
     
-    // Update the specific field
+    // Update specific field
     variantIngredients[index] = { ...variantIngredients[index], [field]: value };
     
-    setVariantChanges({ ...currentChanges, ingredients: variantIngredients });
+    setVariantChanges("ingredients", variantIngredients);
   };
 
   const clearVariantIngredient = (index: number) => {
-    const currentChanges = variantChanges();
-    const variantIngredients = [...(currentChanges.ingredients || [])];
+    const currentIngredients = variantChanges.ingredients || [];
+    const variantIngredients = [...currentIngredients];
     
     if (index < variantIngredients.length) {
       variantIngredients[index] = { ingredient: "" };
-      setVariantChanges({ ...currentChanges, ingredients: variantIngredients });
+      setVariantChanges("ingredients", variantIngredients);
     }
   };
 
   // Variant instruction helpers
   const updateVariantInstruction = (index: number, field: keyof RecipeInstruction, value: string | number) => {
-    const currentChanges = variantChanges();
-    const variantInstructions = [...(currentChanges.instructions || [])];
+    const currentInstructions = variantChanges.instructions || [];
+    const variantInstructions = [...currentInstructions];
     
     // Ensure we have an array that's at least as long as the original
     const originalLength = recipe()?.instructions?.length || 0;
@@ -675,39 +681,24 @@ export default function RecipeDetail() {
       variantInstructions.push({ step: variantInstructions.length + 1, instruction: "" });
     }
     
-    // Update the specific field
+    // Update specific field
     variantInstructions[index] = { ...variantInstructions[index], [field]: value };
     
-    setVariantChanges({ ...currentChanges, instructions: variantInstructions });
+    setVariantChanges("instructions", variantInstructions);
   };
 
-  const clearVariantInstruction = (index: number) => {
-    const currentChanges = variantChanges();
-    const variantInstructions = [...(currentChanges.instructions || [])];
-    
-    if (index < variantInstructions.length) {
-      variantInstructions[index] = { step: index + 1, instruction: "" };
-      setVariantChanges({ ...currentChanges, instructions: variantInstructions });
-    }
-  };
+
 
   const toggleTag = (tag: Tag) => {
     if (!tag || !tag.id) return;
     
-    const current = formData();
-    const currentTags = (current.tags || []).filter(t => t && t.id); // Filter out invalid tags
+    const currentTags = (formData.tags || []).filter(t => t && t.id); // Filter out invalid tags
     const isSelected = currentTags.some(t => t.id === tag.id);
     
     if (isSelected) {
-      setFormData({
-        ...current,
-        tags: currentTags.filter(t => t.id !== tag.id),
-      });
+      setFormData("tags", currentTags.filter(t => t.id !== tag.id));
     } else {
-      setFormData({
-        ...current,
-        tags: [...currentTags, tag],
-      });
+      setFormData("tags", [...currentTags, tag]);
     }
   };
 
@@ -734,7 +725,7 @@ export default function RecipeDetail() {
       const newTag = data.tag;
       
       // Add the new tag to the recipe
-      const current = formData();
+      const current = formData;
       setFormData({
         ...current,
         tags: [...(current.tags || []), newTag],
@@ -766,7 +757,7 @@ export default function RecipeDetail() {
   const breadcrumbItems = () => {
     const fromParam = searchParams.from;
     const cookbookId = searchParams.cookbookId;
-    const recipeTitle = formData().title || "Recipe";
+     const recipeTitle = formData.title || "Recipe";
 
     if (fromParam === "cookbook" && cookbookId && sourceCookbook()) {
       return [
@@ -864,7 +855,7 @@ export default function RecipeDetail() {
 
   return (
     <>
-      <Title>{isNewRecipe() ? "New Recipe" : formData().title || "Recipe"} - Recipe Curator</Title>
+      <Title>{isNewRecipe() ? "New Recipe" : formData.title || "Recipe"} - Recipe Curator</Title>
       {authLoading() || !user() || (recipe.loading && !isNewRecipe()) ? (
         <main class="min-h-screen bg-gray-50 dark:bg-stone-900 pt-16">
           <div class="max-w-6xl mx-auto px-4 py-8">
@@ -879,12 +870,12 @@ export default function RecipeDetail() {
             </div>
           </div>
         </main>
-      ) : (formData().title !== undefined || isNewRecipe()) ? (
+       ) : (formData.title !== undefined || isNewRecipe()) ? (
         <PageLayout
-          title={isNewRecipe() ? "New Recipe" : formData().title || "Recipe"}
+           title={isNewRecipe() ? "New Recipe" : formData.title || "Recipe"}
           breadcrumbs={<Breadcrumbs items={breadcrumbItems()} />}
         >
-        <Show when={formData().title !== undefined || isNewRecipe()}>
+         <Show when={formData.title !== undefined || isNewRecipe()}>
           <div class="bg-white dark:bg-stone-800 rounded-lg shadow-lg overflow-hidden">
             <div class="p-6 border-b border-gray-200 dark:border-stone-700">
               <div class="space-y-4">
@@ -894,7 +885,7 @@ export default function RecipeDetail() {
                   fallback={
                     <div>
                        <div class="flex items-center gap-4 mb-2">
-                          <h1 class="text-3xl font-bold text-gray-900 dark:text-stone-100">{formData().title}</h1>
+                           <h1 class="text-3xl font-bold text-gray-900 dark:text-stone-100">{formData.title}</h1>
                          <Show when={!isNewRecipe() && variants() && variants()!.length > 0}>
                            <select
                              value={selectedVariantId() || ""}
@@ -910,8 +901,8 @@ export default function RecipeDetail() {
                            </select>
                          </Show>
                        </div>
-                      <Show when={formData().description}>
-                         <p class="text-gray-600 dark:text-stone-400 text-lg">{formData().description}</p>
+                      <Show when={formData.description}>
+                          <p class="text-gray-600 dark:text-stone-400 text-lg">{formData.description}</p>
                       </Show>
                     </div>
                   }
@@ -921,16 +912,16 @@ export default function RecipeDetail() {
                       type="text"
                       name="title"
                       placeholder="Recipe title"
-                      value={formData().title || ""}
-                      onInput={(e) => setFormData({ ...formData(), title: e.currentTarget.value })}
+                       value={formData.title || ""}
+                      onInput={(e) => updateFormField("title", e.currentTarget.value)}
                        class="text-3xl font-bold text-gray-900 dark:text-stone-100 w-full border-none outline-none bg-transparent placeholder-gray-400 dark:placeholder-stone-500"
                       disabled={editingVariantId() !== null} // Can't edit title in variant mode
                     />
                     <textarea
                       name="description"
                       placeholder="Recipe description (optional)"
-                      value={formData().description || ""}
-                      onInput={(e) => setFormData({ ...formData(), description: e.currentTarget.value })}
+                       value={formData.description || ""}
+                      onInput={(e) => updateFormField("description", e.currentTarget.value)}
                        class="text-gray-600 dark:text-stone-400 text-lg w-full border-none outline-none bg-transparent placeholder-gray-400 dark:placeholder-stone-500 resize-none"
                       rows="2"
                       disabled={editingVariantId() !== null} // Can't edit description in variant mode for now
@@ -1161,7 +1152,7 @@ export default function RecipeDetail() {
                           fallback={
                             // Editing original recipe - normal inputs
                             <div class="space-y-3">
-                              <For each={formData().ingredients}>
+                               <For each={formData.ingredients}>
                                 {(ingredient, index) => (
                                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-2">
                                      <div class="sm:col-span-12 grid grid-cols-6 sm:grid-cols-12 gap-2 items-center">
@@ -1170,9 +1161,7 @@ export default function RecipeDetail() {
                                           name={`ingredient-${index()}-quantity`}
                                           value={ingredient.quantity || ""}
                                           onInput={(e) => {
-                                            const ingredients = [...(formData().ingredients || [])];
-                                            ingredients[index()] = { ...ingredients[index()], quantity: e.currentTarget.value || undefined };
-                                            setFormData({ ...formData(), ingredients });
+                                            updateIngredientField(index(), "quantity", e.currentTarget.value || undefined);
                                           }}
                                           placeholder="Amount"
                                           class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1182,9 +1171,7 @@ export default function RecipeDetail() {
                                           name={`ingredient-${index()}-unit`}
                                           value={ingredient.unit || ""}
                                           onInput={(e) => {
-                                            const ingredients = [...(formData().ingredients || [])];
-                                            ingredients[index()] = { ...ingredients[index()], unit: e.currentTarget.value || undefined };
-                                            setFormData({ ...formData(), ingredients });
+                                            updateIngredientField(index(), "unit", e.currentTarget.value || undefined);
                                           }}
                                           placeholder="Unit"
                                           class="col-span-1 sm:col-span-2 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1194,9 +1181,7 @@ export default function RecipeDetail() {
                                           name={`ingredient-${index()}-ingredient`}
                                           value={ingredient.ingredient}
                                           onInput={(e) => {
-                                            const ingredients = [...(formData().ingredients || [])];
-                                            ingredients[index()] = { ...ingredients[index()], ingredient: e.currentTarget.value };
-                                            setFormData({ ...formData(), ingredients });
+                                            updateIngredientField(index(), "ingredient", e.currentTarget.value);
                                           }}
                                           placeholder="Ingredient *"
                                           class="col-span-3 sm:col-span-5 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1215,11 +1200,9 @@ export default function RecipeDetail() {
                                          type="text"
                                          name={`ingredient-${index()}-notes`}
                                          value={ingredient.notes || ""}
-                                         onInput={(e) => {
-                                           const ingredients = [...(formData().ingredients || [])];
-                                           ingredients[index()] = { ...ingredients[index()], notes: e.currentTarget.value || undefined };
-                                           setFormData({ ...formData(), ingredients });
-                                         }}
+                                          onInput={(e) => {
+                                            updateIngredientField(index(), "notes", e.currentTarget.value || undefined);
+                                          }}
                                          placeholder="Notes (optional)"
                                          class="sm:col-span-11 px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
@@ -1258,28 +1241,28 @@ export default function RecipeDetail() {
                                        <input
                                          type="text"
                                          value={variantChanges().ingredients?.[index()]?.quantity || ""}
-                                         onInput={(e) => updateVariantIngredient(index(), "quantity", e.currentTarget.value)}
+                                          onInput={(e) => updateVariantIngredientField(index(), "quantity", e.currentTarget.value)}
                                          placeholder="Amount"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
                                          value={variantChanges().ingredients?.[index()]?.unit || ""}
-                                         onInput={(e) => updateVariantIngredient(index(), "unit", e.currentTarget.value)}
+                                          onInput={(e) => updateVariantIngredientField(index(), "unit", e.currentTarget.value)}
                                          placeholder="Unit"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
                                          value={variantChanges().ingredients?.[index()]?.ingredient || ""}
-                                         onInput={(e) => updateVariantIngredient(index(), "ingredient", e.currentTarget.value)}
+                                          onInput={(e) => updateVariantIngredientField(index(), "ingredient", e.currentTarget.value)}
                                          placeholder="Override ingredient"
                                          class="col-span-5 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
                                          value={variantChanges().ingredients?.[index()]?.notes || ""}
-                                         onInput={(e) => updateVariantIngredient(index(), "notes", e.currentTarget.value)}
+                                          onInput={(e) => updateVariantIngredientField(index(), "notes", e.currentTarget.value)}
                                          placeholder="Notes"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
@@ -1372,7 +1355,7 @@ export default function RecipeDetail() {
                           fallback={
                             // Editing original recipe - normal inputs
                             <div class="space-y-3">
-                              <For each={formData().instructions}>
+                               <For each={formData.instructions}>
                                 {(instruction, index) => (
                                    <div class="border border-gray-200 dark:border-stone-700 rounded-lg p-4">
                                     <div class="flex flex-wrap items-center gap-2 mb-3">
@@ -1381,11 +1364,9 @@ export default function RecipeDetail() {
                                         type="number"
                                         name={`instruction-${index()}-time`}
                                         value={instruction.time || ""}
-                                        onInput={(e) => {
-                                          const instructions = [...(formData().instructions || [])];
-                                          instructions[index()] = { ...instructions[index()], time: e.currentTarget.value ? parseInt(e.currentTarget.value) : undefined };
-                                          setFormData({ ...formData(), instructions });
-                                        }}
+                                         onInput={(e) => {
+                                           updateInstructionField(index(), "time", e.currentTarget.value ? parseInt(e.currentTarget.value) : undefined);
+                                         }}
                                         placeholder="Time (min)"
                                          class="w-20 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
@@ -1393,11 +1374,9 @@ export default function RecipeDetail() {
                                         type="text"
                                         name={`instruction-${index()}-temperature`}
                                         value={instruction.temperature || ""}
-                                        onInput={(e) => {
-                                          const instructions = [...(formData().instructions || [])];
-                                          instructions[index()] = { ...instructions[index()], temperature: e.currentTarget.value || undefined };
-                                          setFormData({ ...formData(), instructions });
-                                        }}
+                                         onInput={(e) => {
+                                           updateInstructionField(index(), "temperature", e.currentTarget.value || undefined);
+                                         }}
                                         placeholder="Temp"
                                          class="w-16 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       />
@@ -1412,11 +1391,9 @@ export default function RecipeDetail() {
                                     <textarea
                                       name={`instruction-${index()}-instruction`}
                                       value={instruction.instruction}
-                                      onInput={(e) => {
-                                        const instructions = [...(formData().instructions || [])];
-                                        instructions[index()] = { ...instructions[index()], instruction: e.currentTarget.value };
-                                        setFormData({ ...formData(), instructions });
-                                      }}
+                                       onInput={(e) => {
+                                         updateInstructionField(index(), "instruction", e.currentTarget.value);
+                                       }}
                                       placeholder="Enter instruction"
                                        class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                       rows="3"
@@ -1457,14 +1434,14 @@ export default function RecipeDetail() {
                                         <input
                                           type="number"
                                           value={variantChanges().instructions?.[index()]?.time || ""}
-                                          onInput={(e) => updateVariantInstruction(index(), "time", parseInt(e.currentTarget.value) || undefined)}
+                                           onInput={(e) => updateVariantInstructionField(index(), "time", parseInt(e.currentTarget.value) || undefined)}
                                           placeholder="Time (min)"
                                            class="w-20 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
                                         <input
                                           type="text"
                                           value={variantChanges().instructions?.[index()]?.temperature || ""}
-                                          onInput={(e) => updateVariantInstruction(index(), "temperature", e.currentTarget.value)}
+                                           onInput={(e) => updateVariantInstructionField(index(), "temperature", e.currentTarget.value)}
                                           placeholder="Temp"
                                            class="w-16 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
@@ -1478,7 +1455,7 @@ export default function RecipeDetail() {
                                       </div>
                                       <textarea
                                         value={variantChanges().instructions?.[index()]?.instruction || ""}
-                                        onInput={(e) => updateVariantInstruction(index(), "instruction", e.currentTarget.value)}
+                                         onInput={(e) => updateVariantInstructionField(index(), "instruction", e.currentTarget.value)}
                                         placeholder="Override instruction"
                                          class="w-full px-3 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         rows="3"
@@ -1496,10 +1473,10 @@ export default function RecipeDetail() {
                 </div>
 
                 <div class="space-y-6">
-                  <Show when={formData().imageUrl && !isEditing()}>
+                   <Show when={formData.imageUrl && !isEditing()}>
                     <img
-                      src={formData().imageUrl}
-                      alt={formData().title}
+                       src={formData.imageUrl}
+                       alt={formData.title}
                       class="w-full rounded-lg shadow-md"
                     />
                   </Show>
@@ -1511,8 +1488,8 @@ export default function RecipeDetail() {
                        </label>
                        <input
                          type="url"
-                         value={formData().imageUrl || ""}
-                         onInput={(e) => setFormData({ ...formData(), imageUrl: e.currentTarget.value })}
+                          value={formData.imageUrl || ""}
+                          onInput={(e) => updateFormField("imageUrl", e.currentTarget.value)}
                          placeholder="https://example.com/image.jpg"
                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                        />
@@ -1526,41 +1503,41 @@ export default function RecipeDetail() {
                       when={isEditing()}
                       fallback={
                         <div class="space-y-2 text-sm">
-                           <Show when={formData().servings}>
+                            <Show when={formData.servings}>
                              <div class="flex justify-between">
                                 <span class="text-gray-600 dark:text-stone-400">Servings:</span>
                                 <span class="font-medium text-gray-900 dark:text-stone-100">
-                                  {Math.round((formData().servings || 0) * recipeMultiplier())}
+                                   {Math.round((formData.servings || 0) * recipeMultiplier())}
                                  <Show when={recipeMultiplier() !== 1}>
                                     <span class="text-xs text-gray-500 dark:text-stone-400 ml-1">
-                                     (originally {formData().servings})
+                                      (originally {formData.servings})
                                    </span>
                                  </Show>
                                </span>
                              </div>
                            </Show>
-                          <Show when={formData().prepTime}>
+                           <Show when={formData.prepTime}>
                             <div class="flex justify-between">
                                <span class="text-gray-600 dark:text-stone-400">Prep Time:</span>
-                               <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData().prepTime)}</span>
+                                <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData.prepTime)}</span>
                             </div>
                           </Show>
-                          <Show when={formData().cookTime}>
+                           <Show when={formData.cookTime}>
                             <div class="flex justify-between">
                                <span class="text-gray-600 dark:text-stone-400">Cook Time:</span>
-                               <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData().cookTime)}</span>
+                                <span class="font-medium text-gray-900 dark:text-stone-100">{formatTime(formData.cookTime)}</span>
                             </div>
                           </Show>
-                          <Show when={formData().difficulty}>
+                           <Show when={formData.difficulty}>
                             <div class="flex justify-between">
                                <span class="text-gray-600 dark:text-stone-400">Difficulty:</span>
-                               <span class="font-medium text-gray-900 dark:text-stone-100">{formData().difficulty}</span>
+                                <span class="font-medium text-gray-900 dark:text-stone-100">{formData.difficulty}</span>
                             </div>
                           </Show>
-                          <Show when={formData().cuisine}>
+                           <Show when={formData.cuisine}>
                             <div class="flex justify-between">
                                <span class="text-gray-600 dark:text-stone-400">Cuisine:</span>
-                               <span class="font-medium text-gray-900 dark:text-stone-100">{formData().cuisine}</span>
+                                <span class="font-medium text-gray-900 dark:text-stone-100">{formData.cuisine}</span>
                             </div>
                           </Show>
                         </div>
@@ -1576,8 +1553,8 @@ export default function RecipeDetail() {
                             fallback={
                               <input
                                 type="number"
-                                value={formData().servings || ""}
-                                onInput={(e) => setFormData({ ...formData(), servings: parseInt(e.currentTarget.value) || undefined })}
+                                 value={formData.servings || ""}
+                                 onInput={(e) => updateFormField("servings", parseInt(e.currentTarget.value) || undefined)}
                                  class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                               />
                             }
@@ -1590,7 +1567,7 @@ export default function RecipeDetail() {
                               <input
                                 type="number"
                                 value={variantChanges().servings || ""}
-                                onInput={(e) => setVariantChanges({ ...variantChanges(), servings: parseInt(e.currentTarget.value) || undefined })}
+                                onInput={(e) => updateVariantFormField("servings", parseInt(e.currentTarget.value) || undefined)}
                                 placeholder="Override with variant value"
                                  class="w-full px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                               />
@@ -1604,8 +1581,8 @@ export default function RecipeDetail() {
                            </label>
                            <input
                              type="number"
-                             value={formData().prepTime || ""}
-                             onInput={(e) => setFormData({ ...formData(), prepTime: parseInt(e.currentTarget.value) || undefined })}
+                              value={formData.prepTime || ""}
+                              onInput={(e) => updateFormField("prepTime", parseInt(e.currentTarget.value) || undefined)}
                              class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                            />
                         </div>
@@ -1616,8 +1593,8 @@ export default function RecipeDetail() {
                            </label>
                            <input
                              type="number"
-                             value={formData().cookTime || ""}
-                             onInput={(e) => setFormData({ ...formData(), cookTime: parseInt(e.currentTarget.value) || undefined })}
+                              value={formData.cookTime || ""}
+                              onInput={(e) => updateFormField("cookTime", parseInt(e.currentTarget.value) || undefined)}
                              class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                            />
                         </div>
@@ -1627,8 +1604,8 @@ export default function RecipeDetail() {
                              Difficulty
                            </label>
                            <select
-                             value={formData().difficulty || ""}
-                             onChange={(e) => setFormData({ ...formData(), difficulty: e.currentTarget.value || undefined })}
+                              value={formData.difficulty || ""}
+                              onChange={(e) => updateFormField("difficulty", e.currentTarget.value || undefined)}
                              class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
                            >
                             <option value="">Select</option>
@@ -1644,8 +1621,8 @@ export default function RecipeDetail() {
                            </label>
                            <input
                              type="text"
-                             value={formData().cuisine || ""}
-                             onInput={(e) => setFormData({ ...formData(), cuisine: e.currentTarget.value || undefined })}
+                              value={formData.cuisine || ""}
+                              onInput={(e) => updateFormField("cuisine", e.currentTarget.value || undefined)}
                              placeholder="e.g., Italian, Mexican, Asian"
                              class="w-full px-2 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                            />
@@ -1688,11 +1665,11 @@ export default function RecipeDetail() {
                       when={isEditing()}
                       fallback={
                         <Show 
-                          when={formData().tags && formData().tags.length > 0}
+                           when={formData.tags && formData.tags.length > 0}
                           fallback={                           <p class="text-sm text-gray-500 dark:text-stone-400 italic">No tags assigned</p>}
                         >
                           <div class="flex flex-wrap gap-2">
-                            <For each={formData().tags?.filter(tag => tag && tag.id && tag.name) || []}>
+                             <For each={formData.tags?.filter(tag => tag && tag.id && tag.name) || []}>
                               {(tag) => (
                                 <span
                                   class="px-2 py-1 rounded-full text-xs text-white"
@@ -1713,7 +1690,7 @@ export default function RecipeDetail() {
                         <div class="flex flex-wrap gap-2">
                           <For each={tags()?.filter(tag => tag && tag.id && tag.name) || []}>
                             {(tag) => {
-                              const isSelected = () => formData().tags?.some(t => t && t.id === tag.id) || false;
+                               const isSelected = () => formData.tags?.some(t => t && t.id === tag.id) || false;
                               return (
                                 <button
                                   onClick={() => toggleTag(tag)}
@@ -1735,11 +1712,11 @@ export default function RecipeDetail() {
 
                   </div>
 
-                  <Show when={formData().sourceUrl && !isEditing()}>
+                   <Show when={formData.sourceUrl && !isEditing()}>
                      <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
                        <h3 class="font-semibold text-gray-900 dark:text-stone-100 mb-2">Source</h3>
                       <a
-                        href={formData().sourceUrl}
+                         href={formData.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
                          class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm break-all"
@@ -1756,8 +1733,8 @@ export default function RecipeDetail() {
                        </label>
                       <input
                         type="url"
-                        value={formData().sourceUrl || ""}
-                        onInput={(e) => setFormData({ ...formData(), sourceUrl: e.currentTarget.value || undefined })}
+                         value={formData.sourceUrl || ""}
+                         onInput={(e) => updateFormField("sourceUrl", e.currentTarget.value || undefined)}
                         placeholder="https://example.com/recipe"
                          class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                       />
