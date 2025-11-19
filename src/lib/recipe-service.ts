@@ -166,6 +166,7 @@ export async function createRecipe(userId: string, data: CreateRecipeData): Prom
 
     if (data.tagIds && data.tagIds.length > 0) {
       const recipeTagData = data.tagIds.map(tagId => ({
+        id: uuidv4(),
         recipeId,
         tagId,
       }));
@@ -326,6 +327,7 @@ export async function updateRecipe(recipeId: string, userId: string, data: Updat
       
       if (data.tagIds.length > 0) {
         const recipeTagData = data.tagIds.map(tagId => ({
+          id: uuidv4(),
           recipeId,
           tagId,
         }));

@@ -1,5 +1,5 @@
 import { Title } from "@solidjs/meta";
-import { Show, createSignal, createResource, For, createEffect } from "solid-js";
+import { Show, createSignal, createResource, For, createEffect, createMemo } from "solid-js";
 import { createStore } from "solid-js/store";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate, useParams, useSearchParams } from "@solidjs/router";
@@ -256,6 +256,27 @@ export default function RecipeDetail() {
       throw error;
     }
   });
+
+  // Track locally created tags separately
+  const [localCreatedTags, setLocalCreatedTags] = createSignal<Tag[]>([]);
+  
+  // Derive available tags from resource + local additions
+  const availableTags = createMemo(() => {
+    const loadedTags = tags() || [];
+    const localTags = localCreatedTags();
+    
+    // Combine loaded tags with local tags, avoiding duplicates
+    const combined = [...loadedTags];
+    localTags.forEach(localTag => {
+      if (localTag && localTag.id && !combined.some(tag => tag.id === localTag.id)) {
+        combined.push(localTag);
+      }
+    });
+    
+    return combined;
+  });
+
+
 
   const [variants, { refetch: refetchVariants }] = createResource(() => {
     // Only fetch on client side after auth is loaded
@@ -687,6 +708,16 @@ export default function RecipeDetail() {
     setVariantChanges("instructions", variantInstructions);
   };
 
+  const clearVariantInstruction = (index: number) => {
+    const currentInstructions = variantChanges.instructions || [];
+    const variantInstructions = [...currentInstructions];
+    
+    if (index < variantInstructions.length) {
+      variantInstructions[index] = { step: index + 1, instruction: "" };
+      setVariantChanges("instructions", variantInstructions);
+    }
+  };
+
 
 
   const toggleTag = (tag: Tag) => {
@@ -705,6 +736,22 @@ export default function RecipeDetail() {
   const [newTagName, setNewTagName] = createSignal("");
   const [creatingTag, setCreatingTag] = createSignal(false);
 
+  // Filter tags based on search input (fuzzy search)
+  const filteredTags = createMemo(() => {
+    const searchTerm = newTagName().trim().toLowerCase();
+    if (!searchTerm) return availableTags();
+    
+    return availableTags().filter(tag => 
+      tag && tag.name && tag.name.toLowerCase().includes(searchTerm)
+    );
+  });
+
+  // Check if we should show "Create new tag" option
+  const shouldShowCreateOption = createMemo(() => {
+    const searchTerm = newTagName().trim();
+    return searchTerm && filteredTags().length === 0;
+  });
+
   const createTag = async () => {
     const tagName = newTagName().trim();
     if (!tagName) return;
@@ -722,18 +769,25 @@ export default function RecipeDetail() {
       }
 
       const data = await response.json();
-      const newTag = data.tag;
+      const tagId = data.tagId;
       
-      // Add the new tag to the recipe
-      const current = formData;
-      setFormData({
-        ...current,
-        tags: [...(current.tags || []), newTag],
-      });
+      // Construct the tag object from the response
+      const newTag = {
+        id: tagId,
+        name: tagName,
+        color: '#64748b' // default color
+      };
+      
+      // Track locally created tag
+      setLocalCreatedTags([...localCreatedTags(), newTag]);
+      
+      // Add new tag to recipe using proper store update
+      const currentTags = formData.tags || [];
+      setFormData("tags", [...currentTags, newTag]);
       
       setNewTagName("");
-      // Refresh tags list without reloading the page
-      await refetchTags();
+      // No need to refetch - we've already updated local state
+      // The database sync happens in the background
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to create tag");
     } finally {
@@ -1222,7 +1276,7 @@ export default function RecipeDetail() {
                           <div class="space-y-4">
                             <For each={recipe()?.ingredients || []}>
                               {(originalIngredient, index) => {
-                                const variantIngredients = variantChanges().ingredients || [];
+                                 const variantIngredients = variantChanges.ingredients || [];
                                 const variantIngredient = variantIngredients[index()];
                                 
                                 return (
@@ -1240,28 +1294,28 @@ export default function RecipeDetail() {
                                     <div class="grid grid-cols-12 gap-2 items-center">
                                        <input
                                          type="text"
-                                         value={variantChanges().ingredients?.[index()]?.quantity || ""}
+                                          value={variantChanges.ingredients?.[index()]?.quantity || ""}
                                           onInput={(e) => updateVariantIngredientField(index(), "quantity", e.currentTarget.value)}
                                          placeholder="Amount"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
-                                         value={variantChanges().ingredients?.[index()]?.unit || ""}
+                                          value={variantChanges.ingredients?.[index()]?.unit || ""}
                                           onInput={(e) => updateVariantIngredientField(index(), "unit", e.currentTarget.value)}
                                          placeholder="Unit"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
-                                         value={variantChanges().ingredients?.[index()]?.ingredient || ""}
+                                          value={variantChanges.ingredients?.[index()]?.ingredient || ""}
                                           onInput={(e) => updateVariantIngredientField(index(), "ingredient", e.currentTarget.value)}
                                          placeholder="Override ingredient"
                                          class="col-span-5 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                        />
                                        <input
                                          type="text"
-                                         value={variantChanges().ingredients?.[index()]?.notes || ""}
+                                          value={variantChanges.ingredients?.[index()]?.notes || ""}
                                           onInput={(e) => updateVariantIngredientField(index(), "notes", e.currentTarget.value)}
                                          placeholder="Notes"
                                          class="col-span-2 px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1414,7 +1468,7 @@ export default function RecipeDetail() {
                           <div class="space-y-4">
                             <For each={recipe()?.instructions || []}>
                               {(originalInstruction, index) => {
-                                const variantInstructions = variantChanges().instructions || [];
+                                 const variantInstructions = variantChanges.instructions || [];
                                 const variantInstruction = variantInstructions[index()];
                                 
                                 return (
@@ -1433,14 +1487,14 @@ export default function RecipeDetail() {
                                          <span class="font-medium text-emerald-600 dark:text-emerald-400">Variant Step {originalInstruction.step}</span>
                                         <input
                                           type="number"
-                                          value={variantChanges().instructions?.[index()]?.time || ""}
+                                           value={variantChanges.instructions?.[index()]?.time || ""}
                                            onInput={(e) => updateVariantInstructionField(index(), "time", parseInt(e.currentTarget.value) || undefined)}
                                           placeholder="Time (min)"
                                            class="w-20 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
                                         />
                                         <input
                                           type="text"
-                                          value={variantChanges().instructions?.[index()]?.temperature || ""}
+                                           value={variantChanges.instructions?.[index()]?.temperature || ""}
                                            onInput={(e) => updateVariantInstructionField(index(), "temperature", e.currentTarget.value)}
                                           placeholder="Temp"
                                            class="w-16 px-2 py-1 text-sm border border-emerald-300 dark:border-emerald-600 rounded focus:outline-none focus:ring-1 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1454,7 +1508,7 @@ export default function RecipeDetail() {
                                         </button>
                                       </div>
                                       <textarea
-                                        value={variantChanges().instructions?.[index()]?.instruction || ""}
+                                         value={variantChanges.instructions?.[index()]?.instruction || ""}
                                          onInput={(e) => updateVariantInstructionField(index(), "instruction", e.currentTarget.value)}
                                         placeholder="Override instruction"
                                          class="w-full px-3 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1566,7 +1620,7 @@ export default function RecipeDetail() {
                               </div>
                               <input
                                 type="number"
-                                value={variantChanges().servings || ""}
+                                 value={variantChanges.servings || ""}
                                 onInput={(e) => updateVariantFormField("servings", parseInt(e.currentTarget.value) || undefined)}
                                 placeholder="Override with variant value"
                                  class="w-full px-2 py-2 text-sm border border-emerald-300 dark:border-emerald-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-emerald-50 dark:bg-emerald-900/20 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
@@ -1634,39 +1688,81 @@ export default function RecipeDetail() {
                    <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
                      <h3 class="font-semibold text-gray-900 dark:text-stone-100 mb-3">Tags</h3>
                     
-                    <Show when={isEditing()}>
-                      <div class="mb-3">
-                        <div class="flex gap-2">
-                          <input
-                            type="text"
-                            value={newTagName()}
-                            onInput={(e) => setNewTagName(e.currentTarget.value)}
-                            placeholder="Create new tag"
-                             class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
-                            onKeyPress={(e) => {
-                              if (e.key === "Enter") {
-                                e.preventDefault();
-                                createTag();
-                              }
-                            }}
-                          />
-                          <button
-                            onClick={createTag}
-                            disabled={!newTagName().trim() || creatingTag()}
-                            class="px-3 py-1 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            {creatingTag() ? "..." : "Add"}
-                          </button>
-                        </div>
-                      </div>
-                    </Show>
+                     <Show when={isEditing()}>
+                       <div class="mb-3">
+                         <div class="flex gap-2 mb-2">
+                           <input
+                             type="text"
+                             value={newTagName()}
+                             onInput={(e) => setNewTagName(e.currentTarget.value)}
+                             placeholder="Search or create new tag"
+                              class="flex-1 px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 rounded focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
+                             onKeyPress={(e) => {
+                               if (e.key === "Enter") {
+                                 e.preventDefault();
+                                 if (shouldShowCreateOption()) {
+                                   createTag();
+                                 }
+                               }
+                             }}
+                           />
+                           <Show when={shouldShowCreateOption()}>
+                             <button
+                               onClick={createTag}
+                               disabled={!newTagName().trim() || creatingTag()}
+                               class="px-3 py-1 bg-emerald-600 text-white text-sm rounded hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                             >
+                               {creatingTag() ? "..." : "Create"}
+                             </button>
+                           </Show>
+                         </div>
+                         
+                         {/* Show filtered tags or create option */}
+                         <Show 
+                           when={newTagName().trim()}
+                           fallback={
+                             <p class="text-xs text-gray-500 dark:text-stone-400">Type to search tags or create new ones</p>
+                           }
+                         >
+                           <Show 
+                             when={filteredTags().length > 0}
+                             fallback={
+                               <div class="text-sm text-gray-600 dark:text-stone-400 py-1">
+                                 No matching tags found. Press Enter or click "Create" to add "{newTagName()}" as a new tag.
+                               </div>
+                             }
+                           >
+                             <div class="flex flex-wrap gap-1">
+                               <For each={filteredTags()}>
+                                 {(tag) => {
+                                   const isSelected = () => formData.tags?.some(t => t && t.id === tag.id) || false;
+                                   return (
+                                     <button
+                                       onClick={() => toggleTag(tag)}
+                                       class={`px-2 py-1 rounded-full text-xs transition-colors ${
+                                         isSelected()
+                                           ? "text-white"
+                                           : "bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300 hover:bg-gray-300 dark:hover:bg-stone-500"
+                                       }`}
+                                       style={{ "background-color": isSelected() ? tag.color : undefined }}
+                                     >
+                                       {tag.name}
+                                     </button>
+                                   );
+                                 }}
+                               </For>
+                             </div>
+                           </Show>
+                         </Show>
+                       </div>
+                     </Show>
 
                     <Show
                       when={isEditing()}
                       fallback={
                         <Show 
                            when={formData.tags && formData.tags.length > 0}
-                          fallback={                           <p class="text-sm text-gray-500 dark:text-stone-400 italic">No tags assigned</p>}
+                          fallback={<p class="text-sm text-gray-500 dark:text-stone-400 italic">No tags assigned</p>}
                         >
                           <div class="flex flex-wrap gap-2">
                              <For each={formData.tags?.filter(tag => tag && tag.id && tag.name) || []}>
@@ -1683,31 +1779,42 @@ export default function RecipeDetail() {
                         </Show>
                       }
                     >
-                      <Show 
-                        when={tags()}
-                        fallback={                         <p class="text-sm text-gray-500 dark:text-stone-400">Loading tags...</p>}
-                      >
-                        <div class="flex flex-wrap gap-2">
-                          <For each={tags()?.filter(tag => tag && tag.id && tag.name) || []}>
-                            {(tag) => {
-                               const isSelected = () => formData.tags?.some(t => t && t.id === tag.id) || false;
-                              return (
-                                <button
-                                  onClick={() => toggleTag(tag)}
-                                  class={`px-2 py-1 rounded-full text-xs transition-colors ${
-                                    isSelected()
-                                      ? "text-white"
-                                      : "bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300 hover:bg-gray-300 dark:hover:bg-stone-500"
-                                  }`}
-                                  style={{ "background-color": isSelected() ? tag.color : undefined }}
-                                >
-                                  {tag.name}
-                                </button>
-                              );
-                            }}
-                          </For>
-                        </div>
-                      </Show>
+                       <Show 
+                         when={availableTags()}
+                         fallback={<p class="text-sm text-gray-500 dark:text-stone-400">Loading tags...</p>}
+                       >
+                         <Show 
+                           when={newTagName().trim()}
+                           fallback={
+                             // Show all available tags when not searching
+                             <div class="flex flex-wrap gap-2">
+                               <For each={availableTags()?.filter(tag => tag && tag.id && tag.name) || []}>
+                                 {(tag) => {
+                                   const isSelected = () => formData.tags?.some(t => t && t.id === tag.id) || false;
+                                   return (
+                                     <button
+                                       onClick={() => toggleTag(tag)}
+                                       class={`px-2 py-1 rounded-full text-xs transition-colors ${
+                                         isSelected()
+                                           ? "text-white"
+                                           : "bg-gray-200 dark:bg-stone-600 text-gray-700 dark:text-stone-300 hover:bg-gray-300 dark:hover:bg-stone-500"
+                                       }`}
+                                       style={{ "background-color": isSelected() ? tag.color : undefined }}
+                                     >
+                                       {tag.name}
+                                     </button>
+                                   );
+                                 }}
+                               </For>
+                             </div>
+                           }
+                         >
+                           {/* When searching, the filtered results are shown above */}
+                           <div class="text-sm text-gray-500 dark:text-stone-400">
+                             {filteredTags().length} matching tag{filteredTags().length !== 1 ? 's' : ''} found
+                           </div>
+                         </Show>
+                       </Show>
                     </Show>
 
                   </div>
