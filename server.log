@@ -24,3 +24,86 @@ Get recipes error: Error: Authentication required
 🔍 authenticateUser called: { email: 'test', passwordLength: 4 }
 ❌ No user found with email: test
 ❌ Authentication failed for: test
+🔍 validateSession called with token: 3f238683...
+🔍 validateSession called with token: 3f238683...
+🔍 validateSession result: {
+  email: 'logan@bunch.codes',
+  isSuperAdmin: true,
+  rawIsSuperAdmin: true,
+  rawType: 'boolean',
+  convertedType: 'boolean',
+  fullUser: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  },
+  allKeys: [ 'id', 'email', 'name', 'isSuperAdmin' ]
+}
+🔍 Auth check for user: {
+  email: 'logan@bunch.codes',
+  isSuperAdmin: true,
+  userObject: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  }
+}
+🔍 JSON response string: {"user":{"id":"2a6b1c5c-99b1-4a88-b213-ac9c54699777","email":"logan@bunch.codes","name":"Logan","isSuperAdmin":true}}
+🔍 Parsed back: {
+  user: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  }
+}
+🔍 validateSession result: {
+  email: 'logan@bunch.codes',
+  isSuperAdmin: true,
+  rawIsSuperAdmin: true,
+  rawType: 'boolean',
+  convertedType: 'boolean',
+  fullUser: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  },
+  allKeys: [ 'id', 'email', 'name', 'isSuperAdmin' ]
+}
+🔍 requireAuth called: { hasToken: true, tokenLength: 36, tokenStart: '3f238683...' }
+🔍 validateSession called with token: 3f238683...
+🔍 requireAuth called: { hasToken: true, tokenLength: 36, tokenStart: '3f238683...' }
+🔍 validateSession called with token: 3f238683...
+🔍 validateSession result: {
+  email: 'logan@bunch.codes',
+  isSuperAdmin: true,
+  rawIsSuperAdmin: true,
+  rawType: 'boolean',
+  convertedType: 'boolean',
+  fullUser: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  },
+  allKeys: [ 'id', 'email', 'name', 'isSuperAdmin' ]
+}
+✅ Authentication successful for user: logan@bunch.codes
+🔍 validateSession result: {
+  email: 'logan@bunch.codes',
+  isSuperAdmin: true,
+  rawIsSuperAdmin: true,
+  rawType: 'boolean',
+  convertedType: 'boolean',
+  fullUser: {
+    id: '2a6b1c5c-99b1-4a88-b213-ac9c54699777',
+    email: 'logan@bunch.codes',
+    name: 'Logan',
+    isSuperAdmin: true
+  },
+  allKeys: [ 'id', 'email', 'name', 'isSuperAdmin' ]
+}
+✅ Authentication successful for user: logan@bunch.codes
