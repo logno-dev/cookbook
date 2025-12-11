@@ -8,6 +8,7 @@ import { useConfirm, useToast } from "~/lib/notifications";
 import PageLayout from "~/components/PageLayout";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import { SkeletonRecipeDetail } from "~/components/Skeletons";
+import { useRecipes } from "~/lib/stores";
 
 interface RecipeIngredient {
   quantity?: string;
@@ -119,6 +120,7 @@ export default function RecipeDetail() {
   const [searchParams] = useSearchParams();
   const confirm = useConfirm();
   const toast = useToast();
+  const recipesStore = useRecipes();
   
   const [isEditing, setIsEditing] = createSignal(false);
   const [formData, setFormData] = createStore<Partial<Recipe>>({});
@@ -589,6 +591,9 @@ export default function RecipeDetail() {
         throw new Error("Failed to delete recipe");
       }
 
+      // Invalidate the recipes cache to remove the deleted recipe from the UI
+      recipesStore.invalidate();
+      
       toast.success("Recipe deleted successfully");
       navigate("/dashboard");
     } catch (err) {

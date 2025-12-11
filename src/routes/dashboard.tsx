@@ -5,12 +5,14 @@ import { useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
 import { SkeletonDashboard, SkeletonCardGrid, SkeletonFilters } from "~/components/Skeletons";
 import { SearchAndFilters, RecipesGrid, RecentCookbooks, RecentGroceryLists } from "~/components/DashboardSections";
-import { useFilteredRecipes } from "~/lib/stores";
+import { useFilteredRecipes, useRecipes } from "~/lib/stores";
 import { api } from "~/lib/api-client";
+import { useToast } from "~/lib/notifications";
 
 export default function Dashboard() {
   const { user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const toast = useToast();
   const [mounted, setMounted] = createSignal(false);
   
   const [searchQuery, setSearchQuery] = createSignal("");
@@ -35,6 +37,7 @@ export default function Dashboard() {
   });
 
   // Always call stores - let them handle SSR safety internally
+  const recipesStore = useRecipes();
   const filteredRecipes = useFilteredRecipes(searchQuery, selectedTags, sortBy, sortOrder);
 
   const handleScrapeRecipe = async () => {
@@ -49,17 +52,23 @@ export default function Dashboard() {
         body: JSON.stringify({ url: scrapeUrl() }),
       });
       
-      await api.call("/api/recipes", {
+      const result = await api.call("/api/recipes", {
         method: "POST",
         body: JSON.stringify(scrapeData.recipe),
       });
 
+      // Clear form and close modal
       setScrapeUrl("");
       setShowAddRecipe(false);
-      // Trigger a simple page refresh to update recipes
-      window.location.reload();
+      
+      // Invalidate the recipes cache to force a refresh
+      recipesStore.invalidate();
+      
+      // Show success message
+      toast.success(`Recipe "${scrapeData.recipe.title || 'imported'}" added successfully!`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "An error occurred");
+      toast.error(err instanceof Error ? err.message : "Failed to import recipe");
     } finally {
       setIsLoading(false);
     }
