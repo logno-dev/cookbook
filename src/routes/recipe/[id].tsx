@@ -8,7 +8,7 @@ import { useConfirm, useToast } from "~/lib/notifications";
 import PageLayout from "~/components/PageLayout";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import { SkeletonRecipeDetail } from "~/components/Skeletons";
-import { useRecipes } from "~/lib/stores";
+import { useRecipes, useTags } from "~/lib/stores";
 
 interface RecipeIngredient {
   quantity?: string;
@@ -121,6 +121,7 @@ export default function RecipeDetail() {
   const confirm = useConfirm();
   const toast = useToast();
   const recipesStore = useRecipes();
+  const tagsStore = useTags();
   
   const [isEditing, setIsEditing] = createSignal(false);
   const [formData, setFormData] = createStore<Partial<Recipe>>({});
@@ -228,43 +229,12 @@ export default function RecipeDetail() {
     }
   });
 
-  const [tags, { refetch: refetchTags }] = createResource(() => {
-    // Only fetch on client side after auth is loaded
-    if (typeof window === 'undefined') return null; // Skip SSR fetch
-    if (authLoading()) return null; // Wait for auth to load
-    if (!user()) return null; // Don't fetch if not authenticated
-    return 'fetch-tags';
-  }, async () => {
-    try {
-      console.log('Fetching tags');
-      
-      const response = await fetch("/api/tags", {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        }
-      });
-      
-      if (!response.ok) {
-        console.error('Tags fetch failed:', response.status, response.statusText);
-        throw new Error("Failed to fetch tags");
-      }
-      
-      const data = await response.json();
-      console.log('Tags fetch successful:', data.tags?.length || 0, 'tags');
-      return data.tags as Tag[];
-    } catch (error) {
-      console.error('Tags fetch error:', error);
-      throw error;
-    }
-  });
-
   // Track locally created tags separately
   const [localCreatedTags, setLocalCreatedTags] = createSignal<Tag[]>([]);
   
   // Derive available tags from resource + local additions
   const availableTags = createMemo(() => {
-    const loadedTags = tags() || [];
+    const loadedTags = tagsStore.data() || [];
     const localTags = localCreatedTags();
     
     // Combine loaded tags with local tags, avoiding duplicates
@@ -358,7 +328,7 @@ export default function RecipeDetail() {
   });
 
   // Computed signal for the current recipe data (base or variant)
-  const currentRecipeData = () => {
+  const currentRecipeData = createMemo(() => {
     const base = recipe();
     if (!base) return formData;
     
@@ -409,7 +379,7 @@ export default function RecipeDetail() {
     }
     
     return base;
-  };
+  });
 
   createEffect(() => {
     if (recipe()) {

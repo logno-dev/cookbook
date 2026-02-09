@@ -1,4 +1,4 @@
-import { createSignal, For, Show, createEffect, createMemo } from 'solid-js';
+import { createSignal, For, Show, createEffect, createMemo, onCleanup } from 'solid-js';
 
 interface RecipeIngredient {
   quantity?: string;
@@ -54,7 +54,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
   const [recipeVariantsMap, setRecipeVariantsMap] = createSignal<Map<string, RecipeVariant[]>>(new Map());
 
   // Debounced search
-  let searchTimeout: NodeJS.Timeout;
+  let searchTimeout: ReturnType<typeof setTimeout> | undefined;
   createEffect(() => {
     const query = searchQuery();
     clearTimeout(searchTimeout);
@@ -69,6 +69,10 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
     } else {
       setSearchResults([]);
     }
+  });
+
+  onCleanup(() => {
+    clearTimeout(searchTimeout);
   });
 
   const performSearch = async (query: string) => {

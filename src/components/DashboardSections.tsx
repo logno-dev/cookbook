@@ -172,7 +172,7 @@ export function RecentCookbooks() {
     const cookbooks = cookbooksStore.data();
     if (!cookbooks) return [];
     
-    return cookbooks
+    return [...cookbooks]
       .sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
       .slice(0, 5);
   });
@@ -250,7 +250,7 @@ export function RecentGroceryLists() {
       }
       const data = await api.getGroceryLists();
       // Sort by updatedAt desc and take first 5
-      return data.groceryLists
+      return [...data.groceryLists]
         .sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime())
         .slice(0, 5);
     }

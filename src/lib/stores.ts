@@ -229,6 +229,19 @@ export const useFilteredRecipes = (
   sortOrder: () => string
 ) => {
   const { data: recipes } = useRecipes();
+  const searchIndex = createMemo(() => {
+    const recipeList = recipes();
+    if (!recipeList) return [];
+
+    return recipeList.map((recipe) => {
+      const ingredientText = recipe.ingredients.map((ing) => ing.ingredient).join(" ");
+      const tagText = recipe.tags.map((tag) => tag.name).join(" ");
+      const description = recipe.description || "";
+      const searchText = `${recipe.title} ${description} ${ingredientText} ${tagText}`.toLowerCase();
+
+      return { recipe, searchText };
+    });
+  });
 
   return createMemo(() => {
     const recipeList = recipes();
@@ -237,14 +250,11 @@ export const useFilteredRecipes = (
     let filtered = recipeList;
 
     // Apply search filter
-    const query = searchQuery().toLowerCase().trim();
+    const query = searchQuery().trim().toLowerCase();
     if (query) {
-      filtered = filtered.filter(recipe => 
-        recipe.title.toLowerCase().includes(query) ||
-        recipe.description?.toLowerCase().includes(query) ||
-        recipe.ingredients.some(ing => ing.ingredient.toLowerCase().includes(query)) ||
-        recipe.tags.some(tag => tag.name.toLowerCase().includes(query))
-      );
+      filtered = searchIndex()
+        .filter((entry) => entry.searchText.includes(query))
+        .map((entry) => entry.recipe);
     }
 
     // Apply tag filter
@@ -259,7 +269,7 @@ export const useFilteredRecipes = (
     const sort = sortBy();
     const order = sortOrder();
     
-    filtered.sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       let aVal: any;
       let bVal: any;
 
@@ -284,6 +294,6 @@ export const useFilteredRecipes = (
       return 0;
     });
 
-    return filtered;
+    return sorted;
   });
 };
