@@ -984,7 +984,7 @@ export default function GroceryListPage() {
                           {/* Show recipe-to-recipe match indicator */}
                           <Show when={!match.existingItem && match.recipes && match.recipes.length > 1}>
                              <div class="text-sm text-orange-600 dark:text-orange-400 mb-3">
-                              ⚠️ Multiple recipes contain similar ingredients
+                              Multiple recipes contain similar ingredients
                             </div>
                           </Show>
                          <div class="flex space-x-2">

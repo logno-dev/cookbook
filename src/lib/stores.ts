@@ -1,4 +1,4 @@
-import { createSignal, createEffect, createMemo, createResource } from 'solid-js';
+import { createMemo, createResource } from 'solid-js';
 import { useAuth } from './auth-context';
 import { api } from './api-client';
 
@@ -83,37 +83,48 @@ export interface Cookbook {
 
 // Simple cached resource functions
 const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes - increased for better performance
+const pendingRequests = new Map<string, Promise<unknown>>();
 
 function createCachedResource<T>(
   fetchFn: () => Promise<T>,
   cacheKey: string,
-  deps?: () => any
+  deps: () => string | undefined
 ) {
-  return createResource(deps, async () => {
+  return createResource(deps, async (userId, { refetching }) => {
     // Only run on client side to avoid SSR issues
     if (typeof window === 'undefined') {
       return null;
     }
     
-    // Check cache first
+    const scopedKey = `${cacheKey}:${userId}`;
+    // Explicit refreshes must bypass the cache.
     try {
-      const cached = sessionStorage.getItem(cacheKey);
-      const expiry = sessionStorage.getItem(`${cacheKey}_expiry`);
+      const cached = sessionStorage.getItem(scopedKey);
+      const expiry = sessionStorage.getItem(`${scopedKey}_expiry`);
       
-      if (cached && expiry && Date.now() < parseInt(expiry)) {
-        return JSON.parse(cached);
+      if (!refetching && cached && expiry && Date.now() < parseInt(expiry)) {
+        return JSON.parse(cached) as T;
       }
     } catch (error) {
       console.warn('Failed to read cache:', error);
     }
 
-    // Fetch from server with absolute URL handling
-    const result = await fetchFn();
+    // Share concurrent reads without sharing private data across users.
+    const pending = pendingRequests.get(scopedKey);
+    if (pending) return pending as Promise<T>;
+    const request = fetchFn();
+    pendingRequests.set(scopedKey, request);
+    let result: T;
+    try {
+      result = await request;
+    } finally {
+      pendingRequests.delete(scopedKey);
+    }
     
     // Cache the result
     try {
-      sessionStorage.setItem(cacheKey, JSON.stringify(result));
-      sessionStorage.setItem(`${cacheKey}_expiry`, (Date.now() + CACHE_DURATION).toString());
+      sessionStorage.setItem(scopedKey, JSON.stringify(result));
+      sessionStorage.setItem(`${scopedKey}_expiry`, (Date.now() + CACHE_DURATION).toString());
     } catch (error) {
       console.warn('Failed to cache data:', error);
     }
@@ -135,7 +146,7 @@ export const useTags = () => {
       return data.tags as Tag[];
     },
     'tags_cache',
-    () => !!user() // Fetch when user becomes available
+    () => user()?.id
   );
 
   return {
@@ -145,8 +156,8 @@ export const useTags = () => {
     refetch,
     invalidate: () => {
       try {
-        sessionStorage.removeItem('tags_cache');
-        sessionStorage.removeItem('tags_cache_expiry');
+        sessionStorage.removeItem(`tags_cache:${user()?.id}`);
+        sessionStorage.removeItem(`tags_cache:${user()?.id}_expiry`);
       } catch (error) {
         console.warn('Failed to clear cache:', error);
       }
@@ -168,7 +179,7 @@ export const useRecipes = () => {
       return data.recipes as Recipe[];
     },
     'recipes_cache',
-    () => !!user() // Fetch when user becomes available
+    () => user()?.id
   );
 
   return {
@@ -178,8 +189,8 @@ export const useRecipes = () => {
     refetch,
     invalidate: () => {
       try {
-        sessionStorage.removeItem('recipes_cache');
-        sessionStorage.removeItem('recipes_cache_expiry');
+        sessionStorage.removeItem(`recipes_cache:${user()?.id}`);
+        sessionStorage.removeItem(`recipes_cache:${user()?.id}_expiry`);
       } catch (error) {
         console.warn('Failed to clear cache:', error);
       }
@@ -201,7 +212,7 @@ export const useCookbooks = () => {
       return data.cookbooks as Cookbook[];
     },
     'cookbooks_cache',
-    () => !!user() // Fetch when user becomes available
+    () => user()?.id
   );
 
   return {
@@ -211,8 +222,8 @@ export const useCookbooks = () => {
     refetch,
     invalidate: () => {
       try {
-        sessionStorage.removeItem('cookbooks_cache');
-        sessionStorage.removeItem('cookbooks_cache_expiry');
+        sessionStorage.removeItem(`cookbooks_cache:${user()?.id}`);
+        sessionStorage.removeItem(`cookbooks_cache:${user()?.id}_expiry`);
       } catch (error) {
         console.warn('Failed to clear cache:', error);
       }
@@ -226,9 +237,10 @@ export const useFilteredRecipes = (
   searchQuery: () => string,
   selectedTags: () => string[],
   sortBy: () => string,
-  sortOrder: () => string
+  sortOrder: () => string,
+  source?: () => Recipe[] | null | undefined
 ) => {
-  const { data: recipes } = useRecipes();
+  const recipes = source ?? useRecipes().data;
   const searchIndex = createMemo(() => {
     const recipeList = recipes();
     if (!recipeList) return [];

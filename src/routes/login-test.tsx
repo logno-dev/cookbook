@@ -34,14 +34,14 @@ export default function LoginTest() {
       });
       
       if (response.ok) {
-        setResult(`✅ Success: ${data}`);
+        setResult(`Success: ${data}`);
       } else {
-        setResult(`❌ Error ${response.status}: ${data}`);
+        setResult(`Error ${response.status}: ${data}`);
       }
       
     } catch (error) {
       console.error('🧪 Login test failed:', error);
-      setResult(`❌ Network error: ${error.message}`);
+      setResult(`Network error: ${error.message}`);
     } finally {
       setLoading(false);
     }

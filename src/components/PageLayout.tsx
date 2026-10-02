@@ -34,8 +34,8 @@ export default function PageLayout(props: PageLayoutProps) {
   };
 
   return (
-    <main class={`min-h-screen bg-gray-50 dark:bg-stone-900 pt-16 ${props.className || ''}`}>
-      <div class={`${getMaxWidthClass()} mx-auto px-4 py-8`}>
+    <main class={`app-page min-h-screen pt-16 ${props.className || ''}`}>
+      <div class={`${getMaxWidthClass()} mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12`}>
         {/* Breadcrumbs */}
         <Show when={props.breadcrumbs || breadcrumbContext.items().length > 0}>
           <div class="mb-6">
@@ -45,11 +45,11 @@ export default function PageLayout(props: PageLayoutProps) {
 
         {/* Page Header */}
         <Show when={props.title || props.headerActions}>
-          <div class="bg-white dark:bg-stone-800 rounded-lg shadow-sm border border-gray-200 dark:border-stone-700 p-6 mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div class="page-heading mb-8 pb-8">
+            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-5">
               <div class="flex-1">
                 <Show when={props.title}>
-                  <h1 class="text-3xl font-bold text-gray-900 dark:text-stone-100 mb-2">{props.title}</h1>
+                  <h1 class="page-title text-3xl sm:text-4xl text-gray-900 dark:text-stone-100 mb-3">{props.title}</h1>
                 </Show>
                 <Show when={props.subtitle}>
                   <p class="text-gray-600 dark:text-stone-400">{props.subtitle}</p>

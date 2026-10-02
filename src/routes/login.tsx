@@ -1,10 +1,10 @@
 import { Title } from "@solidjs/meta";
-import { Show, createSignal, onMount, createEffect } from "solid-js";
+import { Show, createSignal, createEffect } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "@solidjs/router";
 
 export default function Login() {
-  const { user, loading: authLoading, refreshAuth } = useAuth();
+  const { user, loading: authLoading, login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = createSignal("");
   const [password, setPassword] = createSignal("");
@@ -13,7 +13,6 @@ export default function Login() {
   // Redirect to dashboard if user is already logged in (via auth context)
   createEffect(() => {
     if (!authLoading() && user()) {
-      console.log('✅ User is logged in via auth context, redirecting to dashboard');
       navigate("/dashboard", { replace: true });
     }
   });
@@ -23,42 +22,9 @@ export default function Login() {
     setLoading(true);
     setError("");
 
-    console.log('🔍 Login form submitted:', {
-      email: email(),
-      password: password().length + ' chars'
-    });
-
     try {
-      // Direct API call without auth context
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          email: email().trim(), 
-          password: password().trim() 
-        }),
-        credentials: 'include' // Important for cookies
-      });
-      
-      if (response.ok) {
-        console.log('✅ Login successful, refreshing auth and redirecting to dashboard');
-        // Refresh the auth context so it knows we're logged in
-        await refreshAuth();
-        // The createEffect will handle the redirect when user() becomes truthy
-        return;
-      } else {
-        // Try to get error message from response
-        let errorMessage = 'Login failed';
-        try {
-          const errorData = await response.json();
-          errorMessage = errorData.error || errorMessage;
-        } catch {
-          errorMessage = `Login failed (${response.status})`;
-        }
-        setError(errorMessage);
-      }
+      await login(email().trim(), password());
     } catch (err) {
-      console.error('❌ Login error:', err);
       setError(err instanceof Error ? err.message : "Network error");
     } finally {
       setLoading(false);
@@ -68,10 +34,12 @@ export default function Login() {
   // No loading screen - show login form immediately
 
   return (
-    <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-stone-900 dark:to-stone-800 flex items-center justify-center pt-16">
+    <main class="app-page min-h-screen flex items-center justify-center px-4 py-24">
       <Title>Sign In - Recipe Curator</Title>
-      <div class="max-w-md w-full bg-white dark:bg-stone-800 rounded-lg shadow-xl p-8">
-        <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-stone-100 mb-8">Sign In</h1>
+      <div class="feature-card max-w-md w-full">
+        <p class="eyebrow mb-3 text-center">Your everyday kitchen</p>
+        <h1 class="page-title text-4xl text-center text-gray-900 dark:text-stone-100 mb-3">Welcome back</h1>
+        <p class="text-center text-gray-500 dark:text-stone-400 mb-8">Your favorite recipes are waiting.</p>
         
         <form onSubmit={handleSubmit} class="space-y-6">
           <div>

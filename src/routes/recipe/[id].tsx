@@ -9,6 +9,7 @@ import PageLayout from "~/components/PageLayout";
 import Breadcrumbs from "~/components/Breadcrumbs";
 import { SkeletonRecipeDetail } from "~/components/Skeletons";
 import { useRecipes, useTags } from "~/lib/stores";
+import RecipeImageInput from "~/components/RecipeImageInput";
 
 interface RecipeIngredient {
   quantity?: string;
@@ -153,6 +154,7 @@ export default function RecipeDetail() {
   };
   const [error, setError] = createSignal("");
   const [saving, setSaving] = createSignal(false);
+  const [imageUploading, setImageUploading] = createSignal(false);
   
   // Variant state
   const [selectedVariantId, setSelectedVariantId] = createSignal<string | null>(null);
@@ -438,6 +440,7 @@ export default function RecipeDetail() {
   };
 
   const handleSave = async () => {
+    if (imageUploading() || saving()) return;
     setSaving(true);
     setError("");
 
@@ -463,8 +466,11 @@ export default function RecipeDetail() {
         throw new Error(errorData.error || "Failed to save recipe");
       }
 
+      // Refresh collection thumbnails after creating or replacing an image.
+      void recipesStore.invalidate();
       if (params.id === "new") {
         const result = await response.json();
+        setIsEditing(false);
         navigate(`/recipe/${result.recipeId}`);
       } else {
         await refetch();
@@ -478,6 +484,7 @@ export default function RecipeDetail() {
   };
 
   const handleSaveVariant = async () => {
+    if (imageUploading() || saving()) return;
     setSaving(true);
     setError("");
 
@@ -489,7 +496,7 @@ export default function RecipeDetail() {
       const response = await fetch(url, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(variantChanges()),
+        body: JSON.stringify(variantChanges),
       });
 
       if (!response.ok) {
@@ -959,12 +966,13 @@ export default function RecipeDetail() {
                 </Show>
 
                 {/* Action Bar - Separate row for controls */}
-                 <div class="flex justify-between items-center pt-2 border-t border-gray-100 dark:border-stone-700">
+                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 pt-2 border-t border-gray-100 dark:border-stone-700">
                   <Show when={isEditing() && !isNewRecipe()}>
                     <div class="flex items-center gap-2">
                        <label class="text-sm font-medium text-gray-700 dark:text-stone-300">Editing:</label>
                       <select
                         value={editingVariantId() || ""}
+                        disabled={imageUploading() || saving()}
                         onChange={(e) => {
                           const value = e.currentTarget.value;
                           if (value === "NEW_VARIANT") {
@@ -1039,7 +1047,7 @@ export default function RecipeDetail() {
                            </button>
                            <button
                              onClick={editingVariantId() ? handleSaveVariant : handleSave}
-                             disabled={saving()}
+                              disabled={saving() || imageUploading()}
                              class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-sm whitespace-nowrap"
                            >
                              {saving() ? "Saving..." : editingVariantId() ? "Save Variant" : "Save Recipe"}
@@ -1053,7 +1061,7 @@ export default function RecipeDetail() {
                         <div class="flex gap-2 flex-wrap">
                            <button
                              onClick={handleSave}
-                             disabled={saving()}
+                              disabled={saving() || imageUploading()}
                              class="px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 text-sm whitespace-nowrap"
                            >
                              {saving() ? "Saving..." : "Save Recipe"}
@@ -1339,7 +1347,7 @@ export default function RecipeDetail() {
                                                <p>{currentInstruction.instruction}</p>
                                                 <div class="flex gap-4 mt-1 text-sm text-gray-500 dark:text-stone-400">
                                                  {currentInstruction.time && <span>⏱️ {currentInstruction.time} min</span>}
-                                                 {currentInstruction.temperature && <span>🌡️ {currentInstruction.temperature}</span>}
+                                                 {currentInstruction.temperature && <span>Temperature: {currentInstruction.temperature}</span>}
                                                </div>
                                              </div>
                                            </div>
@@ -1354,7 +1362,7 @@ export default function RecipeDetail() {
                                              <p>{originalInstruction?.instruction}</p>
                                              <div class="flex gap-4 mt-1 text-xs">
                                                {originalInstruction?.time && <span>⏱️ {originalInstruction.time} min</span>}
-                                               {originalInstruction?.temperature && <span>🌡️ {originalInstruction.temperature}</span>}
+                                               {originalInstruction?.temperature && <span>Temperature: {originalInstruction.temperature}</span>}
                                              </div>
                                            </div>
                                          </div>
@@ -1366,7 +1374,7 @@ export default function RecipeDetail() {
                                               <p class="text-emerald-700 dark:text-emerald-400">{variantInstruction?.instruction}</p>
                                               <div class="flex gap-4 mt-1 text-sm text-gray-500 dark:text-stone-400">
                                                {variantInstruction?.time && <span>⏱️ {variantInstruction.time} min</span>}
-                                               {variantInstruction?.temperature && <span>🌡️ {variantInstruction.temperature}</span>}
+                                               {variantInstruction?.temperature && <span>Temperature: {variantInstruction.temperature}</span>}
                                              </div>
                                            </div>
                                          </div>
@@ -1453,7 +1461,7 @@ export default function RecipeDetail() {
                                       {originalInstruction.instruction}
                                       <div class="flex gap-4 mt-1 text-xs">
                                         {originalInstruction.time && <span>⏱️ {originalInstruction.time} min</span>}
-                                        {originalInstruction.temperature && <span>🌡️ {originalInstruction.temperature}</span>}
+                                        {originalInstruction.temperature && <span>Temperature: {originalInstruction.temperature}</span>}
                                       </div>
                                     </div>
 
@@ -1511,18 +1519,12 @@ export default function RecipeDetail() {
                   </Show>
 
                   <Show when={isEditing()}>
-                     <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4">
-                       <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
-                         Image URL
-                       </label>
-                       <input
-                         type="url"
-                          value={formData.imageUrl || ""}
-                          onInput={(e) => updateFormField("imageUrl", e.currentTarget.value)}
-                         placeholder="https://example.com/image.jpg"
-                         class="w-full px-3 py-2 text-sm border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder-gray-400 dark:placeholder-stone-500"
-                       />
-                    </div>
+                    <RecipeImageInput
+                      value={editingVariantId() ? (variantChanges.imageUrl ?? formData.imageUrl ?? "") : (formData.imageUrl || "")}
+                      disabled={saving()}
+                      onUploadingChange={setImageUploading}
+                      onChange={(url) => editingVariantId() ? updateVariantFormField("imageUrl", url) : updateFormField("imageUrl", url)}
+                    />
                   </Show>
 
                    <div class="bg-gray-50 dark:bg-stone-800 rounded-lg p-4 space-y-4">

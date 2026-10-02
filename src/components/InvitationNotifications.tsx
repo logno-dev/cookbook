@@ -103,7 +103,7 @@ export default function InvitationNotifications() {
       </button>
 
       <Show when={showInvitations()}>
-        <div class="absolute right-0 top-full mt-2 w-96 bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-gray-200 dark:border-stone-600 z-50">
+        <div class="fixed left-4 right-4 top-16 sm:absolute sm:left-auto sm:right-0 sm:top-full mt-2 sm:w-96 bg-white dark:bg-stone-800 rounded-lg shadow-lg border border-gray-200 dark:border-stone-600 z-50">
           <div class="p-4 border-b border-gray-200 dark:border-stone-600">
             <h3 class="font-semibold text-gray-900 dark:text-stone-100">Cookbook Invitations</h3>
           </div>

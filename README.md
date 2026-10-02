@@ -144,6 +144,39 @@ src/
 - `POST /api/tags` - Create new tag
 - `DELETE /api/tags/:id` - Delete tag
 
+## Recipe Image Uploads
+
+Recipe editors support file uploads as well as external image URLs. Uploads go
+directly from the browser to Vercel Blob with a short-lived, authenticated upload
+token, avoiding Vercel Functions' request-body size limit. JPEG, PNG, WebP, GIF,
+and AVIF images up to 10 MB are supported.
+
+### Storage setup
+
+1. In your Vercel project's **Storage** tab, create or connect a **public Blob** store.
+2. Enable the store connection for the environments you use (Production, Preview,
+   and Development).
+3. Set the server environment variable `BLOB_READ_WRITE_TOKEN` to the store's
+   read-write token. Vercel can add this automatically when connecting the store.
+4. For local development, add the same variable to `.env`, or pull your Development
+   variables with `vercel env pull .env.local`. Restart the dev server after adding it.
+5. Redeploy after configuring the production environment.
+
+Open a recipe, select **Edit Recipe**, then **Upload image** in the Recipe image
+section. New recipes and recipe variants support uploads too. The image is uploaded
+immediately, but its URL is attached to the recipe only when you save. No database
+migration is needed: both uploaded and external images use the existing `imageUrl`.
+
+Blob image URLs are public, so anyone with an image URL can view it. The read-write
+token stays on the server. Token issuance checks the user's session, limits paths
+to that user's image folder, and enforces image types and a 10 MB limit.
+
+Removing/replacing an image detaches its URL when the recipe is saved; it does not
+delete the stored file, which may also be used by a fork or variant. Uploads from
+abandoned edits also remain in Blob. Unused files can be managed in the Vercel Blob
+dashboard. Saving does not depend on upload-completion webhooks, so local uploads
+do not require a public tunnel.
+
 ## Recipe Scraping
 
 The app can automatically extract recipe data from most recipe websites using:

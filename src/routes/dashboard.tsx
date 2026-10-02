@@ -3,7 +3,7 @@ import { Show, createSignal, createEffect, onMount } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useNavigate } from "@solidjs/router";
 import PageLayout from "~/components/PageLayout";
-import { SkeletonDashboard, SkeletonCardGrid, SkeletonFilters } from "~/components/Skeletons";
+import { SkeletonDashboard } from "~/components/Skeletons";
 import { SearchAndFilters, RecipesGrid, RecentCookbooks, RecentGroceryLists } from "~/components/DashboardSections";
 import { useFilteredRecipes, useRecipes } from "~/lib/stores";
 import { api } from "~/lib/api-client";
@@ -38,7 +38,8 @@ export default function Dashboard() {
 
   // Always call stores - let them handle SSR safety internally
   const recipesStore = useRecipes();
-  const filteredRecipes = useFilteredRecipes(searchQuery, selectedTags, sortBy, sortOrder);
+  const filteredRecipes = useFilteredRecipes(searchQuery, selectedTags, sortBy, sortOrder,
+    () => recipesStore.error() ? [] : recipesStore.data());
 
   const handleScrapeRecipe = async () => {
     if (!scrapeUrl()) return;
@@ -52,7 +53,7 @@ export default function Dashboard() {
         body: JSON.stringify({ url: scrapeUrl() }),
       });
       
-      const result = await api.call("/api/recipes", {
+      await api.call("/api/recipes", {
         method: "POST",
         body: JSON.stringify(scrapeData.recipe),
       });
@@ -96,6 +97,7 @@ export default function Dashboard() {
   const headerActions = () => (
     <div class="flex flex-col sm:flex-row gap-2">
       <select
+        aria-label="Sort recipes by"
         value={sortBy()}
         onChange={(e) => setSortBy(e.currentTarget.value)}
         class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
@@ -106,6 +108,7 @@ export default function Dashboard() {
       </select>
       
       <select
+        aria-label="Sort direction"
         value={sortOrder()}
         onChange={(e) => setSortOrder(e.currentTarget.value)}
         class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100"
@@ -129,14 +132,15 @@ export default function Dashboard() {
       <Title>Dashboard - Recipe Curator</Title>
       {/* Show skeleton while auth is loading or not mounted */}
       {authLoading() || !user() || !mounted() ? (
-        <main class="min-h-screen bg-gray-50 pt-16">
+        <main class="app-page min-h-screen pt-16">
           <div class="max-w-7xl mx-auto px-4 py-8">
             <SkeletonDashboard />
           </div>
         </main>
       ) : (
         <PageLayout
-          title="Dashboard"
+          title="Your recipe collection"
+          subtitle="A little inspiration for whatever’s cooking next."
           headerActions={headerActions()}
         >
           {/* Search and Filters */}
@@ -149,6 +153,11 @@ export default function Dashboard() {
 
           {/* Main Recipes Grid */}
           <RecipesGrid 
+            loading={recipesStore.loading()}
+            error={recipesStore.error()}
+            retry={() => recipesStore.refetch()}
+            hasFilters={!!searchQuery().trim() || selectedTags().length > 0}
+            clearFilters={() => { setSearchQuery(""); setSelectedTags([]); }}
             filteredRecipes={filteredRecipes}
             formatTime={formatTime}
             showAddRecipe={showAddRecipe}

@@ -1,4 +1,5 @@
 import { Title } from "@solidjs/meta";
+import { Utensils } from "lucide-solid";
 import { createSignal, createResource, Show, For, createEffect, Suspense, SuspenseList, onMount } from "solid-js";
 import { useAuth } from "~/lib/auth-context";
 import { useParams, useNavigate } from "@solidjs/router";
@@ -879,7 +880,7 @@ export default function CookbookDetailPage() {
 
                   <Show when={recipes() && recipes()!.length === 0}>
                     <div class="text-center py-12 bg-white dark:bg-stone-800 rounded-lg shadow-md">
-                      <div class="text-gray-400 dark:text-stone-500 text-6xl mb-4">🍽️</div>
+                      <Utensils size={36} class="mx-auto text-emerald-600 mb-4" aria-hidden="true" />
                       <h3 class="text-xl font-medium text-gray-900 dark:text-stone-100 mb-2">No recipes found</h3>
                       <p class="text-gray-600 dark:text-stone-400 mb-6">
                         {searchQuery() || selectedTags().length > 0 || selectedDifficulty() || selectedCuisine() 
@@ -925,12 +926,12 @@ export default function CookbookDetailPage() {
                                <div class="flex flex-wrap gap-2 mb-3">
                                  <Show when={recipeEntry.recipe.cookTime}>
                                    <span class="px-2 py-1 bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 text-xs rounded-full">
-                                     🕐 {formatTime(recipeEntry.recipe.cookTime)}
+                                     {formatTime(recipeEntry.recipe.cookTime)}
                                    </span>
                                  </Show>
                                  <Show when={recipeEntry.recipe.servings}>
                                    <span class="px-2 py-1 bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 text-xs rounded-full">
-                                     👥 {recipeEntry.recipe.servings} servings
+                                     {recipeEntry.recipe.servings} servings
                                    </span>
                                  </Show>
                                  <Show when={recipeEntry.recipe.difficulty}>

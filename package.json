@@ -4,6 +4,7 @@
   "scripts": {
     "dev": "vinxi dev",
     "build": "vinxi build",
+    "test:uploads": "node --experimental-strip-types --test tests/image-upload.test.ts",
     "start": "vinxi start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -19,6 +20,7 @@
     "@types/cheerio": "^1.0.0",
     "@types/node": "^24.9.1",
     "@types/uuid": "^11.0.0",
+    "@vercel/blob": "^2.8.0",
     "bcryptjs": "^3.0.2",
     "cheerio": "^1.1.2",
     "drizzle-kit": "^0.31.5",

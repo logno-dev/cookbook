@@ -29,16 +29,8 @@ export function AuthProvider(props: { children: JSX.Element }) {
   const [loading, setLoading] = createSignal(true);
   const [hasCheckedAuth, setHasCheckedAuth] = createSignal(false);
   
-  // Aggressive timeout to prevent hanging - set loading to false after 1 second regardless
-  setTimeout(() => {
-    if (loading()) {
-
-      setLoading(false);
-    }
-  }, 1000);
-
   // Get cached auth status
-  const getCachedAuth = (): User | null => {
+  const getCachedAuth = (): User | null | undefined => {
     // Return null during SSR to prevent hydration mismatches
     if (typeof window === 'undefined') {
       return null;
@@ -93,7 +85,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
   // Check auth status from server
   const checkAuthStatus = async () => {
     try {
-      const data = await api.checkAuth();
+      const data = await api.checkAuthWithTimeout(AbortSignal.timeout(15000));
       setUser(data.user);
       setCachedAuth(data.user);
       dispatchAuthChange();
@@ -134,11 +126,7 @@ export function AuthProvider(props: { children: JSX.Element }) {
         setUser(cachedAuth);
         setLoading(false);
       } else {
-        // No cached data, assume user is not logged in and show login form quickly
-        setUser(null);
-        setLoading(false);
-        
-        // Check the server in the background without blocking the UI
+        // Keep protected routes pending until the session check finishes.
         checkAuthStatus().catch(() => {
           // Ignore errors - user can try to login if they want
         });

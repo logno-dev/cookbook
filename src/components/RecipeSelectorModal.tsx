@@ -1,4 +1,5 @@
 import { createSignal, For, Show, createEffect, createMemo, onCleanup } from 'solid-js';
+import { Utensils } from 'lucide-solid';
 
 interface RecipeIngredient {
   quantity?: string;
@@ -536,7 +537,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                     when={recipe.imageUrl}
                                     fallback={
                                       <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <span class="text-gray-400 text-xl">🍳</span>
+                                        <Utensils size={22} class="text-gray-400" aria-hidden="true" />
                                       </div>
                                     }
                                   >
@@ -559,13 +560,13 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                     
                                     <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
                                       <Show when={recipe.cookTime}>
-                                        <span>🕒 {recipe.cookTime}m</span>
+                                        <span>{recipe.cookTime} min</span>
                                       </Show>
                                       <Show when={recipe.difficulty}>
-                                        <span>📊 {recipe.difficulty}</span>
+                                        <span>{recipe.difficulty}</span>
                                       </Show>
                                       <Show when={recipe.cuisine}>
-                                        <span>🌍 {recipe.cuisine}</span>
+                                        <span>{recipe.cuisine}</span>
                                       </Show>
                                     </div>
                                   </div>

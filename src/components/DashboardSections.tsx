@@ -1,8 +1,9 @@
-import { For, Show, createMemo, createResource, createSignal, onMount } from "solid-js";
+import { For, Show, createMemo, createResource, createSignal, createEffect } from "solid-js";
+import { BookOpen, Clock, Users, ShoppingBasket, Search, Utensils } from "lucide-solid";
 import { useNavigate } from "@solidjs/router";
 import { useAuth } from "~/lib/auth-context";
 import { api } from "~/lib/api-client";
-import { useTags, useCookbooks, useFilteredRecipes } from "~/lib/stores";
+import { useTags, useCookbooks, type Recipe } from "~/lib/stores";
 import { SkeletonCardGrid, SkeletonFilters } from "./Skeletons";
 
 // Search and Tags Filter Section
@@ -17,10 +18,12 @@ export function SearchAndFilters(props: {
   return (
     <>
       {/* Search Bar */}
-      <div class="mb-6">
+      <div class="collection-search mb-5">
+        <Search size={20} aria-hidden="true" />
         <input
-          type="text"
-          placeholder="Search recipes..."
+          type="search"
+          aria-label="Search recipes"
+          placeholder="Find a recipe, ingredient, or tag…"
           value={props.searchQuery()}
           onInput={(e) => props.setSearchQuery(e.currentTarget.value)}
           class="w-full px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
@@ -28,7 +31,9 @@ export function SearchAndFilters(props: {
       </div>
 
       {/* Tags Filter */}
-      <Show when={tagsStore.data()} fallback={<SkeletonFilters />}>
+      <Show when={!tagsStore.loading()} fallback={<SkeletonFilters />}>
+        <Show when={!tagsStore.error()}>
+        <Show when={tagsStore.data()?.length}>
         <div class="mb-6">
           <h3 class="text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">Filter by tags:</h3>
           <div class="flex flex-wrap gap-2">
@@ -36,12 +41,12 @@ export function SearchAndFilters(props: {
               {(tag) => (
                 <button
                   onClick={() => props.toggleTag(tag.id)}
+                  aria-pressed={props.selectedTags().includes(tag.id)}
                   class={`px-3 py-1 rounded-full text-sm transition-colors ${
                     props.selectedTags().includes(tag.id)
                       ? "bg-emerald-600 text-white"
                       : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-stone-600 dark:text-stone-100 dark:hover:bg-stone-500"
                   }`}
-                  style={{ "background-color": props.selectedTags().includes(tag.id) ? tag.color : undefined }}
                 >
                   {tag.name}
                 </button>
@@ -49,6 +54,8 @@ export function SearchAndFilters(props: {
             </For>
           </div>
         </div>
+        </Show>
+        </Show>
       </Show>
     </>
   );
@@ -56,51 +63,74 @@ export function SearchAndFilters(props: {
 
 // Main Recipes Grid Section
 export function RecipesGrid(props: {
-  filteredRecipes: () => any[];
+  filteredRecipes: () => Recipe[];
+  loading?: boolean;
+  error?: string | null;
+  retry?: () => void;
+  hasFilters?: boolean;
+  clearFilters?: () => void;
   formatTime: (minutes?: number) => string;
   showAddRecipe: () => boolean;
   setShowAddRecipe: (show: boolean) => void;
 }) {
-  const navigate = useNavigate();
+  const [visibleCount, setVisibleCount] = createSignal(24);
+  createEffect(() => {
+    props.filteredRecipes();
+    setVisibleCount(24);
+  });
+  const visibleRecipes = createMemo(() => props.filteredRecipes().slice(0, visibleCount()));
 
   return (
     <div class="mb-8">
-      <div class="mb-4">
-        <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">My Recipes</h2>
+      <div class="flex items-center justify-between mb-5">
+        <h2 class="text-xl font-semibold text-gray-900 dark:text-stone-100">Saved recipes</h2>
+        <span class="text-sm text-gray-500 dark:text-stone-400" aria-live="polite">{props.loading ? "Loading…" : `${props.filteredRecipes().length} recipes`}</span>
       </div>
-
-      <Show when={props.filteredRecipes() && props.filteredRecipes().length === 0}>
-        <div class="text-center py-12">
-          <div class="text-gray-400 text-6xl mb-4">🍽️</div>
-          <h3 class="text-xl font-medium text-gray-900 dark:text-stone-100 mb-2">No recipes yet</h3>
-          <p class="text-gray-600 dark:text-stone-400 mb-4">Start building your recipe collection!</p>
+      <Show when={props.loading}><SkeletonCardGrid count={6} /></Show>
+      <Show when={props.error}>
+        <div class="empty-state" role="alert">
+          <h3>We couldn’t load your recipes</h3>
+          <p class="my-3">{props.error}</p>
+          <button class="text-emerald-700 dark:text-emerald-300 underline" onClick={props.retry}>Try again</button>
+        </div>
+      </Show>
+      <Show when={!props.loading && !props.error && props.filteredRecipes().length === 0}>
+        <div class="empty-state">
+          <Utensils size={32} class="mx-auto mb-4 text-emerald-600" aria-hidden="true" />
+          <h3 class="text-xl font-medium text-gray-900 dark:text-stone-100 mb-2">{props.hasFilters ? "No recipes match your search" : "Good food starts here"}</h3>
+          <p class="text-gray-600 dark:text-stone-400 mb-5">{props.hasFilters ? "Try another ingredient or clear your filters." : "Save a favorite from the web or write down a recipe of your own."}</p>
           <button
-            onClick={() => props.setShowAddRecipe(true)}
+            onClick={() => props.hasFilters ? props.clearFilters?.() : props.setShowAddRecipe(true)}
             class="px-6 py-3 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
-            Add Your First Recipe
+            {props.hasFilters ? "Clear filters" : "Add your first recipe"}
           </button>
         </div>
       </Show>
 
-      <Show when={props.filteredRecipes() && props.filteredRecipes().length > 0}>
+      <Show when={!props.loading && !props.error && props.filteredRecipes().length > 0}>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <For each={props.filteredRecipes()}>
+          <For each={visibleRecipes()}>
             {(recipe) => (
-              <div 
-                class="bg-white dark:bg-stone-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
-                onClick={() => navigate(`/recipe/${recipe.id}?from=dashboard`)}
+              <article
+                class="recipe-card"
               >
-                <Show when={recipe.imageUrl}>
+                <a href={`/recipe/${recipe.id}?from=dashboard`} tabindex="-1" aria-hidden="true" class="recipe-card-image">
+                <Show when={recipe.imageUrl} fallback={<div class="recipe-image-placeholder"><Utensils size={36} strokeWidth={1} /></div>}>
                   <img
                     src={recipe.imageUrl}
-                    alt={recipe.title}
+                    alt=""
+                    loading="lazy"
+                    decoding="async"
+                    width="640"
+                    height="384"
                     class="w-full h-48 object-cover"
                   />
                 </Show>
+                </a>
                 
                 <div class="p-6">
-                  <h3 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-2">{recipe.title}</h3>
+                  <h3 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-2"><a class="recipe-title-link" href={`/recipe/${recipe.id}?from=dashboard`}>{recipe.title}</a></h3>
                   
                   <Show when={recipe.description}>
                     <p class="text-gray-600 dark:text-stone-400 mb-3 line-clamp-2">{recipe.description}</p>
@@ -108,17 +138,17 @@ export function RecipesGrid(props: {
 
                   <div class="flex flex-wrap gap-2 mb-3">
                     <Show when={recipe.cookTime}>
-                      <span class="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
-                        🕐 {props.formatTime(recipe.cookTime)}
+                      <span class="recipe-meta">
+                        <Clock size={14} aria-hidden="true" /> {props.formatTime(recipe.cookTime)}
                       </span>
                     </Show>
                     <Show when={recipe.servings}>
-                      <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                        👥 {recipe.servings} servings
+                      <span class="recipe-meta">
+                        <Users size={14} aria-hidden="true" /> {recipe.servings} servings
                       </span>
                     </Show>
                     <Show when={recipe.difficulty}>
-                      <span class="px-2 py-1 bg-orange-100 text-orange-800 text-xs rounded-full">
+                      <span class="recipe-meta">
                         {recipe.difficulty}
                       </span>
                     </Show>
@@ -153,10 +183,13 @@ export function RecipesGrid(props: {
                     </div>
                   </Show>
                 </div>
-              </div>
+              </article>
             )}
           </For>
         </div>
+        <Show when={visibleCount() < props.filteredRecipes().length}>
+          <div class="text-center mt-8"><button class="secondary-button" onClick={() => setVisibleCount(count => count + 24)}>Show more recipes</button></div>
+        </Show>
       </Show>
     </div>
   );
@@ -169,6 +202,7 @@ export function RecentCookbooks() {
   
   // Recent cookbooks with memoization (limit to 5)
   const recentCookbooks = createMemo(() => {
+    if (cookbooksStore.error()) return [];
     const cookbooks = cookbooksStore.data();
     if (!cookbooks) return [];
     
@@ -189,9 +223,11 @@ export function RecentCookbooks() {
         </a>
       </div>
       
-      <Show when={recentCookbooks() && recentCookbooks().length === 0}>
+      <Show when={cookbooksStore.loading()}><SkeletonCardGrid count={3} /></Show>
+      <Show when={cookbooksStore.error()}><p role="alert" class="text-sm text-red-600 dark:text-red-400">Couldn’t load cookbooks. <button class="underline" onClick={() => cookbooksStore.refetch()}>Try again</button></p></Show>
+      <Show when={!cookbooksStore.loading() && !cookbooksStore.error() && recentCookbooks().length === 0}>
         <div class="text-center py-8 bg-gray-50 dark:bg-stone-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-stone-600">
-          <div class="text-gray-400 dark:text-stone-500 text-4xl mb-2">📚</div>
+          <BookOpen size={28} class="mx-auto mb-3 text-emerald-600" aria-hidden="true" />
           <p class="text-gray-600 dark:text-stone-400">No cookbooks yet</p>
           <a
             href="/cookbooks"
@@ -242,7 +278,7 @@ export function RecentGroceryLists() {
   const { user } = useAuth();
   
   // Fetch recent grocery lists when user becomes available
-  const [recentGroceryLists] = createResource(
+  const [recentGroceryLists, { refetch }] = createResource(
     () => !!user(), // Fetch when user becomes available
     async () => {
       if (!user()) {
@@ -268,9 +304,11 @@ export function RecentGroceryLists() {
         </a>
       </div>
       
-      <Show when={recentGroceryLists() && recentGroceryLists()!.length === 0}>
+      <Show when={recentGroceryLists.loading}><SkeletonCardGrid count={3} /></Show>
+      <Show when={recentGroceryLists.error}><p role="alert" class="text-sm text-red-600 dark:text-red-400">Couldn’t load grocery lists. <button class="underline" onClick={() => refetch()}>Try again</button></p></Show>
+      <Show when={!recentGroceryLists.error && recentGroceryLists() && recentGroceryLists()!.length === 0}>
         <div class="text-center py-8 bg-gray-50 dark:bg-stone-800 rounded-lg border-2 border-dashed border-gray-300 dark:border-stone-600">
-          <div class="text-gray-400 dark:text-stone-500 text-4xl mb-2">🛒</div>
+          <ShoppingBasket size={28} class="mx-auto mb-3 text-emerald-600" aria-hidden="true" />
           <p class="text-gray-600 dark:text-stone-400">No grocery lists yet</p>
           <a
             href="/grocery-lists"
@@ -281,7 +319,7 @@ export function RecentGroceryLists() {
         </div>
       </Show>
       
-      <Show when={recentGroceryLists() && recentGroceryLists()!.length > 0}>
+      <Show when={!recentGroceryLists.error && recentGroceryLists() && recentGroceryLists()!.length > 0}>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           <For each={recentGroceryLists()}>
             {(list: any) => (
