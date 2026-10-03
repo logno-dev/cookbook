@@ -115,7 +115,7 @@ export function RecipesGrid(props: {
               <article
                 class="recipe-card"
               >
-                <a href={`/recipe/${recipe.id}?from=dashboard`} tabindex="-1" aria-hidden="true" class="recipe-card-image">
+                <div class="recipe-card-image" aria-hidden="true">
                 <Show when={recipe.imageUrl} fallback={<div class="recipe-image-placeholder"><Utensils size={36} strokeWidth={1} /></div>}>
                   <img
                     src={recipe.imageUrl}
@@ -127,7 +127,7 @@ export function RecipesGrid(props: {
                     class="w-full h-48 object-cover"
                   />
                 </Show>
-                </a>
+                </div>
                 
                 <div class="p-6">
                   <h3 class="text-xl font-semibold text-gray-900 dark:text-stone-100 mb-2"><a class="recipe-title-link" href={`/recipe/${recipe.id}?from=dashboard`}>{recipe.title}</a></h3>
@@ -175,8 +175,7 @@ export function RecipesGrid(props: {
                         href={recipe.sourceUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        class="text-gray-500 hover:text-gray-700 dark:text-stone-400 dark:hover:text-stone-300 text-sm"
-                        onClick={(e) => e.stopPropagation()}
+                        class="recipe-source-link text-gray-500 hover:text-gray-700 dark:text-stone-400 dark:hover:text-stone-300 text-sm"
                       >
                         Source ↗
                       </a>

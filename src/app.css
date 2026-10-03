@@ -53,13 +53,16 @@
 .collection-search { position: relative; }
 .collection-search > svg { position: absolute; left: 1rem; top: 50%; transform: translateY(-50%); color: var(--muted); pointer-events: none; }
 .collection-search input { padding: 1rem 1rem 1rem 3rem; background: var(--surface); border-color: var(--line); border-radius: .85rem; }
-.recipe-card { background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; overflow: hidden; box-shadow: 0 2px 4px rgb(0 0 0 / .025); transition: box-shadow 160ms ease, border-color 160ms ease; }
+.recipe-card { position: relative; isolation: isolate; -webkit-user-select: none; user-select: none; background: var(--surface); border: 1px solid var(--line); border-radius: 1rem; overflow: hidden; box-shadow: 0 2px 4px rgb(0 0 0 / .025); transition: box-shadow 160ms ease, border-color 160ms ease; }
 .recipe-card:hover, .recipe-card:focus-within { border-color: var(--color-emerald-400); box-shadow: 0 8px 24px rgb(0 0 0 / .06); }
 .recipe-card-image { display: block; height: 12rem; overflow: hidden; }
 .recipe-card-image img { height: 100%; }
 .recipe-image-placeholder { height: 100%; display: grid; place-items: center; background: var(--color-emerald-50); color: var(--color-emerald-500); }
 .dark .recipe-image-placeholder { background: var(--color-emerald-900); color: var(--color-emerald-300); }
 .recipe-title-link:hover { color: var(--color-emerald-600); }
+/* Stretch the semantic title link across the card without nesting the source link. */
+.recipe-title-link::after { content: ""; position: absolute; inset: 0; z-index: 1; cursor: pointer; }
+.recipe-source-link { position: relative; z-index: 2; }
 .recipe-meta { display: inline-flex; align-items: center; gap: .35rem; color: var(--muted); font-size: .75rem; padding: .25rem 0; margin-right: .5rem; }
 .empty-state { text-align: center; padding: 3.5rem 1.5rem; border: 1px dashed var(--line); border-radius: 1rem; background: var(--surface); }
 .secondary-button { display: inline-flex; justify-content: center; align-items: center; gap: .5rem; padding: .75rem 1.25rem; border: 1px solid var(--line); border-radius: .6rem; background: var(--surface); color: var(--ink); font-weight: 500; }
