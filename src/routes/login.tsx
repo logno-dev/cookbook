@@ -73,7 +73,7 @@ export default function Login() {
           </div>
 
           <Show when={error()}>
-            <div class="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg">
+            <div class="text-red-600 dark:text-red-300 text-sm text-center bg-red-50 dark:bg-red-950/40 p-3 rounded-lg">
               {error()}
             </div>
           </Show>

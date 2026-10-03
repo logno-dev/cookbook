@@ -5,6 +5,7 @@
     "dev": "vinxi dev",
     "build": "vinxi build",
     "test:uploads": "node --experimental-strip-types --test tests/image-upload.test.ts",
+    "test:grocery-lists": "node --experimental-strip-types --test tests/recipe-grocery-list.test.ts",
     "start": "vinxi start",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",

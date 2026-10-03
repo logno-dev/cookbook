@@ -102,8 +102,8 @@ export default function UserSettings(props: UserSettingsProps) {
           {/* Success/Error Messages */}
           <Show when={message()}>
             <div class={`p-4 rounded-lg ${message()?.type === 'success' 
-              ? 'bg-green-50 border border-green-200 text-green-800' 
-              : 'bg-red-50 border border-red-200 text-red-800'}`}>
+              ? 'bg-green-50 dark:bg-green-950/40 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-200'
+              : 'bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-200'}`}>
               {message()?.text}
             </div>
           </Show>
@@ -168,7 +168,7 @@ export default function UserSettings(props: UserSettingsProps) {
 
       <Show when={!settings.loading && !settings()}>
         <div class="text-center py-8">
-          <p class="text-gray-500">Failed to load settings. Please try refreshing the page.</p>
+          <p class="text-gray-500 dark:text-stone-400">Failed to load settings. Please try refreshing the page.</p>
         </div>
       </Show>
     </div>

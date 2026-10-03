@@ -114,6 +114,7 @@ function Modal(props: {
   confirmText: string;
   isLoading: boolean;
   children: any;
+  confirmDisabled?: boolean;
 }) {
   return (
     <Show when={props.isOpen}>
@@ -121,21 +122,21 @@ function Modal(props: {
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
           {/* Backdrop */}
           <div 
-            class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
+            class="fixed inset-0 bg-black/50 dark:bg-black/70 transition-opacity"
             onClick={props.onClose}
           />
           
           {/* Modal */}
-          <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
-            <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+          <div role="dialog" aria-modal="true" aria-label={props.title} class="relative transform overflow-hidden rounded-lg bg-white dark:bg-stone-800 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg">
+            <div class="bg-white dark:bg-stone-800 px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
               <div class="sm:flex sm:items-start">
-                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
-                  <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30 sm:mx-0 sm:h-10 sm:w-10">
+                  <svg class="h-6 w-6 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
                   </svg>
                 </div>
                 <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-                  <h3 class="text-base font-semibold leading-6 text-gray-900">
+                  <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-stone-100">
                     {props.title}
                   </h3>
                   <div class="mt-2">
@@ -144,18 +145,18 @@ function Modal(props: {
                 </div>
               </div>
             </div>
-            <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+            <div class="bg-gray-50 dark:bg-stone-900 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
               <button
                 type="button"
                 class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto disabled:opacity-50"
                 onClick={props.onConfirm}
-                disabled={props.isLoading || (props.title === "Delete Cookbook" && !canDeleteCookbook())}
+                disabled={props.isLoading || props.confirmDisabled}
               >
                 {props.isLoading ? 'Processing...' : props.confirmText}
               </button>
               <button
                 type="button"
-                class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto"
+                class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-stone-700 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-stone-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-stone-600 hover:bg-gray-50 dark:hover:bg-stone-600 sm:mt-0 sm:w-auto"
                 onClick={props.onClose}
               >
                 Cancel
@@ -175,6 +176,10 @@ export default function CookbookSettingsPage() {
   const toast = useToast();
   
   // Form state
+  const [isEditing, setIsEditing] = createSignal(false);
+  const [editTitle, setEditTitle] = createSignal('');
+  const [editDescription, setEditDescription] = createSignal('');
+  const [editIsPublic, setEditIsPublic] = createSignal(false);
   const [isUpdating, setIsUpdating] = createSignal(false);
   
   // Delete confirmation state
@@ -193,8 +198,9 @@ export default function CookbookSettingsPage() {
     }
   });
 
-  const [cookbook, { refetch: refetchCookbook }] = createResource(() => params.id, fetchCookbook);
-  const [recipes, { refetch: refetchRecipes }] = createResource(() => params.id, fetchCookbookRecipes);
+  const resourceId = () => typeof window !== 'undefined' && !authLoading() && user() ? params.id : false;
+  const [cookbook, { refetch: refetchCookbook }] = createResource(resourceId, fetchCookbook);
+  const [recipes, { refetch: refetchRecipes }] = createResource(resourceId, fetchCookbookRecipes);
 
   // Initialize form when cookbook loads
   createEffect(() => {
@@ -299,6 +305,7 @@ export default function CookbookSettingsPage() {
   return (
     <>
       <Title>Settings - {cookbook()?.title || 'Loading...'} - Recipe Curator</Title>
+      <Show when={!authLoading() && user()} fallback={<main class="app-page min-h-screen pt-24 px-4"><SkeletonCardGrid count={3} /></main>}>
       <PageLayout
         title="Cookbook Settings"
         subtitle={cookbook() ? `Managing "${cookbook()!.title}"` : undefined}
@@ -308,7 +315,7 @@ export default function CookbookSettingsPage() {
       >
         <div class="space-y-8">
           {/* Basic Information */}
-          <div class="bg-white rounded-lg shadow-md p-6">
+          <div class="bg-white dark:bg-stone-800 text-gray-900 dark:text-stone-100 rounded-lg shadow-md p-6">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-xl font-semibold">Basic Information</h2>
               <Show when={canEdit() && !isEditing()}>
@@ -324,24 +331,24 @@ export default function CookbookSettingsPage() {
             <Show when={!isEditing() && cookbook()}>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Title</label>
-                  <p class="text-gray-900">{cookbook()!.title}</p>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Title</label>
+                  <p class="text-gray-900 dark:text-stone-100">{cookbook()!.title}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                  <p class="text-gray-900">{cookbook()!.description || 'No description provided'}</p>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Description</label>
+                  <p class="text-gray-900 dark:text-stone-100">{cookbook()!.description || 'No description provided'}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Visibility</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Visibility</label>
                   <span class={`px-2 py-1 text-xs font-medium rounded-full ${
-                    cookbook()!.isPublic ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                    cookbook()!.isPublic ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-200'
                   }`}>
                     {cookbook()!.isPublic ? 'Public' : 'Private'}
                   </span>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Created</label>
-                  <p class="text-gray-900">{new Date(cookbook()!.createdAt).toLocaleDateString()}</p>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-1">Created</label>
+                  <p class="text-gray-900 dark:text-stone-100">{new Date(cookbook()!.createdAt).toLocaleDateString()}</p>
                 </div>
               </div>
             </Show>
@@ -349,7 +356,7 @@ export default function CookbookSettingsPage() {
             <Show when={isEditing()}>
               <form onSubmit={handleUpdateCookbook} class="space-y-4">
                 <div>
-                  <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
+                  <label for="title" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                     Title *
                   </label>
                   <input
@@ -357,19 +364,19 @@ export default function CookbookSettingsPage() {
                     type="text"
                     value={editTitle()}
                     onInput={(e) => setEditTitle(e.currentTarget.value)}
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     required
                   />
                 </div>
                 <div>
-                  <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                  <label for="description" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
                     Description
                   </label>
                   <textarea
                     id="description"
                     value={editDescription()}
                     onInput={(e) => setEditDescription(e.currentTarget.value)}
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400 rounded-md focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     rows="3"
                     placeholder="Describe your cookbook..."
                   />
@@ -380,11 +387,11 @@ export default function CookbookSettingsPage() {
                       type="checkbox"
                       checked={editIsPublic()}
                       onChange={(e) => setEditIsPublic(e.currentTarget.checked)}
-                      class="w-4 h-4 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                      class="w-4 h-4 accent-emerald-600 border-gray-300 dark:border-stone-600 rounded focus:ring-emerald-500"
                     />
-                    <span class="text-sm text-gray-700">Make this cookbook public</span>
+                    <span class="text-sm text-gray-700 dark:text-stone-300">Make this cookbook public</span>
                   </label>
-                  <p class="text-xs text-gray-500 mt-1">Public cookbooks can be viewed by anyone</p>
+                  <p class="text-xs text-gray-500 dark:text-stone-400 mt-1">Public cookbooks can be viewed by anyone</p>
                 </div>
                 <div class="flex space-x-3">
                   <button
@@ -397,7 +404,7 @@ export default function CookbookSettingsPage() {
                   <button
                     type="button"
                     onClick={cancelEdit}
-                    class="bg-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-400 transition-colors"
+                    class="bg-gray-300 dark:bg-stone-700 text-gray-700 dark:text-stone-100 px-4 py-2 rounded-md hover:bg-gray-400 dark:hover:bg-stone-600 transition-colors"
                   >
                     Cancel
                   </button>
@@ -408,7 +415,7 @@ export default function CookbookSettingsPage() {
 
           {/* Recipe Management */}
           <Show when={canManageRecipes()}>
-            <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="bg-white dark:bg-stone-800 text-gray-900 dark:text-stone-100 rounded-lg shadow-md p-6">
               <div class="flex justify-between items-center mb-6">
                 <button
                   onClick={() => setShowRecipeManagement(!showRecipeManagement())}
@@ -423,7 +430,7 @@ export default function CookbookSettingsPage() {
                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                   </svg>
                 </button>
-                <span class="text-sm text-gray-500">
+                <span class="text-sm text-gray-500 dark:text-stone-400">
                   {recipes() ? `${recipes()!.length} recipe${recipes()!.length !== 1 ? 's' : ''}` : ''}
                 </span>
               </div>
@@ -437,34 +444,34 @@ export default function CookbookSettingsPage() {
                   </Show>
 
                   <Show when={recipes() && recipes()!.length === 0}>
-                    <p class="text-gray-500 text-center py-8">No recipes in this cookbook</p>
+                    <p class="text-gray-500 dark:text-stone-400 text-center py-8">No recipes in this cookbook</p>
                   </Show>
 
                   <Show when={recipes() && recipes()!.length > 0}>
                     <div class="space-y-3">
                       <For each={recipes()}>
                         {(recipe) => (
-                          <div class="flex items-center justify-between p-3 border border-gray-200 rounded-lg">
+                          <div class="flex items-center justify-between p-3 border border-gray-200 dark:border-stone-700 rounded-lg">
                             <div class="flex-1">
-                              <h3 class="font-medium text-gray-900">{recipe.recipe.title}</h3>
-                              <p class="text-sm text-gray-500">
+                              <h3 class="font-medium text-gray-900 dark:text-stone-100">{recipe.recipe.title}</h3>
+                              <p class="text-sm text-gray-500 dark:text-stone-400">
                                 Added by {recipe.addedByUser.name || recipe.addedByUser.email} • {new Date(recipe.addedAt).toLocaleDateString()}
                               </p>
                               <Show when={recipe.notes}>
-                                <p class="text-sm text-gray-600 italic">"{recipe.notes}"</p>
+                                <p class="text-sm text-gray-600 dark:text-stone-400 italic">"{recipe.notes}"</p>
                               </Show>
                             </div>
                             <div class="flex items-center space-x-2">
                               <a
                                 href={`/recipe/${recipe.recipe.id}`}
-                                class="text-emerald-600 hover:text-emerald-700 text-sm"
+                                class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 text-sm"
                               >
                                 View
                               </a>
                               <button
                                 onClick={() => handleRemoveRecipe(recipe.id, recipe.recipe.title)}
                                 disabled={removingRecipe() === recipe.id}
-                                class="text-red-600 hover:text-red-700 text-sm disabled:opacity-50"
+                                class="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 text-sm disabled:opacity-50"
                               >
                                 {removingRecipe() === recipe.id ? 'Removing...' : 'Remove'}
                               </button>
@@ -481,9 +488,9 @@ export default function CookbookSettingsPage() {
 
           {/* Danger Zone */}
           <Show when={canDelete()}>
-            <div class="bg-white rounded-lg shadow-md p-6 border-l-4 border-red-500">
-              <h2 class="text-xl font-semibold text-red-600 mb-4">Danger Zone</h2>
-              <div class="bg-red-50 p-4 rounded-md">
+            <div class="bg-white dark:bg-stone-800 rounded-lg shadow-md p-6 border-l-4 border-red-500">
+              <h2 class="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Danger Zone</h2>
+              <div class="bg-red-50 dark:bg-red-950/40 p-4 rounded-md">
                 <div class="flex">
                   <div class="flex-shrink-0">
                     <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -491,8 +498,8 @@ export default function CookbookSettingsPage() {
                     </svg>
                   </div>
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800">Delete Cookbook</h3>
-                    <div class="mt-2 text-sm text-red-700">
+                    <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Delete Cookbook</h3>
+                    <div class="mt-2 text-sm text-red-700 dark:text-red-300">
                       <p>
                         Permanently delete this cookbook and all its recipes. This action cannot be undone.
                         All members will lose access and all recipe data will be lost forever.
@@ -524,16 +531,17 @@ export default function CookbookSettingsPage() {
           title="Delete Cookbook"
           confirmText="Delete Forever"
           isLoading={isDeleting()}
+          confirmDisabled={!canDeleteCookbook()}
         >
           <div class="space-y-4">
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-stone-400">
               This will permanently delete <strong>"{cookbook()?.title}"</strong> and all its recipes. 
               This action cannot be undone.
             </p>
-            <p class="text-sm text-gray-500">
+            <p class="text-sm text-gray-500 dark:text-stone-400">
               To confirm deletion, please type the cookbook name exactly as it appears:
             </p>
-            <div class="bg-gray-50 p-3 rounded-md">
+            <div class="bg-gray-50 dark:bg-stone-900 text-gray-900 dark:text-stone-100 p-3 rounded-md">
               <code class="text-sm font-mono">{cookbook()?.title}</code>
             </div>
             <input
@@ -541,14 +549,15 @@ export default function CookbookSettingsPage() {
               value={deleteConfirmationName()}
               onInput={(e) => setDeleteConfirmationName(e.currentTarget.value)}
               placeholder="Type cookbook name here"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+              class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
             />
             <Show when={deleteConfirmationName() && deleteConfirmationName() !== cookbook()?.title}>
-              <p class="text-sm text-red-600">The name doesn't match. Please try again.</p>
+              <p class="text-sm text-red-600 dark:text-red-400">The name doesn't match. Please try again.</p>
             </Show>
           </div>
         </Modal>
       </PageLayout>
+      </Show>
     </>
   );
 }

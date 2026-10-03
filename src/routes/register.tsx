@@ -47,33 +47,15 @@ export default function Register() {
     }
   };
 
-  // Show loading while checking auth status
-  if (authLoading()) {
-    return (
-      <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center pt-16">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-          <p class="mt-2 text-gray-600">Loading...</p>
-        </div>
-      </main>
-    );
-  }
-
-  // Show redirecting message if user is logged in (effect will handle navigation)
-  if (user()) {
-    return (
-      <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 flex items-center justify-center pt-16">
-        <div class="text-center">
-          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
-          <p class="mt-2 text-gray-600">Redirecting...</p>
-        </div>
-      </main>
-    );
-  }
-
   return (
     <main class="min-h-screen bg-gradient-to-br from-emerald-50 to-teal-100 dark:from-stone-900 dark:to-stone-800 flex items-center justify-center pt-16">
       <Title>Sign Up - Recipe Curator</Title>
+      <Show when={!authLoading() && !user()} fallback={
+        <div class="text-center" role="status">
+          <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-emerald-600"></div>
+          <p class="mt-2 text-gray-600 dark:text-stone-400">{authLoading() ? 'Loading...' : 'Redirecting...'}</p>
+        </div>
+      }>
       <div class="max-w-md w-full bg-white dark:bg-stone-800 rounded-lg shadow-xl p-8">
         <h1 class="text-3xl font-bold text-center text-gray-900 dark:text-stone-100 mb-8">Create Account</h1>
         
@@ -93,7 +75,7 @@ export default function Register() {
           </div>
 
           <div>
-            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="email" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
               Email Address
             </label>
             <input
@@ -103,12 +85,12 @@ export default function Register() {
               onInput={(e) => setEmail(e.currentTarget.value)}
               placeholder="john@example.com"
               required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
             />
           </div>
 
           <div>
-            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="password" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
               Password
             </label>
             <input
@@ -118,12 +100,12 @@ export default function Register() {
               onInput={(e) => setPassword(e.currentTarget.value)}
               placeholder="••••••••"
               required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
             />
           </div>
 
           <div>
-            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 mb-2">
+            <label for="confirmPassword" class="block text-sm font-medium text-gray-700 dark:text-stone-300 mb-2">
               Confirm Password
             </label>
             <input
@@ -133,12 +115,12 @@ export default function Register() {
               onInput={(e) => setConfirmPassword(e.currentTarget.value)}
               placeholder="••••••••"
               required
-              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+              class="w-full px-4 py-3 border border-gray-300 dark:border-stone-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400"
             />
           </div>
 
           <Show when={error()}>
-            <div class="text-red-600 text-sm text-center bg-red-50 p-3 rounded-lg">
+            <div class="text-red-600 dark:text-red-300 text-sm text-center bg-red-50 dark:bg-red-950/40 p-3 rounded-lg">
               {error()}
             </div>
           </Show>
@@ -153,7 +135,7 @@ export default function Register() {
         </form>
 
         <div class="mt-6 text-center">
-          <p class="text-gray-600">
+          <p class="text-gray-600 dark:text-stone-400">
             Already have an account?{" "}
             <a href="/login" class="text-emerald-600 hover:text-emerald-700 font-medium">
               Sign in
@@ -161,6 +143,7 @@ export default function Register() {
           </p>
         </div>
       </div>
+      </Show>
     </main>
   );
 }

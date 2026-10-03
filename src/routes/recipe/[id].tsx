@@ -10,6 +10,8 @@ import Breadcrumbs from "~/components/Breadcrumbs";
 import { SkeletonRecipeDetail } from "~/components/Skeletons";
 import { useRecipes, useTags } from "~/lib/stores";
 import RecipeImageInput from "~/components/RecipeImageInput";
+import { ShoppingBasket } from "lucide-solid";
+import { api } from "~/lib/api-client";
 
 interface RecipeIngredient {
   quantity?: string;
@@ -165,6 +167,30 @@ export default function RecipeDetail() {
 
   // Recipe multiplier state
   const [recipeMultiplier, setRecipeMultiplier] = createSignal(1);
+  const [creatingGroceryList, setCreatingGroceryList] = createSignal(false);
+
+  const handleCreateGroceryList = async () => {
+    if (creatingGroceryList() || isEditing() || params.id === 'new') return;
+    setCreatingGroceryList(true);
+    try {
+      const { groceryList } = await api.call<{ groceryList: { id: string } }>(
+        `/api/recipes/${encodeURIComponent(params.id)}/grocery-list`,
+        {
+          method: 'POST',
+          body: JSON.stringify({
+            variantId: selectedVariantId() || undefined,
+            multiplier: recipeMultiplier(),
+          }),
+        },
+      );
+      toast.success('Grocery list created from this recipe.');
+      navigate(`/grocery-lists/${groceryList.id}`);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Could not create the grocery list. Please try again.');
+    } finally {
+      setCreatingGroceryList(false);
+    }
+  };
 
   // Fork state
   const [isForking, setIsForking] = createSignal(false);
@@ -1071,6 +1097,15 @@ export default function RecipeDetail() {
 
                     <Show when={!isNewRecipe() && !isEditing()}>
                        <div class="flex gap-2 flex-wrap">
+                         <button
+                           onClick={handleCreateGroceryList}
+                           disabled={creatingGroceryList()}
+                           aria-busy={creatingGroceryList()}
+                           class="inline-flex items-center gap-2 px-3 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed text-sm"
+                         >
+                           <ShoppingBasket size={16} aria-hidden="true" />
+                           {creatingGroceryList() ? 'Creating grocery list…' : 'Create grocery list'}
+                         </button>
                          <Show when={!isOwnRecipe()}>
                            <button
                              onClick={openForkDialog}
@@ -1160,7 +1195,7 @@ export default function RecipeDetail() {
                                        }
                                      >
                                        {/* Variant exists for this item - show original struck through + variant below */}
-                                       <div class="text-gray-500 line-through text-sm">
+                                       <div class="text-gray-500 dark:text-stone-400 line-through text-sm">
                                          <span class="font-medium">
                                            {originalIngredient?.quantity && `${formatFractionWithUnicode(multiplyQuantity(originalIngredient.quantity, recipeMultiplier()))} `}
                                            {originalIngredient?.unit && `${originalIngredient.unit} `}
@@ -1355,7 +1390,7 @@ export default function RecipeDetail() {
                                        }
                                      >
                                        {/* Variant exists for this item - show original struck through + variant below */}
-                                       <div class="text-gray-500 line-through text-sm">
+                                       <div class="text-gray-500 dark:text-stone-400 line-through text-sm">
                                          <div class="flex items-start gap-2">
                                            <span class="font-medium mr-2">{originalInstruction?.step}.</span>
                                            <div class="flex-1">
@@ -1832,7 +1867,7 @@ export default function RecipeDetail() {
 
         {/* Create New Variant Dialog */}
         <Show when={showCreateVariantDialog()}>
-          <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-sm w-full p-6">
                <h2 class="text-xl font-bold text-gray-900 dark:text-stone-100 mb-4">Create New Variant</h2>
               
@@ -1875,7 +1910,7 @@ export default function RecipeDetail() {
 
         {/* Fork Recipe Dialog */}
         <Show when={showForkDialog()}>
-          <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
              <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-md w-full p-6">
                <h2 class="text-xl font-bold text-gray-900 dark:text-stone-100 mb-4">Fork Recipe</h2>
                <p class="text-gray-600 dark:text-stone-400 mb-4">

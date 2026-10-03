@@ -15,14 +15,14 @@ export default function ErrorNotification() {
   return (
     <Show when={typeof searchParams.error === "string" && searchParams.error} keyed>
       {msg => (
-        <aside class="flex items-start gap-3 fixed bottom-4 left-4 max-w-sm bg-red-50 border border-red-200 rounded-xl p-4 shadow-lg z-50 transition-all duration-300 text-sm">
+        <aside class="flex items-start gap-3 fixed bottom-4 left-4 max-w-sm bg-red-50 dark:bg-red-950 border border-red-200 dark:border-red-800 rounded-xl p-4 shadow-lg z-50 transition-all duration-300 text-sm">
           <div>
-            <strong class="font-medium text-red-800">Error</strong>
-            <p class="text-red-700 mt-1 select-text">{msg}</p>
+            <strong class="font-medium text-red-800 dark:text-red-200">Error</strong>
+            <p class="text-red-700 dark:text-red-300 mt-1 select-text">{msg}</p>
           </div>
           <button
             onclick={() => setSearchParams({ error: "" })}
-            class="text-red-400 hover:text-red-600 transition-colors"
+            class="text-red-400 hover:text-red-600 dark:hover:text-red-200 transition-colors"
           >
             <X class="w-4 h-4" />
           </button>

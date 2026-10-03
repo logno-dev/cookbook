@@ -249,10 +249,10 @@ export function RecentCookbooks() {
                 <div class="flex items-start justify-between mb-2">
                   <h3 class="font-medium text-gray-900 dark:text-stone-100 text-sm line-clamp-2">{cookbook.title}</h3>
                   <span class={`px-2 py-1 text-xs rounded-full ${
-                    cookbook.userRole === 'owner' ? 'bg-purple-100 text-purple-800' :
-                    cookbook.userRole === 'editor' ? 'bg-blue-100 text-blue-800' :
-                    cookbook.userRole === 'contributor' ? 'bg-green-100 text-green-800' :
-                    'bg-gray-100 text-gray-800'
+                    cookbook.userRole === 'owner' ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-800 dark:text-purple-200' :
+                    cookbook.userRole === 'editor' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-200' :
+                    cookbook.userRole === 'contributor' ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-200' :
+                    'bg-gray-100 dark:bg-stone-700 text-gray-800 dark:text-stone-200'
                   }`}>
                     {cookbook.userRole}
                   </span>

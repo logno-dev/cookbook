@@ -98,7 +98,7 @@ export default function Dashboard() {
       <select
         value={sortBy()}
         onChange={(e) => setSortBy(e.currentTarget.value)}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        class="px-4 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
         <option value="createdAt">Sort by Date</option>
         <option value="title">Sort by Title</option>
@@ -108,7 +108,7 @@ export default function Dashboard() {
       <select
         value={sortOrder()}
         onChange={(e) => setSortOrder(e.currentTarget.value)}
-        class="px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+        class="px-4 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
       >
         <option value="desc">Descending</option>
         <option value="asc">Ascending</option>
@@ -185,7 +185,7 @@ export default function Dashboard() {
       </PageLayout>
 
       <Show when={showAddRecipe()}>
-        <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50 p-4">
            <div class="bg-white dark:bg-stone-800 rounded-lg shadow-xl max-w-md w-full p-6">
              <h2 class="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-4">Add Recipe</h2>
             
@@ -234,7 +234,7 @@ export default function Dashboard() {
                     setScrapeUrl("");
                     setError("");
                   }}
-                  class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                  class="px-4 py-2 bg-white dark:bg-stone-700 border border-gray-300 dark:border-stone-600 text-gray-700 dark:text-stone-100 rounded-lg hover:bg-gray-50 dark:hover:bg-stone-600 focus:outline-none focus:ring-2 focus:ring-gray-500"
                 >
                   Cancel
                 </button>

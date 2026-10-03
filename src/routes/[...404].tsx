@@ -8,7 +8,7 @@ export default function NotFound() {
       Sorry, the page you’re looking for doesn't exist
       <a
         href="/"
-        class="px-4 py-2 border border-gray-300 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors duration-200"
+        class="px-4 py-2 border border-gray-300 dark:border-stone-600 rounded-xl text-gray-700 dark:text-stone-300 hover:bg-gray-100 dark:hover:bg-stone-800 transition-colors duration-200"
       >
         Go Home
       </a>

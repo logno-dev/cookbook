@@ -933,7 +933,7 @@ export default function GroceryListPage() {
 
           {/* Ingredient Matching Modal */}
           <Show when={showMatchingModal()}>
-            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
                <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
                  <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Smart Ingredient Matching</h3>
                  <p class="text-sm text-gray-600 dark:text-stone-400 mb-4">
@@ -1060,7 +1060,7 @@ export default function GroceryListPage() {
 
           {/* Duplicate Resolution Modal */}
           <Show when={showDuplicateModal()}>
-            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
               <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-2xl mx-4 max-h-96 overflow-y-auto">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Potential Duplicates Found</h3>
                 <p class="text-sm text-gray-600 dark:text-stone-400 mb-4">
@@ -1161,7 +1161,7 @@ export default function GroceryListPage() {
 
           {/* Delete Confirmation Modal */}
           <Show when={showDeleteConfirm()}>
-            <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
                <div class="bg-white dark:bg-stone-800 rounded-lg p-6 w-full max-w-md mx-4">
                  <h3 class="text-lg font-semibold text-gray-900 dark:text-stone-100 mb-4">Delete Grocery List</h3>
                  <p class="text-gray-600 dark:text-stone-400 mb-6">

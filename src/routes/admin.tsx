@@ -228,8 +228,8 @@ export default function AdminDashboard() {
                              <p class="text-sm font-medium text-gray-500 dark:text-stone-400">Total Users</p>
                              <p class="text-2xl font-bold text-gray-900 dark:text-stone-100">{data().overview.totalUsers}</p>
                           </div>
-                          <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                          <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900/40 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-blue-600 dark:text-blue-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
                           </div>
@@ -242,8 +242,8 @@ export default function AdminDashboard() {
                              <p class="text-sm font-medium text-gray-500 dark:text-stone-400">Total Recipes</p>
                              <p class="text-2xl font-bold text-gray-900 dark:text-stone-100">{data().overview.totalRecipes}</p>
                           </div>
-                          <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20">
+                          <div class="w-8 h-8 bg-green-100 dark:bg-green-900/40 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-green-600 dark:text-green-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
                             </svg>
                           </div>
@@ -256,8 +256,8 @@ export default function AdminDashboard() {
                              <p class="text-sm font-medium text-gray-500 dark:text-stone-400">Total Cookbooks</p>
                              <p class="text-2xl font-bold text-gray-900 dark:text-stone-100">{data().overview.totalCookbooks}</p>
                           </div>
-                          <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-purple-600" fill="currentColor" viewBox="0 0 20 20">
+                          <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900/40 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-purple-600 dark:text-purple-300" fill="currentColor" viewBox="0 0 20 20">
                               <path d="M9 4.804A7.968 7.968 0 005.5 4c-1.255 0-2.443.29-3.5.804v10A7.969 7.969 0 015.5 14c1.669 0 3.218.51 4.5 1.385A7.962 7.962 0 0114.5 14c1.255 0 2.443.29 3.5.804v-10A7.968 7.968 0 0014.5 4c-1.255 0-2.443.29-3.5.804V12a1 1 0 11-2 0V4.804z" />
                             </svg>
                           </div>
@@ -270,8 +270,8 @@ export default function AdminDashboard() {
                              <p class="text-sm font-medium text-gray-500 dark:text-stone-400">Grocery Lists</p>
                              <p class="text-2xl font-bold text-gray-900 dark:text-stone-100">{data().overview.totalGroceryLists}</p>
                           </div>
-                          <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center">
-                            <svg class="w-4 h-4 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                          <div class="w-8 h-8 bg-yellow-100 dark:bg-yellow-900/40 rounded-full flex items-center justify-center">
+                            <svg class="w-4 h-4 text-yellow-600 dark:text-yellow-300" fill="currentColor" viewBox="0 0 20 20">
                               <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h4a1 1 0 010 2H6.414l2.293 2.293a1 1 0 11-1.414 1.414L5 6.414V8a1 1 0 01-2 0V4zm9 1a1 1 0 010-2h4a1 1 0 011 1v4a1 1 0 01-2 0V6.414l-2.293 2.293a1 1 0 11-1.414-1.414L13.586 5H12zm-9 7a1 1 0 012 0v1.586l2.293-2.293a1 1 0 111.414 1.414L6.414 15H8a1 1 0 010 2H4a1 1 0 01-1-1v-4zm13-1a1 1 0 011 1v4a1 1 0 01-1 1h-4a1 1 0 010-2h1.586l-2.293-2.293a1 1 0 111.414-1.414L15.586 13H14a1 1 0 01-1-1z" clip-rule="evenodd" />
                             </svg>
                           </div>
@@ -502,7 +502,7 @@ export default function AdminDashboard() {
 
           {/* User Details Modal */}
           <Show when={showUserModal() && selectedUser()}>
-             <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+             <div class="fixed inset-0 bg-black/50 dark:bg-black/70 overflow-y-auto h-full w-full z-50">
                <div class="relative top-20 mx-auto p-5 border border-gray-200 dark:border-stone-700 w-96 shadow-lg rounded-md bg-white dark:bg-stone-800">
                 <div class="mt-3">
                   <div class="flex items-center justify-between mb-4">

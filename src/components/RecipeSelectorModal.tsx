@@ -246,11 +246,11 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
   return (
     <Show when={props.isOpen}>
-      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
+      <div class="fixed inset-0 bg-black/50 dark:bg-black/70 flex items-center justify-center z-50">
+        <div role="dialog" aria-modal="true" aria-labelledby="recipe-selector-title" class="bg-white dark:bg-stone-800 text-gray-900 dark:text-stone-100 rounded-lg w-full max-w-4xl mx-4 max-h-[90vh] overflow-hidden flex flex-col">
           {/* Header */}
-          <div class="p-6 border-b border-gray-200 flex items-center justify-between">
-            <h3 class="text-xl font-semibold text-gray-900">
+          <div class="p-6 border-b border-gray-200 dark:border-stone-700 flex items-center justify-between">
+            <h3 id="recipe-selector-title" class="text-xl font-semibold text-gray-900 dark:text-stone-100">
               {selectedRecipe() 
                 ? 'Recipe Details' 
                 : props.enableMultiSelect 
@@ -259,7 +259,8 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
             </h3>
             <button
               onClick={props.onClose}
-              class="text-gray-400 hover:text-gray-600 text-2xl leading-none"
+              aria-label="Close recipe selector"
+              class="text-gray-400 dark:text-stone-400 hover:text-gray-600 dark:hover:text-stone-100 text-2xl leading-none"
             >
               ×
             </button>
@@ -277,7 +278,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                     <div class="flex items-center gap-4">
                       <button
                         onClick={handleBackToSearch}
-                        class="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium"
+                         class="flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                       >
                         ← Back to Search
                       </button>
@@ -287,11 +288,11 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                       {/* Recipe Info */}
                       <div class="space-y-4">
                         <div>
-                          <h4 class="text-2xl font-bold text-gray-900 mb-2">
+                          <h4 class="text-2xl font-bold text-gray-900 dark:text-stone-100 mb-2">
                             {selectedRecipe()?.title}
                           </h4>
                           <Show when={selectedRecipe()?.description}>
-                            <p class="text-gray-600">{selectedRecipe()?.description}</p>
+                            <p class="text-gray-600 dark:text-stone-400">{selectedRecipe()?.description}</p>
                           </Show>
                         </div>
 
@@ -304,7 +305,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                         </Show>
 
                         {/* Recipe Meta */}
-                        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600">
+                        <div class="grid grid-cols-2 gap-4 text-sm text-gray-600 dark:text-stone-400">
                           <Show when={selectedRecipe()?.cookTime}>
                             <div>
                               <span class="font-medium">Cook Time:</span> {selectedRecipe()?.cookTime}m
@@ -330,13 +331,13 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                         {/* Variant Selection */}
                         <Show when={recipeVariants().length > 0}>
                           <div class="space-y-2">
-                            <label class="block text-sm font-medium text-gray-700">
+                            <label class="block text-sm font-medium text-gray-700 dark:text-stone-300">
                               Recipe Variant
                             </label>
                             <select
                               value={selectedVariantId() || ''}
                               onChange={(e) => setSelectedVariantId(e.target.value || null)}
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              class="w-full px-3 py-2 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             >
                               <option value="">Original Recipe</option>
                               <For each={recipeVariants()}>
@@ -350,10 +351,10 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
                         {/* Multiplier Selection */}
                         <div class="space-y-2">
-                          <label class="block text-sm font-medium text-gray-700">
+                          <label class="block text-sm font-medium text-gray-700 dark:text-stone-300">
                             Recipe Size
                           </label>
-                          <div class="flex items-center gap-1 border border-gray-300 rounded-lg overflow-hidden w-fit">
+                          <div class="flex items-center gap-1 border border-gray-300 dark:border-stone-600 rounded-lg overflow-hidden w-fit">
                             <For each={[1, 1.5, 2, 3]}>
                               {(multiplier) => (
                                 <button
@@ -361,7 +362,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                   class={`px-4 py-2 text-sm font-medium transition-colors ${
                                     selectedMultiplier() === multiplier
                                       ? "bg-blue-600 text-white"
-                                      : "bg-white text-gray-700 hover:bg-gray-50"
+                                      : "bg-white dark:bg-stone-700 text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-600"
                                   }`}
                                 >
                                   {multiplier}x
@@ -374,28 +375,28 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
                       {/* Ingredients Preview */}
                       <div class="space-y-4">
-                        <h5 class="text-lg font-semibold text-gray-900">Ingredients</h5>
+                        <h5 class="text-lg font-semibold text-gray-900 dark:text-stone-100">Ingredients</h5>
                         <Show 
                           when={!isLoadingVariants()}
                           fallback={
                             <div class="flex items-center justify-center py-8">
                               <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-                              <span class="ml-2 text-gray-600">Loading variants...</span>
+                              <span class="ml-2 text-gray-600 dark:text-stone-400">Loading variants...</span>
                             </div>
                           }
                         >
-                          <div class="bg-gray-50 rounded-lg p-4 max-h-80 overflow-y-auto">
+                          <div class="bg-gray-50 dark:bg-stone-900 rounded-lg p-4 max-h-80 overflow-y-auto">
                             <ul class="space-y-2">
                               <For each={currentIngredients()}>
                                 {(ingredient) => (
-                                  <li class="text-sm text-gray-700">
+                                  <li class="text-sm text-gray-700 dark:text-stone-300">
                                     <span class="font-medium">
                                       {ingredient.quantity && `${ingredient.quantity} `}
                                       {ingredient.unit && `${ingredient.unit} `}
                                     </span>
                                     {ingredient.ingredient}
                                     {ingredient.notes && (
-                                      <span class="text-gray-500 italic"> ({ingredient.notes})</span>
+                                      <span class="text-gray-500 dark:text-stone-400 italic"> ({ingredient.notes})</span>
                                     )}
                                   </li>
                                 )}
@@ -417,9 +418,10 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                     <input
                       type="text"
                       placeholder="Search recipes..."
+                      aria-label="Search recipes"
                       value={searchQuery()}
                       onInput={(e) => setSearchQuery(e.target.value)}
-                      class="w-full px-4 py-3 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      class="w-full px-4 py-3 pr-10 border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 placeholder:text-gray-500 dark:placeholder:text-stone-400 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       autofocus
                     />
                     <Show when={isSearching()}>
@@ -428,7 +430,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                       </div>
                     </Show>
                   </div>
-                  <p class="text-sm text-gray-500 mt-2">
+                  <p class="text-sm text-gray-500 dark:text-stone-400 mt-2">
                     {searchQuery() ? `Search results for "${searchQuery()}"` : 'Showing all your recipes'}
                   </p>
                 </div>
@@ -449,7 +451,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                           });
                           setRecipeConfigs(configs);
                         }}
-                        class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                        class="text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium"
                       >
                         Select All
                       </button>
@@ -459,13 +461,13 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                           setRecipeConfigs(new Map());
                           setRecipeVariantsMap(new Map());
                         }}
-                        class="text-sm text-gray-600 hover:text-gray-800 font-medium"
+                        class="text-sm text-gray-600 dark:text-stone-400 hover:text-gray-800 dark:hover:text-stone-100 font-medium"
                       >
                         Clear All
                       </button>
                     </div>
                     <Show when={selectedRecipes().size > 0}>
-                      <span class="text-sm text-gray-600">
+                      <span class="text-sm text-gray-600 dark:text-stone-400">
                         {selectedRecipes().size} selected
                       </span>
                     </Show>
@@ -483,11 +485,11 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                           fallback={
                             <div class="flex items-center justify-center">
                               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-                              <span class="ml-3 text-gray-600">Searching...</span>
+                              <span class="ml-3 text-gray-600 dark:text-stone-400">Searching...</span>
                             </div>
                           }
                         >
-                          <p class="text-gray-500">
+                          <p class="text-gray-500 dark:text-stone-400">
                             {searchQuery() ? 'No recipes found matching your search.' : 'No recipes available.'}
                           </p>
                         </Show>
@@ -505,15 +507,15 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                               onClick={() => handleRecipeSelect(recipe)}
                               class={`border rounded-lg p-4 cursor-pointer transition-all relative ${
                                 isSelected() 
-                                  ? "border-blue-500 bg-blue-50 shadow-md" 
+                                  ? "border-blue-500 dark:border-blue-400 bg-blue-50 dark:bg-blue-950/50 shadow-md"
                                   : isExisting()
-                                    ? "border-green-300 bg-green-50 hover:border-green-400"
-                                    : "border-gray-200 hover:border-blue-300 hover:shadow-md"
+                                    ? "border-green-300 dark:border-green-700 bg-green-50 dark:bg-green-950/50 hover:border-green-400 dark:hover:border-green-500"
+                                    : "border-gray-200 dark:border-stone-700 hover:border-blue-300 dark:hover:border-blue-500 hover:shadow-md"
                               }`}
                             >
                               {/* Existing recipe indicator */}
                               <Show when={isExisting()}>
-                                <div class="absolute top-2 right-2 bg-green-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                                <div class="absolute top-2 right-2 bg-green-700 text-white text-xs px-2 py-1 rounded-full font-medium">
                                   Added
                                 </div>
                               </Show>
@@ -526,7 +528,8 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                     checked={isSelected()}
                                     onClick={(e) => e.stopPropagation()}
                                     onChange={() => handleRecipeSelect(recipe)}
-                                    class="h-4 w-4 text-blue-600 rounded border-gray-300 focus:ring-blue-500"
+                                    aria-label={`Select ${recipe.title}`}
+                                    class="h-4 w-4 accent-blue-600 rounded border-gray-300 dark:border-stone-600 focus:ring-blue-500"
                                   />
                                 </div>
                               </Show>
@@ -536,8 +539,8 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                   <Show 
                                     when={recipe.imageUrl}
                                     fallback={
-                                      <div class="w-16 h-16 bg-gray-200 rounded-lg flex items-center justify-center flex-shrink-0">
-                                        <Utensils size={22} class="text-gray-400" aria-hidden="true" />
+                                      <div class="w-16 h-16 bg-gray-200 dark:bg-stone-700 rounded-lg flex items-center justify-center flex-shrink-0">
+                                        <Utensils size={22} class="text-gray-400 dark:text-stone-400" aria-hidden="true" />
                                       </div>
                                     }
                                   >
@@ -549,16 +552,16 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                   </Show>
                                   
                                   <div class="flex-1 min-w-0">
-                                    <h4 class="font-semibold text-gray-900 truncate">
+                                    <h4 class="font-semibold text-gray-900 dark:text-stone-100 truncate">
                                       {recipe.title}
                                     </h4>
                                     <Show when={recipe.description}>
-                                      <p class="text-sm text-gray-600 mt-1 line-clamp-2">
+                                      <p class="text-sm text-gray-600 dark:text-stone-400 mt-1 line-clamp-2">
                                         {recipe.description}
                                       </p>
                                     </Show>
                                     
-                                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                                    <div class="flex items-center gap-4 mt-2 text-xs text-gray-500 dark:text-stone-400">
                                       <Show when={recipe.cookTime}>
                                         <span>{recipe.cookTime} min</span>
                                       </Show>
@@ -574,11 +577,11 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
                                 {/* Variant and Multiplier Controls - Show when selected in multi-select mode */}
                                 <Show when={props.enableMultiSelect && isSelected()}>
-                                  <div class="mt-4 pt-4 border-t border-gray-200 space-y-3">
+                                  <div class="mt-4 pt-4 border-t border-gray-200 dark:border-stone-700 space-y-3">
                                     {/* Variant Selection */}
                                     <Show when={recipeVariantsMap().get(recipe.id)?.length > 0}>
                                       <div>
-                                        <label class="block text-xs font-medium text-gray-700 mb-1">
+                                        <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
                                           Recipe Variant
                                         </label>
                                         <select
@@ -588,7 +591,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                             updateRecipeConfig(recipe.id, e.target.value || undefined);
                                           }}
                                           onClick={(e) => e.stopPropagation()}
-                                          class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                          class="w-full px-2 py-1 text-sm border border-gray-300 dark:border-stone-600 bg-white dark:bg-stone-700 text-gray-900 dark:text-stone-100 rounded focus:outline-none focus:ring-1 focus:ring-blue-500"
                                         >
                                           <option value="">Original Recipe</option>
                                           <For each={recipeVariantsMap().get(recipe.id) || []}>
@@ -602,10 +605,10 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
                                     {/* Multiplier Selection */}
                                     <div>
-                                      <label class="block text-xs font-medium text-gray-700 mb-1">
+                                      <label class="block text-xs font-medium text-gray-700 dark:text-stone-300 mb-1">
                                         Recipe Size
                                       </label>
-                                      <div class="flex items-center gap-1 border border-gray-300 rounded overflow-hidden w-fit">
+                                      <div class="flex items-center gap-1 border border-gray-300 dark:border-stone-600 rounded overflow-hidden w-fit">
                                         <For each={[1, 1.5, 2, 3]}>
                                           {(multiplier) => (
                                             <button
@@ -616,7 +619,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
                                               class={`px-3 py-1 text-xs font-medium transition-colors ${
                                                 (recipeConfigs().get(recipe.id)?.multiplier || 1) === multiplier
                                                   ? "bg-blue-600 text-white"
-                                                  : "bg-white text-gray-700 hover:bg-gray-50"
+                                                  : "bg-white dark:bg-stone-700 text-gray-700 dark:text-stone-300 hover:bg-gray-50 dark:hover:bg-stone-600"
                                               }`}
                                             >
                                               {multiplier}x
@@ -641,9 +644,9 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
 
           {/* Footer - Show in recipe details view or multi-select mode */}
           <Show when={selectedRecipe() || (props.enableMultiSelect && selectedRecipes().size > 0)}>
-            <div class="p-6 border-t border-gray-200 flex justify-between items-center gap-3">
+            <div class="p-6 border-t border-gray-200 dark:border-stone-700 flex flex-wrap justify-between items-center gap-3">
               <Show when={props.enableMultiSelect && !selectedRecipe()}>
-                <div class="text-sm text-gray-600">
+                <div class="text-sm text-gray-600 dark:text-stone-400">
                   {selectedRecipes().size} recipe{selectedRecipes().size !== 1 ? 's' : ''} selected
                 </div>
               </Show>
@@ -651,7 +654,7 @@ export default function RecipeSelectorModal(props: RecipeSelectorModalProps) {
               <div class="flex gap-3 ml-auto">
                 <button
                   onClick={props.onClose}
-                  class="px-6 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+                  class="px-6 py-2 text-gray-700 dark:text-stone-300 border border-gray-300 dark:border-stone-600 rounded-lg hover:bg-gray-50 dark:hover:bg-stone-700"
                 >
                   Cancel
                 </button>

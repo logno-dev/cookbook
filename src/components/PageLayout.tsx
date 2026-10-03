@@ -74,7 +74,7 @@ export default function PageLayout(props: PageLayoutProps) {
 
         {/* Error State */}
         <Show when={props.error}>
-          <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+          <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-8">
             <div class="flex">
               <div class="flex-shrink-0">
                 <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -82,7 +82,7 @@ export default function PageLayout(props: PageLayoutProps) {
                 </svg>
               </div>
               <div class="ml-3">
-                <p class="text-sm text-red-700">{props.error}</p>
+                <p class="text-sm text-red-700 dark:text-red-300">{props.error}</p>
               </div>
             </div>
           </div>

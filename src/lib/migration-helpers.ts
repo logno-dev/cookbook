@@ -1,4 +1,4 @@
-import { RecipeIngredient, RecipeInstruction } from './recipe-service';
+import type { RecipeIngredient, RecipeInstruction } from './recipe-service';
 
 export function migrateIngredientsFromString(oldIngredients: string[]): RecipeIngredient[] {
   return oldIngredients.map(ingredient => {

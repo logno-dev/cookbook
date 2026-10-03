@@ -21,7 +21,7 @@ export default function Breadcrumbs(props: BreadcrumbsProps) {
               {/* Add chevron separator for non-first items */}
               {index() > 0 && (
                 <svg 
-                  class="w-4 h-4 text-gray-400 mx-2" 
+                  class="w-4 h-4 text-gray-400 dark:text-stone-500 mx-2"
                   fill="currentColor" 
                   viewBox="0 0 20 20"
                 >
@@ -37,7 +37,7 @@ export default function Breadcrumbs(props: BreadcrumbsProps) {
               {item.href && !item.current ? (
                 <a 
                   href={item.href}
-                  class="inline-flex items-center text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors"
+                  class="inline-flex items-center text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors"
                 >
                   {item.label}
                 </a>
@@ -45,8 +45,8 @@ export default function Breadcrumbs(props: BreadcrumbsProps) {
                 <span 
                   class={`text-sm font-medium ${
                     item.current 
-                      ? 'text-gray-500' 
-                      : 'text-gray-700'
+                      ? 'text-gray-500 dark:text-stone-400'
+                      : 'text-gray-700 dark:text-stone-300'
                   }`}
                 >
                   {item.label}

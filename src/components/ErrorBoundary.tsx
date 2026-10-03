@@ -9,7 +9,7 @@ export default function ErrorBoundary(props: ErrorBoundaryProps) {
   const [error, setError] = createSignal<Error | null>(null);
 
   const defaultFallback = (error: Error, reset: () => void) => (
-    <div class="bg-red-50 border border-red-200 rounded-lg p-6 mb-8">
+    <div class="bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg p-6 mb-8">
       <div class="flex">
         <div class="flex-shrink-0">
           <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -17,11 +17,11 @@ export default function ErrorBoundary(props: ErrorBoundaryProps) {
           </svg>
         </div>
         <div class="ml-3">
-          <h3 class="text-sm font-medium text-red-800">Something went wrong</h3>
-          <p class="text-sm text-red-700 mt-1">{error.message}</p>
+          <h3 class="text-sm font-medium text-red-800 dark:text-red-200">Something went wrong</h3>
+          <p class="text-sm text-red-700 dark:text-red-300 mt-1">{error.message}</p>
           <button
             onClick={reset}
-            class="mt-2 bg-red-100 hover:bg-red-200 text-red-800 px-3 py-1 rounded text-sm transition-colors"
+            class="mt-2 bg-red-100 dark:bg-red-900 hover:bg-red-200 dark:hover:bg-red-800 text-red-800 dark:text-red-100 px-3 py-1 rounded text-sm transition-colors"
           >
             Try again
           </button>
